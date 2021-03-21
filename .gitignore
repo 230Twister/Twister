@@ -1,1 +1,9 @@
 build
+
+# 忽略 .vscode/ 目录下的所有文件
+.vscode/
+
+# 忽略自己的笔记 --yao
+*.md
+!README.md
+!UPDATE.md
