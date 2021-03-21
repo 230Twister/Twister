@@ -1,0 +1,36 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558 
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "mk_build",
+            "type": "shell", 
+            "command": "mkdir",     // 创建文件夹
+            "args": [
+                "-Force",
+                "build"],
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+        },
+        {
+            "label": "cmake",
+            "options": {
+                "cwd": "${workspaceFolder}/build"    //切换到build下
+            },
+            "type": "shell",
+            "command": "cmake -G 'Unix Makefiles' .. ",
+            "dependsOn": [ "mk_build" ],
+        },
+        {
+            "label": "make",
+            "options": {
+                "cwd": "${workspaceFolder}/build"  //切换到build下
+            },
+            "type": "shell",
+            "command": "make -j4",
+            "dependsOn": [ "cmake" ],  //需要cmake完成
+        }
+    ]
+}

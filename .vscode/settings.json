@@ -1,0 +1,30 @@
+{
+    "files.associations": {
+        "iostream": "cpp",
+        "ostream": "cpp",
+        "xiosbase": "cpp",
+        "iomanip": "cpp",
+        "iosfwd": "cpp",
+        "istream": "cpp",
+        "xlocale": "cpp",
+        "xstring": "cpp",
+        "xmemory": "cpp",
+        "stack": "cpp",
+        "deque": "cpp",
+        "initializer_list": "cpp",
+        "queue": "cpp",
+        "type_traits": "cpp",
+        "vector": "cpp",
+        "xutility": "cpp",
+        "utility": "cpp",
+        "ios": "cpp",
+        "memory": "cpp",
+        "random": "cpp",
+        "xhash": "cpp",
+        "limits": "cpp",
+        "cmath": "cpp",
+        "unordered_map": "cpp",
+        "algorithm": "cpp",
+        "xtree": "cpp"
+    }
+}
