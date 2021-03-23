@@ -5,6 +5,8 @@
  * 最后更新时间: 21.02.22 
  */
 #include "../include/representation.h"
+#include "../include/define.h"
+#include "../include/moves_getter.h"
 
 /* 
  * 函数名：GetAllMovements
@@ -12,14 +14,41 @@
  * 入参：
  * - const Situation & situation：当前局面
  * - int & num_of_all_movements：当前着法数
- * - Movement* all_movements ：	当前着法数组，存储当前所有着法
+ * - int* all_movements ：	当前着法数组，存储当前所有着法
  * 返回值：
  * - void
- * 最后更新时间: 21.03.22
+ * 最后更新时间: 21.03.23
  */
-void GetAllMovements(const Situation & situation, int & num_of_all_movements, Movement* all_movements){
-    int player_flag = situation.current_player << 4 + 16;
-    for(int i = player_flag; i < player_flag + 16; i ++){
-        
-    }
+void GetAllMovements(const Situation & situation, int & num_of_all_movements, int* all_movements){
+
 }
+
+/* 
+ * 函数名：GetAllMovements
+ * 描述：生成所有吃子着法
+ * 入参：
+ * - const Situation & situation：当前局面
+ * - int & num_of_all_movements：当前着法数
+ * - int* all_movements ：	当前着法数组，存储当前所有着法
+ * 返回值：
+ * - void
+ * 最后更新时间: 21.03.23
+ */
+void GetAllCaptureMovements(const Situation & situation, int & num_of_all_movements, int* all_movements){
+
+}
+
+/* 
+ * 函数名：GetAllMovements
+ * 描述：生成所有不吃子着法
+ * 入参：
+ * - const Situation & situation：当前局面
+ * - int & num_of_all_movements：当前着法数
+ * - int* all_movements ：	当前着法数组，存储当前所有着法
+ * 返回值：
+ * - void
+ * 最后更新时间: 21.03.23
+ */
+void GetAllNotCaptureMovements(const Situation & situation, int & num_of_all_movements, int* all_movements){
+    
+}   

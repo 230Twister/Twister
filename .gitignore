@@ -7,3 +7,9 @@ build
 *.md
 !README.md
 !UPDATE.md
+
+# 调试文件
+debug.cpp
+
+# 输出调试测试文件
+debug/
