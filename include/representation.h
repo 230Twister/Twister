@@ -2,7 +2,7 @@
  * 文件名： representation.h
  * 描述	：数据的表示，包括棋盘 棋子 局面 着法等数据的表示
  * 作者 : yao
- * 最后更新时间: 21.02.22 
+ * 最后更新时间: 21.02.24
  */
 #include "define.h"
 #ifndef REPRESENTATION_H
@@ -11,8 +11,27 @@
 
 const int RED = 0;			// 0 表示红
 const int BLACK = 1;		// 1 表示黑
-
-const short LEGAL_POSITION[2][256] = {												// 各棋子合理位置检测数组 [0]为红方 [1]为黑方
+// 位置是否在棋盘上的检测数组
+const UINT8 ON_BOARD[256] = {
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+	0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+	0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+	0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+	0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+	0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+	0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+	0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+	0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+	0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+};
+// 各棋子合理位置检测数组 [0]为红方 [1]为黑方
+const UINT8 LEGAL_POSITION[2][256] = {												
 	{
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -50,7 +69,7 @@ const short LEGAL_POSITION[2][256] = {												// 各棋子合理位置检测
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	}
 };
-const short POSITION_MASK[7] = {2, 4, 16, 1, 1, 1, 8};	// 各子力的特征值 将士相车马炮卒
+const UINT8 POSITION_MASK[7] = {2, 4, 16, 1, 1, 1, 8};									// 各子力的特征值 将士相车马炮卒
 
 const int BOARD_FIRST_POSITION = 0x33;													// 位于棋盘上的第一个位置
 const int KING_DIRECTION[4] = {+0x10, -0x10, +0x1, -0x1};								// 将可走的四个方向
@@ -80,6 +99,23 @@ inline int GetPosition(const int position_col, const int position_row){
 	return position_row << 4 | position_col;
 }
 
+
+/* 
+ * 函数名：RowBitOpration
+ * 描述: 由于我们是以拓展数组左上角为0行0列，但是位行位列表示是低位在右，所以需要镜像一下
+ * 入参：
+ * - 行 列
+ * 返回值：
+ * - 纠正后的移位个数
+ * 最后更新时间: 21.03.24
+ */
+inline int RowBitOpration(int col){
+	return 8 - col;
+}
+inline int ColBitOpration(int row){
+	return 9 - row;
+}
+
 /* 
  * 函数名：NextBoardPosition
  * 描述：位于棋盘上的下一个位置
@@ -97,8 +133,9 @@ inline int NextBoardPosition(const int position){
 struct Situation{
 	int current_player;			// 当前执棋的玩家 用 0 表示红方 1 表示黑方
 	UINT8 current_board[256];	// 当前的棋盘数组，256个位置 0 表示无棋子 其余表示有棋子
-	UINT8 current_chess[48];	// 当前棋子所在的位置 16-31表示红方棋子 32-47表示黑方棋子
-
+	UINT8 current_pieces[48];	// 当前棋子所在的位置 16-31表示红方棋子 32-47表示黑方棋子
+	UINT16 bit_row[16];			// 位行 用于车和炮着法的生成
+	UINT16 bit_col[16];			// 位列 用于车和炮着法的生成
 	int value_red;				// 局面评估值（红）
 	int value_black;			// 局面评估值（黑）
 
@@ -116,6 +153,32 @@ struct Situation{
  */
 inline void ChangePlayer(int & current_player){
 	current_player = 1 - current_player;
+}
+
+/* 
+ * 函数名：GetPlayerFlag
+ * 描述：得到玩家的特征值 红 16 黑 32
+ * 入参：
+ * - int & current_player: 当前执棋玩家
+ * 返回值：
+ * - int 玩家的特征值
+ * 最后更新时间: 21.03.24
+ */
+inline int GetPlayerFlag(const int current_player){
+	return current_player << 4 + 16;
+}
+
+/* 
+ * 函数名：ColorOfPiece
+ * 描述：得到玩家的特征值 红 16 黑 32
+ * 入参：
+ * - const int piece_id 棋子的编号
+ * 返回值：
+ * - int 玩家编号
+ * 最后更新时间: 21.03.24
+ */
+inline int ColorOfPiece(const int piece_id){
+	return (piece_id == 0) ? 0 : ((piece_id & GetPlayerFlag(0)) ? RED : BLACK);
 }
 
 /* 
@@ -166,11 +229,12 @@ void AddPiece(int piece_position, int piece_id);
  */
 void BoardToFen(UINT8 board[], char* fen);
 
-// // 着法表示
-// struct Movement{
-// 	UINT8 sourc;				// 着法的起点
-// 	UINT8 destination;			// 着法的终点
-// };
+// 着法表示
+struct Movement{
+	UINT8 from;				// 着法的起点
+	UINT8 to;				// 着法的终点
+	UINT8 capture;			// 着法是否吃子 0代表不吃子 其余代表吃的子的类型
+};
 
 /* 
  * 函数名：ClearAllMovements
