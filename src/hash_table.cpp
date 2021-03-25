@@ -2,7 +2,7 @@
  * 文件名： hash_table.cpp
  * 描述	：实现置换表
  * 作者 : oscar
- * 最后更新时间: 24.03.10 
+ * 最后更新时间: 24.03.10
  */
 #include <random>
 #include "hash_table.h"

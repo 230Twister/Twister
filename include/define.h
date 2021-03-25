@@ -5,6 +5,7 @@
  * 最后更新时间: 21.03.23
  */
 #include<iostream>
+#include<string.h>
 
 #ifndef DEFINE_H
 #define DEFINE_H

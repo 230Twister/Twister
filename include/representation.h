@@ -9,8 +9,11 @@
 #define REPRESENTATION_H
 
 
+// =====================================================================================
+// 相关常量定义
 const int RED = 0;			// 0 表示红
 const int BLACK = 1;		// 1 表示黑
+
 // 位置是否在棋盘上的检测数组
 const UINT8 ON_BOARD[256] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -80,55 +83,7 @@ const int BISHOP_EYE_DIRECTION[4] = {-0xf, -0x11, +0xf, +0x11};							// 象可�
 const int ADVISOR_DIRECTION[4] = {-0x11, -0xf, +0x11, +0xf};							// 士可走的方向
 const int PAWN_DIRECTION[2][3] = {{-0x10, +0x1, -0x1}, {+0x10, +0x1, -0x1}};			// 双方的兵可走的方向
 
-/* 
- * 函数名：GetRow GetCol GetPosition
- * 描述: 位置于其对应行列的相互转换与获取
- * 入参：
- * - 行 列 或者 位置
- * 返回值：
- * - 行 列 或者 位置
- * 最后更新时间: 21.03.23
- */
-inline int GetRow(const int position){
-	return position >> 4;
-}
-inline int GetCol(const int position){
-	return position & 0xf;
-}
-inline int GetPosition(const int position_col, const int position_row){
-	return position_row << 4 | position_col;
-}
-
-
-/* 
- * 函数名：RowBitOpration
- * 描述: 由于我们是以拓展数组左上角为0行0列，但是位行位列表示是低位在右，所以需要镜像一下
- * 入参：
- * - 行 列
- * 返回值：
- * - 纠正后的移位个数
- * 最后更新时间: 21.03.24
- */
-inline int RowBitOpration(int col){
-	return 8 - col;
-}
-inline int ColBitOpration(int row){
-	return 9 - row;
-}
-
-/* 
- * 函数名：NextBoardPosition
- * 描述：位于棋盘上的下一个位置
- * 入参：
- * - const int position 当前的位置
- * 返回值：
- * - int x :下一个在棋盘上的位置
- * 最后更新时间: 21.03.22
- */
-inline int NextBoardPosition(const int position){
-	return (GetCol(position) == 11) ? ( position == 0xcb ? 0 : position + 8 ) : position + 1;
-}
-
+// ======================================================================================
 // 局面表示
 struct Situation{
 	int current_player;			// 当前执棋的玩家 用 0 表示红方 1 表示黑方
@@ -142,93 +97,51 @@ struct Situation{
 	char current_fen[120];		// 当前局面的FEN格式串
 };
 
-/* 
- * 函数名：ChangePlayer
- * 描述：交换执棋玩家 1->0 0->1
- * 入参：
- * - int & current_player: 当前执棋玩家
- * 返回值：
- * - void
- * 最后更新时间: 21.03.22
- */
+
+// 行列 <-> 位置转换
+inline int GetRow(const int position){
+	return position >> 4;
+}
+inline int GetCol(const int position){
+	return position & 0xf;
+}
+inline int GetPosition(const int position_col, const int position_row){
+	return position_row << 4 | position_col;
+}
+
+// 行位列移位时的调整
+inline int RowBitOpration(int col){
+	return 8 - col;
+}
+inline int ColBitOpration(int row){
+	return 9 - row;
+}
+
+// 棋盘上的下一个位置
+inline int NextBoardPosition(const int position){
+	return (GetCol(position) == 11) ? ( position == 0xcb ? 0 : position + 8 ) : position + 1;
+}
+
+// 玩家相关操作与判断
 inline void ChangePlayer(int & current_player){
 	current_player = 1 - current_player;
 }
-
-/* 
- * 函数名：GetPlayerFlag
- * 描述：得到玩家的特征值 红 16 黑 32
- * 入参：
- * - int & current_player: 当前执棋玩家
- * 返回值：
- * - int 玩家的特征值
- * 最后更新时间: 21.03.24
- */
 inline int GetPlayerFlag(const int current_player){
-	return current_player << 4 + 16;
+	return (current_player << 4) + 16;
 }
-
-/* 
- * 函数名：ColorOfPiece
- * 描述：得到玩家的特征值 红 16 黑 32
- * 入参：
- * - const int piece_id 棋子的编号
- * 返回值：
- * - int 玩家编号
- * 最后更新时间: 21.03.24
- */
 inline int ColorOfPiece(const int piece_id){
 	return (piece_id == 0) ? 0 : ((piece_id & GetPlayerFlag(0)) ? RED : BLACK);
 }
 
-/* 
- * 函数名：InitSituation
- * 描述：根据FEN串初始化棋盘，包括初始化棋盘棋子数组，执棋玩家，局面对应的FEN串
- * 入参：
- * - Situation & situation : 当前的局面
- * - const char* fen : 传入的FEN串
- * 返回值：
- * - void
- * 最后更新时间: 21.03.22
- */
+// 局面操作
 void InitSituation(Situation & situation, const char* fen);
+int PieceOfFen(const char fen_char);
+void AddPiece(int piece_position, int piece_id, Situation & situation);
+void DeletePiece(int piece_position, int piece_id, Situation & situation);
+void FenToSituation(Situation & situation, const char* fen);
+void SituationToFen(Situation & situation, char* fen);
 
-/* 
- * 函数名：FenToBoard
- * 描述：FEN串转棋盘数组
- * 入参：
- * - UINT8 board[]：棋盘数组
- * - const char* fen : 传入的FEN串
- * 返回值：
- * - void
- * 最后更新时间: 21.03.22
- */
-void FenToBoard(UINT8 board[], const char* fen);
-
-/* 
- * 函数名：AddPiece
- * 描述：向棋盘中添加棋子
- * 入参：
- * - int piece_position 棋子的位置
- * - int piece_id 棋子的编号
- * 返回值：
- * - void
- * 最后更新时间: 21.03.23
- */
-void AddPiece(int piece_position, int piece_id);
-
-/* 
- * 函数名：FenToBoard
- * 描述：FEN串转棋盘数组
- * 入参：
- * - UINT8 board[]：需转的棋盘数组
- * - char* fen : 输出的FEN串
- * 返回值：
- * - void
- * 最后更新时间: 21.03.22
- */
-void BoardToFen(UINT8 board[], char* fen);
-
+// ==========================================================================================
 // 着法表示
 struct Movement{
 	UINT8 from;				// 着法的起点
@@ -236,17 +149,14 @@ struct Movement{
 	UINT8 capture;			// 着法是否吃子 0代表不吃子 其余代表吃的子的类型
 };
 
-/* 
- * 函数名：ClearAllMovements
- * 描述：清空所有着法
- * 入参：
- * - int & num_of_movements：当前着法数
- * 返回值：
- * - void
- * 最后更新时间: 21.03.22
- */
+// 着法清空操作
 inline void ClearAllMovements(int & num_of_movements){
 	num_of_movements = 0;
 }
+
+// 生成着法
+void GetAllMovements(const Situation & situation, int & num_of_all_movements, Movement* all_movements);
+void GetAllCaptureMovements(const Situation & situation, int & num_of_all_movements, Movement* all_movements);
+void GetAllNotCaptureMovements(const Situation & situation, int & num_of_all_movements, Movement* all_movements);
 
 #endif
