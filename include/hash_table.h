@@ -2,14 +2,13 @@
  * 文件名： hash_table.h
  * 描述	：置换表
  * 作者 : oscar
- * 最后更新时间: 23.03.23 
+ * 最后更新时间: 25.03.11 
  */
-
-#ifndef SEARCH_H
-#define SEARCH_H
-
 #include "define.h"
 #include "representation.h"
+
+#ifndef HASHTABLE_H
+#define HASHTABLE_H
 
 const UINT8 hashEXACT = 0;                  // PV结点类型
 const UINT8 hashALPHA = 1;                  // ALPHA结点类型

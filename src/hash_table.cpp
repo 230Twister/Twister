@@ -88,7 +88,7 @@ int ReadHashTable(int depth, int alpha, int beta, Movement& move){
 void SaveHashTable(int depth, int value, UINT8 node_type, Movement move){
     int index = ZobristKey & HASHTABLE_MASK;
     HashNode hash_node = HashTable[index];
-    HashNode new_hash_node = HashNode{ZobristKeyCheck, depth, value, node_type};
+    HashNode new_hash_node = HashNode{ZobristKeyCheck, depth, value, node_type, move};
     
     // 出现相同局面冲突
     if(hash_node.check == ZobristKeyCheck){
