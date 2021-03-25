@@ -7,6 +7,22 @@
 #include <random>
 #include "hash_table.h"
 
+const UINT8 hashEXACT = 0;                  // PV结点类型
+const UINT8 hashALPHA = 1;                  // ALPHA结点类型
+const UINT8 hashBETA = 2;                   // BETA结点类型
+const UINT32 HASHTABLE_SIZE = 1 << 22;      // 置换表大小 4MB
+const UINT32 HASHTABLE_MASK = (1 << 22) - 1;
+
+const int NONE_VALUE = 1 << 20;             // 空价值
+const Movement NONE_MOVE = {0, 0, 0};       // 空着
+
+HashNode* HashTable;                        // 置换表
+UINT64 ZobristKey;                          // 当前局面键值
+UINT64 ZobristKeyCheck;                     // 当前局面校验值
+UINT64 ZobristPlayer;                       // 走棋方的键值
+UINT64 ZobristPlayerCheck;                  // 走棋方校验值
+UINT64 ZobristTable[32][256];               // 棋子在棋盘各个位置的键值
+UINT64 ZobristTableCheck[32][256];          // 棋子在棋盘各个位置的校验值
 /* 
  * 函数名：InitHashTable
  * 描述：生成置换表以及相关键值
@@ -32,6 +48,33 @@ void InitHashTable(){
             ZobristTableCheck[i][j] = engine();
         }
     }
+}
+
+/* 
+ * 函数名：ResetHashTable
+ * 描述：重置 置换表
+ * 入参: 
+ * - void
+ * 返回值：
+ * - void
+ * 最后更新时间: 25.03.14
+ */
+void ResetHashTable(){
+    DeleteHashTable();
+    HashTable = new HashNode[HASHTABLE_SIZE];
+}
+
+/* 
+ * 函数名：DeleteHashTable
+ * 描述：删除置换表
+ * 入参: 
+ * - void
+ * 返回值：
+ * - void
+ * 最后更新时间: 25.03.13
+ */
+void DeleteHashTable(){
+    delete[] HashTable;
 }
 
 /* 

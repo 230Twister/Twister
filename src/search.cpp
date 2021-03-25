@@ -1,5 +1,6 @@
 #include "search.h"
 #include "hash_table.h"
+#include "moves_sort.h"
 
 /* 
  * 函数名：AlphaBetaSearch
@@ -20,7 +21,7 @@ int AlphaBetaSearch(int depth, int alpha, int beta){
     Movement good_move;         // 当前局面最佳着法
     move = good_move = NONE_MOVE;
     // 读取置换表
-    value = ReadHashTable(depth, alpha, beta, good_move);
+    value = ReadHashTable(depth, alpha, beta, move);
 
     // 读取成功
     if(value != NONE_VALUE){
@@ -44,9 +45,13 @@ int AlphaBetaSearch(int depth, int alpha, int beta){
         // do-something
         for(int i = 0; i < move_num; i++){
             move = move_list[i];
-            // 下子 do-something
+            // 下子 
+            /* do-something */
+            // 搜索此着法，记录进历史表
+            SaveHistoryTable(move, depth);
             value = -AlphaBetaSearch(depth - 1, alpha, beta);
-            // 回溯 do-something
+            // 回溯
+            /* do-something */
 
             // 当前为beta结点，执行剪枝
             if(value >= beta){
