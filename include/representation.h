@@ -134,7 +134,7 @@ inline int ColorOfPiece(const int piece_id){
 }
 
 // 局面操作
-void InitSituation(Situation & situation, const char* fen);
+void InitSituation(Situation & situation);
 int PieceOfFen(const char fen_char);
 void AddPiece(int piece_position, int piece_id, Situation & situation);
 void DeletePiece(int piece_position, int piece_id, Situation & situation);

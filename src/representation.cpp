@@ -14,7 +14,7 @@
  * - Situation & situation : 当前的局面
  * 返回值：
  * - void
- * 最后更新时间: 21.03.22
+ * 最后更新时间: 21.03.24
  */
 void InitSituation(Situation & situation){
     // 清空棋子棋盘数组
@@ -38,7 +38,7 @@ void InitSituation(Situation & situation){
  * - Situation & situation 当前局面
  * 返回值：
  * - void 
- * 最后更新时间: 21.03.23
+ * 最后更新时间: 21.03.24
  */
 void AddPiece(int piece_position, int piece_id, Situation & situation){
     // 1. 更新棋子棋盘数组
@@ -64,7 +64,7 @@ void AddPiece(int piece_position, int piece_id, Situation & situation){
  * - Situation & situation 当前局面
  * 返回值：
  * - void
- * 最后更新时间: 21.03.23
+ * 最后更新时间: 21.03.24
  */
 void DeletePiece(int piece_position, int piece_id, Situation & situation){
     // 1. 更新棋子棋盘数组
@@ -138,6 +138,7 @@ int PieceOfFen(const char fen_char){
     default:
         break;
     }
+    return piece_index;
 }
 
 /* 
@@ -169,6 +170,7 @@ void FenToSituation(Situation & situation, const char* fen){
             piece_id = piece_id_array[piece_id_index];
             piece_id_array[piece_id_index] ++;
             AddPiece(GetPosition(col, row), piece_id, situation);
+            col ++;
         }
         p ++;
     }
