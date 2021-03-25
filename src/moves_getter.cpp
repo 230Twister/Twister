@@ -6,7 +6,7 @@
  */
 #include "representation.h"
 #include "define.h"
-#include "moves_getter.h"
+#include "preset.h"
 
 /* 
  * 函数名：GetAllMovements
@@ -228,7 +228,7 @@ void GetAllCaptureMovements(const Situation & situation, int & num_of_all_moveme
  * - Movement* all_movements ：	当前着法数组，存储当前所有着法
  * 返回值：
  * - void
- * 最后更新时间: 21.03.23
+ * 最后更新时间: 21.03.24
  */
 void GetAllNotCaptureMovements(const Situation & situation, int & num_of_all_movements, Movement* all_movements){
     // 1. 获得玩家特征值 

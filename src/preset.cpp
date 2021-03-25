@@ -4,7 +4,7 @@
  * 作者 : yao
  * 最后更新时间: 21.02.23
  */
-#include "moves_getter.h"
+#include "preset.h"
 
 int HORSE_CAN_GET[256][10];             // 马在各个位置所能到的地方
 int HORSE_LEG[256][10];                 // 马在各个位置马腿所在的地方
