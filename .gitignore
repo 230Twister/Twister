@@ -13,3 +13,5 @@ debug.cpp
 
 # 输出调试测试文件
 debug/
+
+*.pdf
