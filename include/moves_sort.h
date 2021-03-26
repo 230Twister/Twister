@@ -7,4 +7,6 @@ extern int HistoryTable[256][256];     // 历史表
 
 void SaveHistoryTable(const Movement& move, int depth);
 
+
+
 #endif

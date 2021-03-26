@@ -83,6 +83,12 @@ const int BISHOP_EYE_DIRECTION[4] = {-0xf, -0x11, +0xf, +0x11};							// 象可�
 const int ADVISOR_DIRECTION[4] = {-0x11, -0xf, +0x11, +0xf};							// 士可走的方向
 const int PAWN_DIRECTION[2][3] = {{-0x10, +0x1, -0x1}, {+0x10, +0x1, -0x1}};			// 双方的兵可走的方向
 
+const int MVV_VALUES[48] = {
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	8, 2, 2, 2, 2, 4, 4 ,6 ,6, 4, 4, 2, 2, 2, 2, 2,
+	8, 2, 2, 2, 2, 4, 4, 6, 6, 4, 4, 2, 2, 2, 2, 2,
+};																						// 被吃子的价值
+
 // ======================================================================================
 // 局面表示
 struct Situation{
@@ -147,6 +153,7 @@ struct Movement{
 	UINT8 from;				// 着法的起点
 	UINT8 to;				// 着法的终点
 	UINT8 capture;			// 着法是否吃子 0代表不吃子 其余代表吃的子的类型
+	UINT8 value;			// 着法的价值
 };
 
 // 着法清空操作
@@ -158,5 +165,8 @@ inline void ClearAllMovements(int & num_of_movements){
 void GetAllMovements(const Situation & situation, int & num_of_all_movements, Movement* all_movements);
 void GetAllCaptureMovements(const Situation & situation, int & num_of_all_movements, Movement* all_movements);
 void GetAllNotCaptureMovements(const Situation & situation, int & num_of_all_movements, Movement* all_movements);
+
+// 待完善：保护检测函数，side一方的dst能被保护返回1，否则返回0
+int IfProtected(int side, const int dst);
 
 #endif
