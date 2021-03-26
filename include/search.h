@@ -9,6 +9,7 @@
 #define SEARCH_H
 
 int AlphaBetaSearch(int depth, int alpha, int beta);
+int QuiescentSearch(int alpha, int beta);
 void ComputerThink();
 
 #endif
