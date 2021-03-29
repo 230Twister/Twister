@@ -23,6 +23,10 @@ UINT64 ZobristPlayer;                       // 走棋方的键值
 UINT64 ZobristPlayerCheck;                  // 走棋方校验值
 UINT64 ZobristTable[32][256];               // 棋子在棋盘各个位置的键值
 UINT64 ZobristTableCheck[32][256];          // 棋子在棋盘各个位置的校验值
+
+extern int step;
+extern UINT32 MAX_VALUE;
+extern UINT32 WIN_VALUE;
 /* 
  * 函数名：InitHashTable
  * 描述：生成置换表以及相关键值
@@ -97,6 +101,14 @@ int ReadHashTable(int depth, int alpha, int beta, Movement& move){
     if(ZobristKeyCheck == hash_node.check){
         // 获取到的置换表结点的搜索深度应该较大才能认为是有效的
         if(hash_node.depth > depth){
+            // 调整至相对值
+            if(hash_node.value > WIN_VALUE){
+                hash_node.value -= step;
+            }
+            if(hash_node.value < -WIN_VALUE){
+                hash_node.value += step;
+            }
+
             // PV结点 直接返回置换表中的值
             if(hash_node.type == hashEXACT){
                 return hash_node.value;
@@ -133,6 +145,13 @@ void SaveHashTable(int depth, int value, UINT8 node_type, Movement move){
     HashNode hash_node = HashTable[index];
     HashNode new_hash_node = HashNode{ZobristKeyCheck, depth, value, node_type, move};
     
+    // 存入置换表前，将估值调整到绝对值
+    if(new_hash_node.value > WIN_VALUE){
+        new_hash_node.value += step;
+    }
+    if(new_hash_node.value < -WIN_VALUE){
+        new_hash_node.value -= step;
+    }
     // 出现相同局面冲突
     if(hash_node.check == ZobristKeyCheck){
         // 深度优先覆盖
