@@ -25,8 +25,8 @@ UINT64 ZobristTable[32][256];               // 棋子在棋盘各个位置的键
 UINT64 ZobristTableCheck[32][256];          // 棋子在棋盘各个位置的校验值
 
 extern int step;
-extern UINT32 MAX_VALUE;
-extern UINT32 WIN_VALUE;
+extern const UINT32 MAX_VALUE;
+extern const UINT32 WIN_VALUE;
 /* 
  * 函数名：InitHashTable
  * 描述：生成置换表以及相关键值

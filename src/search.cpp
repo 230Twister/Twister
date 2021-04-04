@@ -3,14 +3,14 @@
 #include "moves_sort.h"
 #include <ctime>
 
-Movement BestMove;                              // 当前局面的最好走法
-int step = 0;                                   // 搜索步数
-time_t StartTime;                               // 开始搜索的时间
-bool isTimeLimit = 0;                           // 时间是否超限
-const UINT16 MAX_DEPTH = 8;                     // 最大搜索深度
-const UINT32 MAX_TIME = 20000;                  // 最大消耗时间(ms)
-const UINT32 MAX_VALUE = 10000;                 // 最大价值，胜利局面绝对分数
-const UINT32 WIN_VALUE = MAX_VALUE - MAX_DEPTH; // 胜利局面的相对分数
+Movement BestMove;                                      // 当前局面的最好走法
+int step = 0;                                           // 搜索步数
+time_t StartTime;                                       // 开始搜索的时间
+bool isTimeLimit = 0;                                   // 时间是否超限
+const UINT16 MAX_DEPTH = 8;                             // 最大搜索深度
+const UINT32 MAX_TIME = 20000;                          // 最大消耗时间(ms)
+extern const UINT32 MAX_VALUE = 10000;                  // 最大价值，胜利局面绝对分数
+extern const UINT32 WIN_VALUE = MAX_VALUE - MAX_DEPTH;  // 胜利局面的相对分数
 /* 
  * 函数名：AlphaBetaSearch
  * 描述：带置换表的AlphaBeta搜索
@@ -115,6 +115,7 @@ int QuiescentSearch(int alpha, int beta){
     Movement move_list[128];    // 当前所有着法
 
     best = step - MAX_VALUE;
+    // 必输局面直接返回
     if(best > beta){
         return beta;
     }
