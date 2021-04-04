@@ -5,6 +5,7 @@
  * 最后更新时间: 21.02.24
  */
 #include "define.h"
+#include <stack>
 #ifndef REPRESENTATION_H
 #define REPRESENTATION_H
 
@@ -100,6 +101,8 @@ struct Situation{
 	int value_red;				// 局面评估值（红）
 	int value_black;			// 局面评估值（黑）
 	char current_fen[120];		// 当前局面的FEN格式串
+
+	std::stack<Movement> moves_stack;
 };
 
 

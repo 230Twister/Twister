@@ -1,5 +1,6 @@
 #include <iostream>
 #include "ucci.h"
+#include "hash_table.h"
 
 int main() {
     UcciCommStruct UcciComm;
@@ -7,5 +8,7 @@ int main() {
 		return 0;
 	}
     std::cout << "ucciok\n";
+    InitHashTable();
+
     std::cout << "Hello, world!\n";
 }

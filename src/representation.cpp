@@ -6,7 +6,7 @@
  */
 #include "representation.h"
 #include "preset.h"
-
+#include "hash_table.h"
 /* 
  * 函数名：InitSituation
  * 描述：根据FEN串初始化棋盘，包括初始化棋盘棋子数组，执棋玩家，局面对应的FEN串
@@ -428,4 +428,45 @@ bool BeChecked(const Situation & situation){
 
     // 6. 没有被将军
     return false;
+}
+
+bool MakeAMove (Situation & situation, const Movement move){
+    // 放入走法栈
+    situation.moves_stack.push(move);
+
+    /* 置换表更新 */
+    // 当前局面哈希值
+    ZobristKey ^= ZobristPlayer;
+    ZobristKey ^= ZobristTable[situation.current_board[move.from]][move.from];
+    if(move.capture != 0)
+        ZobristKey ^= ZobristTable[move.capture][move.to];
+    ZobristKey ^= ZobristTable[situation.current_board[move.from]][move.to];
+
+    // 当前局面哈希校验值
+    ZobristKeyCheck ^= ZobristPlayerCheck;
+    ZobristKeyCheck ^= ZobristTableCheck[situation.current_board[move.from]][move.from];
+    if(move.capture != 0)
+        ZobristKey ^= ZobristTableCheck[move.capture][move.to];
+    ZobristKey ^= ZobristTableCheck[situation.current_board[move.from]][move.to];
+}
+
+void UnMakeAMove (Situation & situation){
+    // 从走法栈中弹出，进行回滚
+    Movement move = situation.moves_stack.top();
+    situation.moves_stack.pop();
+
+    /* 置换表更新 */
+    // 当前局面哈希值
+    ZobristKey ^= ZobristPlayer;
+    ZobristKey ^= ZobristTable[situation.current_board[move.to]][move.to];
+    if(move.capture != 0)
+        ZobristKey ^= ZobristTable[move.capture][move.to];
+    ZobristKey ^= ZobristTable[situation.current_board[move.to]][move.from];
+
+    // 当前局面哈希校验值
+    ZobristKeyCheck ^= ZobristPlayerCheck;
+    ZobristKeyCheck ^= ZobristTableCheck[situation.current_board[move.to]][move.to];
+    if(move.capture != 0)
+        ZobristKey ^= ZobristTableCheck[move.capture][move.to];
+    ZobristKey ^= ZobristTableCheck[situation.current_board[move.to]][move.from];
 }
