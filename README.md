@@ -16,7 +16,6 @@
 |  `representation.cpp`   |     数据的表示，包括棋盘 棋子 着法等     |
 |       `preset.h`        |           预置的数组与相关判断           |
 |      `preset.cpp`       |           预置的数组与相关判断           |
-|    `moves_getter.h`     |       着法生成器，生成当前所有着法       |
 |   `moves_getter.cpp`    |       着法生成器，生成当前所有着法       |
 |     `moves_sort.h`      |         着法排序，将所有着法排序         |
 |    `moves_sort.cpp`     |         着法排序，将所有着法排序         |
@@ -27,15 +26,15 @@
 | :---------------------: | :--------------------------------------: |
 |       `search.h`        |          实现博弈树搜索相关算法          |
 |      `search.cpp`       |          实现博弈树搜索相关算法          |
-|  `permutation_table.h`  |              置换表相关操作              |
-| `permutation_table.cpp` |              置换表相关操作              |
+|  `hash_table.h`  |              置换表相关操作              |
+| `hash_table.cpp` |              置换表相关操作              |
 
 ### 局面评价
 
 |         文件名          |                   说明                   |
 | :---------------------: | :--------------------------------------: |
-|  `game_evaluation.cpp`  |               局面评估方法               |
-|   `game_evaluation.h`   |               局面评估方法               |
+|  `value.cpp`  |               局面评估方法               |
+|   `value.h`   |               局面评估方法               |
 
 ### 其他
 
@@ -209,14 +208,6 @@ $ git commit -m '-yao -03.21.17 -v0.5 -完善search.h'
 
 #### 备注
 
-### `moves_getter.h`
-
-#### 结构体及变量
-
-#### 函数
-
-#### 备注
-
 ### `moves_sort.h`
 
 #### 结构体及变量
@@ -233,7 +224,7 @@ $ git commit -m '-yao -03.21.17 -v0.5 -完善search.h'
 
 #### 备注
 
-### `premutation_table.h`
+### `hash_table.h`
 
 #### 结构体及变量
 
@@ -241,7 +232,7 @@ $ git commit -m '-yao -03.21.17 -v0.5 -完善search.h'
 
 #### 备注
 
-### `game_evaluation.h`
+### `value.h`
 
 #### 结构体及变量
 

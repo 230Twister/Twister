@@ -191,3 +191,241 @@ void FenToSituation(Situation & situation, const char* fen){
  * 最后更新时间: 21.03.25
  */
 void SituationToFen(Situation & situation, char* fen);
+
+/* 
+ * 函数名：CheckOpponent
+ * 描述：检测是否将军
+ * 入参：
+ * - Situation & situation :当前局面
+ * 返回值：
+ * - bool 判断执棋方是否将军
+ * 最后更新时间: 21.03.29
+ */
+bool CheckOpponent(const Situation & situation){
+    // 1. 获得玩家特征值 
+    int player_flag = GetPlayerFlag(situation.current_player), player = situation.current_player;
+    int opponent_king_id = GetPlayerFlag(OpponentPlayer(situation.current_player)) + 0;
+    int piece_from, piece_to, can_move_counter, piece_to_id;
+
+    // 2. 检测马的将军
+    for(int i = player_flag + 5; i <= player_flag + 6; i ++){
+        if(situation.current_pieces[i] != 0){
+            int horse_leg;                  // 马腿位置
+            piece_from = situation.current_pieces[i];
+            can_move_counter = 0;
+            piece_to = HORSE_CAN_GET[piece_from][can_move_counter];
+            while(piece_to != 0){
+                horse_leg = HORSE_LEG[piece_from][can_move_counter];
+                piece_to_id = situation.current_board[piece_to];
+                if(piece_to_id == opponent_king_id && situation.current_board[horse_leg] == 0){
+                    return true;
+                }
+                can_move_counter ++;
+                piece_to = HORSE_CAN_GET[piece_from][can_move_counter];
+            }
+        }
+    }
+
+    // 3. 车的吃子着法
+    for(int i = player_flag + 7; i <= player_flag + 8; i ++){
+        if(situation.current_pieces[i] != 0){
+            piece_from = situation.current_pieces[i];
+            int col = GetCol(piece_from), row = GetRow(piece_from);
+
+            // 右 左 方向的吃子
+            for(int j = 0; j < 2; j ++){
+                int capture_col = ROOK_CANNON_CAN_GET_ROW[col - 3][situation.bit_row[row]].rook_capture[j];
+                if(capture_col != col){
+                    piece_to = GetPosition(capture_col, row);
+                    piece_to_id = situation.current_board[piece_to];
+                    if(piece_to_id == opponent_king_id){
+                       return true;
+                    }
+                }
+            }
+            // 下 上 方向的吃子
+            for(int j = 0; j < 2; j ++){
+                int capture_row = ROOK_CANNON_CAN_GET_COL[row - 3][situation.bit_col[col]].rook_capture[j];
+                if(capture_row != row){
+                    piece_to = GetPosition(col, capture_row);
+                    piece_to_id = situation.current_board[piece_to];
+                    if(piece_to_id == opponent_king_id){
+                       return true;
+                    }
+                }
+            }
+        
+        }
+    }
+    
+    // 4. 炮的吃子着法
+    for(int i = player_flag + 9; i <= player_flag + 10; i ++){
+        if(situation.current_pieces[i] != 0){
+            piece_from = situation.current_pieces[i];
+            int col = GetCol(piece_from), row = GetRow(piece_from);
+
+            // 右 左 方向的吃子
+            for(int j = 0; j < 2; j ++){
+                int capture_col = ROOK_CANNON_CAN_GET_ROW[col - 3][situation.bit_row[row]].connon_capture[j];
+                if(capture_col != col){
+                    piece_to = GetPosition(capture_col, row);
+                    piece_to_id = situation.current_board[piece_to];
+                    if(piece_to_id == opponent_king_id){
+                       return true;
+                    }
+                }
+            }
+            // 下 上 方向的吃子
+            for(int j = 0; j < 2; j ++){
+                int capture_row = ROOK_CANNON_CAN_GET_COL[row - 3][situation.bit_col[col]].connon_capture[j];
+                if(capture_row != row){
+                    piece_to = GetPosition(col, capture_row);
+                    piece_to_id = situation.current_board[piece_to];
+                    if(piece_to_id == opponent_king_id){
+                       return true;
+                    }
+                }
+            }
+        
+        }
+    }
+
+    // 5. 兵(卒)的吃子着法
+    for(int i = player_flag + 11; i <= player_flag + 15; i ++){
+        if(situation.current_pieces[i] != 0){
+            piece_from = situation.current_pieces[i];
+            can_move_counter = 0;
+            piece_to = PAWN_CAN_GET[piece_from][player][can_move_counter];
+            while(piece_to != 0){
+                piece_to_id = situation.current_board[piece_to];
+                if(piece_to_id == opponent_king_id){
+                    return true;
+                }
+                can_move_counter ++;
+                piece_to = PAWN_CAN_GET[piece_from][player][can_move_counter];
+            }
+        }
+    }
+
+    // 6. 没有将军
+    return false;
+}
+
+/* 
+ * 函数名：BeChecked
+ * 描述：检测是否被对方将军
+ * 入参：
+ * - Situation & situation :当前局面
+ * 返回值：
+ * - bool 判断执棋方是否被对方将军
+ * 最后更新时间: 21.03.29
+ */
+bool BeChecked(const Situation & situation){
+    // 1. 获得玩家特征值 (注意走棋方假想为对手)
+    int player_flag = GetPlayerFlag(OpponentPlayer(situation.current_player)), player = OpponentPlayer(situation.current_player);
+    int opponent_king_id = GetPlayerFlag(situation.current_player) + 0;
+    int piece_from, piece_to, can_move_counter, piece_to_id;
+
+    // 2. 检测马的将军
+    for(int i = player_flag + 5; i <= player_flag + 6; i ++){
+        if(situation.current_pieces[i] != 0){
+            int horse_leg;                  // 马腿位置
+            piece_from = situation.current_pieces[i];
+            can_move_counter = 0;
+            piece_to = HORSE_CAN_GET[piece_from][can_move_counter];
+            while(piece_to != 0){
+                horse_leg = HORSE_LEG[piece_from][can_move_counter];
+                piece_to_id = situation.current_board[piece_to];
+                if(piece_to_id == opponent_king_id && situation.current_board[horse_leg] == 0){
+                    return true;
+                }
+                can_move_counter ++;
+                piece_to = HORSE_CAN_GET[piece_from][can_move_counter];
+            }
+        }
+    }
+
+    // 3. 车的吃子着法
+    for(int i = player_flag + 7; i <= player_flag + 8; i ++){
+        if(situation.current_pieces[i] != 0){
+            piece_from = situation.current_pieces[i];
+            int col = GetCol(piece_from), row = GetRow(piece_from);
+
+            // 右 左 方向的吃子
+            for(int j = 0; j < 2; j ++){
+                int capture_col = ROOK_CANNON_CAN_GET_ROW[col - 3][situation.bit_row[row]].rook_capture[j];
+                if(capture_col != col){
+                    piece_to = GetPosition(capture_col, row);
+                    piece_to_id = situation.current_board[piece_to];
+                    if(piece_to_id == opponent_king_id){
+                       return true;
+                    }
+                }
+            }
+            // 下 上 方向的吃子
+            for(int j = 0; j < 2; j ++){
+                int capture_row = ROOK_CANNON_CAN_GET_COL[row - 3][situation.bit_col[col]].rook_capture[j];
+                if(capture_row != row){
+                    piece_to = GetPosition(col, capture_row);
+                    piece_to_id = situation.current_board[piece_to];
+                    if(piece_to_id == opponent_king_id){
+                       return true;
+                    }
+                }
+            }
+        
+        }
+    }
+    
+    // 4. 炮的吃子着法
+    for(int i = player_flag + 9; i <= player_flag + 10; i ++){
+        if(situation.current_pieces[i] != 0){
+            piece_from = situation.current_pieces[i];
+            int col = GetCol(piece_from), row = GetRow(piece_from);
+
+            // 右 左 方向的吃子
+            for(int j = 0; j < 2; j ++){
+                int capture_col = ROOK_CANNON_CAN_GET_ROW[col - 3][situation.bit_row[row]].connon_capture[j];
+                if(capture_col != col){
+                    piece_to = GetPosition(capture_col, row);
+                    piece_to_id = situation.current_board[piece_to];
+                    if(piece_to_id == opponent_king_id){
+                       return true;
+                    }
+                }
+            }
+            // 下 上 方向的吃子
+            for(int j = 0; j < 2; j ++){
+                int capture_row = ROOK_CANNON_CAN_GET_COL[row - 3][situation.bit_col[col]].connon_capture[j];
+                if(capture_row != row){
+                    piece_to = GetPosition(col, capture_row);
+                    piece_to_id = situation.current_board[piece_to];
+                    if(piece_to_id == opponent_king_id){
+                       return true;
+                    }
+                }
+            }
+        
+        }
+    }
+
+    // 5. 兵(卒)的吃子着法
+    for(int i = player_flag + 11; i <= player_flag + 15; i ++){
+        if(situation.current_pieces[i] != 0){
+            piece_from = situation.current_pieces[i];
+            can_move_counter = 0;
+            piece_to = PAWN_CAN_GET[piece_from][player][can_move_counter];
+            while(piece_to != 0){
+                piece_to_id = situation.current_board[piece_to];
+                if(piece_to_id == opponent_king_id){
+                    return true;
+                }
+                can_move_counter ++;
+                piece_to = PAWN_CAN_GET[piece_from][player][can_move_counter];
+            }
+        }
+    }
+
+    // 6. 没有被将军
+    return false;
+}

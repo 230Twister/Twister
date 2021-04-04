@@ -99,7 +99,6 @@ struct Situation{
 	UINT16 bit_col[16];			// 位列 用于车和炮着法的生成
 	int value_red;				// 局面评估值（红）
 	int value_black;			// 局面评估值（黑）
-
 	char current_fen[120];		// 当前局面的FEN格式串
 };
 
@@ -132,6 +131,9 @@ inline int NextBoardPosition(const int position){
 inline void ChangePlayer(int & current_player){
 	current_player = 1 - current_player;
 }
+inline int OpponentPlayer(int current_player){
+	return 1 - current_player;
+}
 inline int GetPlayerFlag(const int current_player){
 	return (current_player << 4) + 16;
 }
@@ -146,6 +148,8 @@ void AddPiece(int piece_position, int piece_id, Situation & situation);
 void DeletePiece(int piece_position, int piece_id, Situation & situation);
 void FenToSituation(Situation & situation, const char* fen);
 void SituationToFen(Situation & situation, char* fen);
+bool MakeAMove (Situation & situation, const Movement move);
+void UnMakeAMove (Situation & situation);
 
 // ==========================================================================================
 // 着法表示
@@ -166,7 +170,12 @@ void GetAllMovements(const Situation & situation, int & num_of_all_movements, Mo
 void GetAllCaptureMovements(const Situation & situation, int & num_of_all_movements, Movement* all_movements);
 void GetAllNotCaptureMovements(const Situation & situation, int & num_of_all_movements, Movement* all_movements);
 
-// 待完善：保护检测函数，side一方的dst能被保护返回1，否则返回0
+// ============================================================================================
+// 局面状态检测相关函数
+// 检测是否被保护
 int IfProtected(int side, const int dst);
+// 检测将军
+bool CheckOpponent(const Situation & situation);
+bool BeChecked(const Situation & situation);
 
 #endif
