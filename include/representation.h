@@ -93,16 +93,15 @@ const int MVV_VALUES[48] = {
 // ======================================================================================
 // 局面表示
 struct Situation{
-	int current_player;			// 当前执棋的玩家 用 0 表示红方 1 表示黑方
-	UINT8 current_board[256];	// 当前的棋盘数组，256个位置 0 表示无棋子 其余表示有棋子
-	UINT8 current_pieces[48];	// 当前棋子所在的位置 16-31表示红方棋子 32-47表示黑方棋子
-	UINT16 bit_row[16];			// 位行 用于车和炮着法的生成
-	UINT16 bit_col[16];			// 位列 用于车和炮着法的生成
-	int value_red;				// 局面评估值（红）
-	int value_black;			// 局面评估值（黑）
-	char current_fen[120];		// 当前局面的FEN格式串
-
-	std::stack<Movement> moves_stack;
+	int current_player;					// 当前执棋的玩家 用 0 表示红方 1 表示黑方
+	UINT8 current_board[256];			// 当前的棋盘数组，256个位置 0 表示无棋子 其余表示有棋子
+	UINT8 current_pieces[48];			// 当前棋子所在的位置 16-31表示红方棋子 32-47表示黑方棋子
+	UINT16 bit_row[16];					// 位行 用于车和炮着法的生成
+	UINT16 bit_col[16];					// 位列 用于车和炮着法的生成
+	int value_red;						// 局面评估值（红）
+	int value_black;					// 局面评估值（黑）
+	char current_fen[120];				// 当前局面的FEN格式串
+	std::stack<Movement> moves_stack;	// 着法栈
 };
 
 
@@ -175,10 +174,9 @@ void GetAllNotCaptureMovements(const Situation & situation, int & num_of_all_mov
 
 // ============================================================================================
 // 局面状态检测相关函数
-// 检测是否被保护
 int IfProtected(int side, const int dst);
-// 检测将军
 bool CheckOpponent(const Situation & situation);
 bool BeChecked(const Situation & situation);
+bool KingFacing(const Situation & situation);
 
 #endif

@@ -430,43 +430,160 @@ bool BeChecked(const Situation & situation){
     return false;
 }
 
+/* 
+ * 函数名：MakeAMove
+ * 描述：下一步棋
+ * 入参：
+ * - Situation & situation :当前局面
+ * - const Movement move ：着法
+ * 返回值：
+ * - bool 
+ * 最后更新时间: 21.04.05
+ */
 bool MakeAMove (Situation & situation, const Movement move){
-    // 放入走法栈
+    // 1. 放入走法栈
     situation.moves_stack.push(move);
 
-    /* 置换表更新 */
-    // 当前局面哈希值
+    // 2. 置换表更新
+    // 2.1 当前局面哈希值
     ZobristKey ^= ZobristPlayer;
     ZobristKey ^= ZobristTable[situation.current_board[move.from]][move.from];
     if(move.capture != 0)
         ZobristKey ^= ZobristTable[move.capture][move.to];
     ZobristKey ^= ZobristTable[situation.current_board[move.from]][move.to];
 
-    // 当前局面哈希校验值
+    // 2.2 当前局面哈希校验值
     ZobristKeyCheck ^= ZobristPlayerCheck;
     ZobristKeyCheck ^= ZobristTableCheck[situation.current_board[move.from]][move.from];
     if(move.capture != 0)
         ZobristKey ^= ZobristTableCheck[move.capture][move.to];
     ZobristKey ^= ZobristTableCheck[situation.current_board[move.from]][move.to];
+
+    // 3. 移动棋子
+    int piece_id_from = situation.current_board[move.from];
+    int piece_id_to = situation.current_board[move.to];
+    // 3.1 如果是吃子着法
+    if(piece_id_to != 0){
+        // 3.1.1 只更新起始格的位行位列
+        int row = GetRow(move.from), col = GetCol(move.from);
+        situation.bit_row[row] ^= BIT_ROW_MASK[move.from];
+        situation.bit_col[col] ^= BIT_COL_MASK[move.from];
+        // 3.1.2 更新棋子棋盘数组
+        situation.current_board[move.from] = 0;
+        situation.current_board[move.to] = piece_id_from;
+        situation.current_pieces[piece_id_from] = move.to;
+        situation.current_pieces[piece_id_to] = 0;
+
+    }else{
+        // 3.1.1 更新起始格的位行位列
+        int row = GetRow(move.from), col = GetCol(move.from);
+        situation.bit_row[row] ^= BIT_ROW_MASK[move.from];
+        situation.bit_col[col] ^= BIT_COL_MASK[move.from];
+        // 3.1.2 更新目标格的位行位列
+        row = GetRow(move.to), col = GetCol(move.to);
+        situation.bit_row[row] ^= BIT_ROW_MASK[move.to];
+        situation.bit_col[col] ^= BIT_COL_MASK[move.to];
+        // 3.1.3 更新棋子棋盘数组
+        situation.current_board[move.from] = 0;
+        situation.current_board[move.to] = piece_id_from;
+        situation.current_pieces[piece_id_from] = move.to;
+    
+    }
+    // 4. 如果...返回False
+
+    // 5. 交换走棋方
+    ChangePlayer(situation.current_player);
 }
 
+/* 
+ * 函数名：UnMakeAMove
+ * 描述：撤销一步棋
+ * 入参：
+ * - Situation & situation :当前局面
+ * 返回值：
+ * - void
+ * 最后更新时间: 21.04.05
+ */
 void UnMakeAMove (Situation & situation){
-    // 从走法栈中弹出，进行回滚
+    // 1. 从走法栈中弹出，进行回滚
     Movement move = situation.moves_stack.top();
     situation.moves_stack.pop();
 
-    /* 置换表更新 */
-    // 当前局面哈希值
+    // 2. 置换表更新
+    // 2.1 当前局面哈希值
     ZobristKey ^= ZobristPlayer;
     ZobristKey ^= ZobristTable[situation.current_board[move.to]][move.to];
     if(move.capture != 0)
         ZobristKey ^= ZobristTable[move.capture][move.to];
     ZobristKey ^= ZobristTable[situation.current_board[move.to]][move.from];
 
-    // 当前局面哈希校验值
+    // 2.2 当前局面哈希校验值
     ZobristKeyCheck ^= ZobristPlayerCheck;
     ZobristKeyCheck ^= ZobristTableCheck[situation.current_board[move.to]][move.to];
     if(move.capture != 0)
         ZobristKey ^= ZobristTableCheck[move.capture][move.to];
     ZobristKey ^= ZobristTableCheck[situation.current_board[move.to]][move.from];
+
+    // 3. 返回棋子
+    int piece_id_from = situation.current_board[move.to];
+    int piece_id_to = move.capture;
+    // 3.1 如果是吃子着法
+    if(piece_id_to != 0){
+        // 3.1.1 只更新起始格的位行位列
+        int row = GetRow(move.from), col = GetCol(move.from);
+        situation.bit_row[row] ^= BIT_ROW_MASK[move.from];
+        situation.bit_col[col] ^= BIT_COL_MASK[move.from];
+        // 3.1.2 更新棋子棋盘数组
+        situation.current_board[move.from] = piece_id_from;
+        situation.current_board[move.to] = piece_id_to;
+        situation.current_pieces[piece_id_from] = move.from;
+        situation.current_pieces[piece_id_to] = move.to;
+    }else{
+        // 3.1.1 更新起始格的位行位列
+        int row = GetRow(move.from), col = GetCol(move.from);
+        situation.bit_row[row] ^= BIT_ROW_MASK[move.from];
+        situation.bit_col[col] ^= BIT_COL_MASK[move.from];
+        // 3.1.2 更新目标格的位行位列
+        row = GetRow(move.to), col = GetCol(move.to);
+        situation.bit_row[row] ^= BIT_ROW_MASK[move.to];
+        situation.bit_col[col] ^= BIT_COL_MASK[move.to];
+        // 3.1.3 更新棋子棋盘数组
+        situation.current_board[move.from] = piece_id_from;
+        situation.current_board[move.to] = 0;
+        situation.current_pieces[piece_id_from] = move.from;
+    }
+
+    // 5. 交换走棋方
+    ChangePlayer(situation.current_player);
+}
+
+/* 
+ * 函数名：KingFacing
+ * 描述：检测是否将对将局面
+ * 入参：
+ * - Situation & situation :当前局面
+ * 返回值：
+ * - bool 是否将对将
+ * 最后更新时间: 21.04.05
+ */
+bool KingFacing(const Situation & situation){
+    // 1. 如果有一方没有将 则无效
+    int red_king_pos = situation.current_board[GetPlayerFlag(RED) + 0], black_king_pos = situation.current_board[GetPlayerFlag(BLACK) + 0];
+    if(situation.current_pieces[GetPlayerFlag(RED) + 0] == 0 || situation.current_pieces[GetPlayerFlag(BLACK) + 0] == 0){
+        return false;
+    }
+
+    // 2. 先判断两个将是否在同一列
+    // 2.1 不在同一列
+    if(GetCol(red_king_pos) != GetCol(black_king_pos)){
+        return false;
+    }
+    // 2.2 在同一列，判断中间是否有棋子阻挡(使用车的着法生成，如果将对将，那么中间的车可以吃到的子就是这两个将)
+    int resume_rook_row = 7, resume_rook_col = GetCol(red_king_pos);        // 假想的车的位置
+    int resume_capture_down = ROOK_CANNON_CAN_GET_COL[resume_rook_row - 3][situation.bit_col[resume_rook_col]].rook_capture[0];
+    int resume_capture_up = ROOK_CANNON_CAN_GET_COL[resume_rook_row - 3][situation.bit_col[resume_rook_col]].rook_capture[1];
+    int down_pos = GetPosition(resume_rook_col, resume_capture_down), up_pos = GetPosition(resume_rook_col, resume_capture_up); // 假想的车能吃到的地方
+    
+    // 3. 返回假想的车吃到的是否为上下两个将
+    return (down_pos == red_king_pos && up_pos == black_king_pos) || (down_pos == black_king_pos && up_pos == red_king_pos); 
 }
