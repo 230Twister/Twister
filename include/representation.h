@@ -74,7 +74,6 @@ const UINT8 LEGAL_POSITION[2][256] = {
 	}
 };
 const UINT8 POSITION_MASK[7] = {2, 4, 16, 1, 1, 1, 8};									// 各子力的特征值 将士相车马炮卒
-
 const int BOARD_FIRST_POSITION = 0x33;													// 位于棋盘上的第一个位置
 const int KING_DIRECTION[4] = {+0x10, -0x10, +0x1, -0x1};								// 将可走的四个方向
 const int HORSE_DIRECTION[8] = {-0x21, -0x1f, -0x12, +0xe, +0x21, +0x1f, -0xe, +0x12};	// 马可走的八个方向
@@ -83,12 +82,16 @@ const int BISHOP_DIRECTION[4] = {-0x1e, -0x22, +0x1e, +0x22};							// 象可走
 const int BISHOP_EYE_DIRECTION[4] = {-0xf, -0x11, +0xf, +0x11};							// 象可走方向对应的象眼方向
 const int ADVISOR_DIRECTION[4] = {-0x11, -0xf, +0x11, +0xf};							// 士可走的方向
 const int PAWN_DIRECTION[2][3] = {{-0x10, +0x1, -0x1}, {+0x10, +0x1, -0x1}};			// 双方的兵可走的方向
-
 const int MVV_VALUES[48] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	8, 2, 2, 2, 2, 4, 4 ,6 ,6, 4, 4, 2, 2, 2, 2, 2,
 	8, 2, 2, 2, 2, 4, 4, 6, 6, 4, 4, 2, 2, 2, 2, 2,
 };																						// 被吃子的价值
+const char FEN_OF_PIECE[2][16] = {
+	{'K', 'A', 'A', 'B', 'B', 'N', 'N', 'R', 'R', 'C', 'C', 'P', 'P', 'P', 'P', 'P'}, 
+	{'k', 'a', 'a', 'b', 'b', 'n', 'n', 'r', 'r', 'c', 'c', 'p', 'p', 'p', 'p', 'p'}
+};																						// 棋子序号对应的FEN
+
 
 // ======================================================================================
 // 局面表示
@@ -103,8 +106,6 @@ struct Situation{
 	char current_fen[120];				// 当前局面的FEN格式串
 	std::stack<Movement> moves_stack;	// 着法栈
 };
-
-
 // 行列 <-> 位置转换
 inline int GetRow(const int position){
 	return position >> 4;
@@ -115,7 +116,6 @@ inline int GetCol(const int position){
 inline int GetPosition(const int position_col, const int position_row){
 	return position_row << 4 | position_col;
 }
-
 // 行位列移位时的调整
 inline int RowBitOpration(int col){
 	return 8 - col;
@@ -123,12 +123,10 @@ inline int RowBitOpration(int col){
 inline int ColBitOpration(int row){
 	return 9 - row;
 }
-
 // 棋盘上的下一个位置
 inline int NextBoardPosition(const int position){
 	return (GetCol(position) == 11) ? ( position == 0xcb ? 0 : position + 8 ) : position + 1;
 }
-
 // 玩家相关操作与判断
 inline void ChangePlayer(int & current_player){
 	current_player = 1 - current_player;
@@ -142,7 +140,6 @@ inline int GetPlayerFlag(const int current_player){
 inline int ColorOfPiece(const int piece_id){
 	return (piece_id == 0) ? 0 : ((piece_id & GetPlayerFlag(0)) ? RED : BLACK);
 }
-
 // 局面操作
 void InitSituation(Situation & situation);
 int PieceOfFen(const char fen_char);
@@ -161,12 +158,10 @@ struct Movement{
 	UINT8 capture;			// 着法是否吃子 0代表不吃子 其余代表吃的子的类型
 	UINT8 value;			// 着法的价值
 };
-
 // 着法清空操作
 inline void ClearAllMovements(int & num_of_movements){
 	num_of_movements = 0;
 }
-
 // 生成着法
 void GetAllMovements(const Situation & situation, int & num_of_all_movements, Movement* all_movements);
 void GetAllCaptureMovements(const Situation & situation, int & num_of_all_movements, Movement* all_movements);
