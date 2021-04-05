@@ -2,6 +2,7 @@
 #include "ucci.h"
 #include "hash_table.h"
 #include "search.h"
+#include "preset.h"
 
 void PrintLn(const char* str);
 
@@ -12,6 +13,7 @@ int main() {
 		return 0;
 	}
     InitHashTable();
+    InitPresetArray();
 	PrintLn("ucciok");
 
     bool quit = false;
@@ -25,6 +27,7 @@ int main() {
 				// 构造局面
                 InitSituation(situation);
                 FenToSituation(situation, UcciComm.szFenStr);
+                PrintLn(UcciComm.szFenStr);
 				break;
 			case UCCI_COMM_GO:
 				ComputerThink(situation);

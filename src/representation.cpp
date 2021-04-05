@@ -172,8 +172,6 @@ void FenToSituation(Situation & situation, const char* fen){
             piece_id_index = PieceOfFen(*p);
             piece_id = piece_id_array[piece_id_index];
             piece_id_array[piece_id_index] ++;
-            if(piece_id > 48)
-                piece_id = 0;
             AddPiece(GetPosition(col, row), piece_id, situation);
             col ++;
         }
