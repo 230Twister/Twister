@@ -195,7 +195,43 @@ void FenToSituation(Situation & situation, const char* fen){
  * - void
  * 最后更新时间: 21.03.25
  */
-void SituationToFen(Situation & situation, char* fen);
+void SituationToFen(Situation & situation, char* fen){
+    int row, col, piece_id, space_count;
+    char *fent = fen;
+    for(row = 3; row <= 12; row++){
+        space_count = 0;
+        for(col = 3; col <= 11; col ++){
+            piece_id = situation.current_board[GetPosition(col, row)];
+            if(piece_id != 0){
+                if(space_count != 0){
+                    *fent = space_count + '0';
+                    space_count = 0;
+                    fent ++;
+                }
+                if(piece_id & 16){
+                    *fent = FEN_OF_PIECE[0][piece_id - 16];
+                }
+                else{
+                    *fent = FEN_OF_PIECE[1][piece_id - 32];
+                }
+                fent ++;
+            }
+            else{
+                space_count ++;
+            }
+        }
+        if(space_count > 0){
+            *fent = space_count + '0';
+            fent ++;
+        }
+        *fent = '/';
+        fent ++;
+    }
+    *(fent - 1) = ' ';
+    *fent = (situation.current_player == RED ? 'w' : 'b');
+    fent ++;
+    *fent = '\0';
+}
 
 /* 
  * 函数名：CheckOpponent
