@@ -280,23 +280,6 @@ void Eval(Situation &s)
     {
         SideTag = 16 + r << 4;
 
-        // //将的灵活性
-        // for (i = 0; i <= 0; i++)
-        // {
-        //     p = s.current_pieces[SideTag];
-        //     if (!p)
-        //         continue;
-        //     for (k = 0; k < 4; k++) //4个方向
-        //     {
-        //         n = p + KING_DIRECTION[k]; //n为新的可能走到的位置
-        //         if (LEGAL_POSITION[s.current_player][n] & POSITION_MASK[0])
-        //         {
-        //             if (!(s.current_board[n] & SideTag)) //该位置没有本方棋子
-        //                 fValue[r] += 2;
-        //         }
-        //     }
-        // }
-
         //将的灵活性
         for (i = 0; i <= 0; i++)
         {
@@ -314,23 +297,6 @@ void Eval(Situation &s)
             }
         }
 
-        // //士的灵活性
-        // for (i = 1; i <= 2; i++)
-        // {
-        //     p = s.current_pieces[SideTag + i];
-        //     if (!p)
-        //         continue;
-        //     for (k = 0; k < 4; k++) //4个方向
-        //     {
-        //         n = p + ADVISOR_DIRECTION[k]; //n为新的可能走到的位置
-        //         if (LEGAL_POSITION[s.current_player][n] & POSITION_MASK[1])
-        //         {
-        //             if (!(s.current_board[n] & SideTag)) //该位置没有本方棋子
-        //                 fValue[r] += 2;
-        //         }
-        //     }
-        // }
-
         //士的灵活性
         for (i = 1; i <= 2; i++)
         {
@@ -347,24 +313,6 @@ void Eval(Situation &s)
                 }
             }
         }
-
-        // //象的灵活性
-        // for (i = 3; i <= 4; i++)
-        // {
-        //     p = s.current_pieces[SideTag + i];
-        //     if (!p)
-        //         continue;
-        //     for (k = 0; k < 4; k++) //4个方向
-        //     {
-        //         n = p + BISHOP_DIRECTION[k]; //n为新的可能走到的位置
-        //         if (LEGAL_POSITION[s.current_player][n] & POSITION_MASK[2])
-        //         {
-        //             m = p + BISHOP_EYE_DIRECTION[k];
-        //             if (!s.current_board[m] && !(s.current_board[n] & SideTag)) //象眼无棋子占据且该位置没有本方棋子
-        //                 fValue[r] += 2;
-        //         }
-        //     }
-        // }
 
         //象的灵活性
         for (i = 3; i <= 4; i++)
@@ -385,24 +333,6 @@ void Eval(Situation &s)
             }
         }
 
-        // //马的灵活性
-        // for (i = 5; i <= 6; i++)
-        // {
-        //     p = s.current_pieces[SideTag + i];
-        //     if (!p)
-        //         continue;
-        //     for (k = 0; k < 8; k++) //4个方向
-        //     {
-        //         n = p + HORSE_DIRECTION[k]; //n为新的可能走到的位置
-        //         if (LEGAL_POSITION[s.current_player][n] & POSITION_MASK[3])
-        //         {
-        //             m = p + HORSE_LEG_DIRECTION[k];
-        //             if (!s.current_board[m] && !(s.current_board[n] & SideTag)) //马腿无棋子占据且该位置没有本方棋子
-        //                 fValue[r] += 5;
-        //         }
-        //     }
-        // }
-
         //马的灵活性
         for (i = 5; i <= 6; i++)
         {
@@ -422,38 +352,12 @@ void Eval(Situation &s)
             }
         }
 
-        // //車的灵活性
-        // for (i = 7; i <= 8; i++)
-        // {
-        //     p = s.current_pieces[SideTag + i];
-        //     if (!p)
-        //         continue;
-        //     for (k = 0; k < 4; k++) //4个方向
-        //     {
-        //         for (j = 1; j < 10; j++) //横向最多有8个位置可走，纵向9个
-        //         {
-        //             n = p + j * KING_DIRECTION[k];
-        //             if (!(LEGAL_POSITION[s.current_player][n] & POSITION_MASK[4]))
-        //                 break;               //不合理位置
-        //             if (!s.current_board[n]) //目标位置没有子
-        //                 fValue[r] += 4;
-        //             else if (s.current_board[n] & SideTag) //目标位置有本方子
-        //                 break;
-        //             else //目标位置有对方棋子
-        //             {
-        //                 fValue[r] += 4;
-        //                 break;
-        //             }
-        //         }
-        //     }
-        // }
-
         //車的吃子灵活性
         for (i = 7; i <= 8; i++)
         {
             if (s.current_pieces[SideTag + i] != 0)
             {
-                int piece_from = s.current_pieces[i];
+                int piece_from = s.current_pieces[SideTag + i];
                 int col = GetCol(piece_from), row = GetRow(piece_from);
                 // 右 左 方向的吃子
                 for (int j = 0; j < 2; j++)
@@ -477,7 +381,7 @@ void Eval(Situation &s)
         {
             if (s.current_pieces[SideTag + i] != 0)
             {
-                int piece_from = s.current_pieces[i];
+                int piece_from = s.current_pieces[SideTag + i];
                 int col = GetCol(piece_from), row = GetRow(piece_from);
                 // 右 左 方向的吃子
                 for (int j = 0; j < 2; j++)
@@ -501,7 +405,7 @@ void Eval(Situation &s)
         {
             if (s.current_pieces[SideTag + i] != 0)
             {
-                int piece_from = s.current_pieces[i];
+                int piece_from = s.current_pieces[SideTag + i];
                 int col = GetCol(piece_from), row = GetRow(piece_from);
                 // 右方向
                 int get_col = ROOK_CANNON_CAN_GET_ROW[col - 3][s.bit_row[row]].no_capture[0];
@@ -549,35 +453,20 @@ void Eval(Situation &s)
             }
         }
 
-        //     //兵的灵活性
-        //     for (i = 11; i <= 15; i++)
-        //     {
-        //         p = s.current_pieces[SideTag + i];
-        //         if (!p)
-        //             continue;
-        //         for (k = 0; k < 3; k++) //3个方向
-        //         {
-        //             n = p + PAWN_DIRECTION[s.current_player][k]; //n为新的可能走到的位置
-        //             if (LEGAL_POSITION[s.current_player][n] & POSITION_MASK[6])
-        //             {
-        //                 if (!(s.current_board[n] & SideTag)) //马腿无棋子占据且该位置没有本方棋子
-        //                     fValue[r] += 2;
-        //             }
-        //         }
-        //     }
-        // }
-
         //兵的灵活性
         for (i = 11; i <= 15; i++)
         {
-            int piece_from = s.current_pieces[SideTag + i];
-            int can_move_counter = 0;
-            int piece_to = PAWN_CAN_GET[piece_from][r][can_move_counter];
-            while (piece_to != 0)
+            if (s.current_pieces[SideTag + i] != 0)
             {
-                fValue[r] += 2;
-                can_move_counter++;
-                piece_to = PAWN_CAN_GET[piece_from][r][can_move_counter];
+                int piece_from = s.current_pieces[SideTag + i];
+                int can_move_counter = 0;
+                int piece_to = PAWN_CAN_GET[piece_from][r][can_move_counter];
+                while (piece_to != 0)
+                {
+                    fValue[r] += 2;
+                    can_move_counter++;
+                    piece_to = PAWN_CAN_GET[piece_from][r][can_move_counter];
+                }
             }
         }
     }
