@@ -8,8 +8,9 @@
 #ifndef SEARCH_H
 #define SEARCH_H
 
+struct Situation;
 int AlphaBetaSearch(int depth, int alpha, int beta);
 int QuiescentSearch(int alpha, int beta);
-void ComputerThink();
+void ComputerThink(Situation& situation);
 
 #endif

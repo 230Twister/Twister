@@ -2,7 +2,7 @@
  * 文件名： hash_table.cpp
  * 描述	：实现置换表
  * 作者 : oscar
- * 最后更新时间: 24.03.10
+ * 最后更新时间: 21.03.24
  */
 #include <random>
 #include "hash_table.h"
@@ -21,8 +21,8 @@ UINT64 ZobristKey;                          // 当前局面键值
 UINT64 ZobristKeyCheck;                     // 当前局面校验值
 UINT64 ZobristPlayer;                       // 走棋方的键值
 UINT64 ZobristPlayerCheck;                  // 走棋方校验值
-UINT64 ZobristTable[32][256];               // 棋子在棋盘各个位置的键值
-UINT64 ZobristTableCheck[32][256];          // 棋子在棋盘各个位置的校验值
+UINT64 ZobristTable[48][256];               // 棋子在棋盘各个位置的键值
+UINT64 ZobristTableCheck[48][256];          // 棋子在棋盘各个位置的校验值
 
 extern int step;
 extern const UINT32 MAX_VALUE;
@@ -34,7 +34,7 @@ extern const UINT32 WIN_VALUE;
  * - void
  * 返回值：
  * - void
- * 最后更新时间: 24.03.10
+ * 最后更新时间: 21.03.24
  */
 void InitHashTable(){
     HashTable = new HashNode[HASHTABLE_SIZE];
@@ -42,13 +42,15 @@ void InitHashTable(){
 
     ZobristPlayer = engine();       // 生成走棋方键值
     ZobristPlayerCheck = engine();  // 生成走棋方校验值
-    for(int i = 0; i < 32; i++){
-        for(int j = 0; i < 256; j++){
+    ZobristKey = engine();
+    ZobristKeyCheck = engine();
+    for(int i = 16; i < 48; i++){
+        for(int j = 0; j < 256; j++){
             ZobristTable[i][j] = engine();
         }
     }
-    for(int i = 0; i < 32; i++){
-        for(int j = 0; i < 256; j++){
+    for(int i = 16; i < 48; i++){
+        for(int j = 0; j < 256; j++){
             ZobristTableCheck[i][j] = engine();
         }
     }
@@ -61,7 +63,7 @@ void InitHashTable(){
  * - void
  * 返回值：
  * - void
- * 最后更新时间: 25.03.14
+ * 最后更新时间: 21.03.25
  */
 void ResetHashTable(){
     DeleteHashTable();
@@ -75,10 +77,25 @@ void ResetHashTable(){
  * - void
  * 返回值：
  * - void
- * 最后更新时间: 25.03.13
+ * 最后更新时间: 21.03.25
  */
 void DeleteHashTable(){
     delete[] HashTable;
+}
+
+/* 
+ * 函数名：ResetZobristKey
+ * 描述：重置局面Key
+ * 入参: 
+ * - void
+ * 返回值：
+ * - void
+ * 最后更新时间: 21.04.05
+ */
+void ResetZobristKey(){
+    std::independent_bits_engine<std::default_random_engine, 64, UINT64> engine;
+    ZobristKey = engine();
+    ZobristKeyCheck = engine();
 }
 
 /* 
@@ -91,7 +108,7 @@ void DeleteHashTable(){
  * - Movement& move 当前局面最佳走法
  * 返回值：
  * - int 获取到的值
- * 最后更新时间: 25.03.11
+ * 最后更新时间: 21.03.25
  */
 int ReadHashTable(int depth, int alpha, int beta, Movement& move){
     int index = ZobristKey & HASHTABLE_MASK;
@@ -138,7 +155,7 @@ int ReadHashTable(int depth, int alpha, int beta, Movement& move){
  * - Movement move      当前最佳着法
  * 返回值：
  * - void
- * 最后更新时间: 25.03.11
+ * 最后更新时间: 21.03.25
  */
 void SaveHashTable(int depth, int value, UINT8 node_type, Movement move){
     int index = ZobristKey & HASHTABLE_MASK;

@@ -2,7 +2,7 @@
  * 文件名： hash_table.h
  * 描述	：置换表
  * 作者 : oscar
- * 最后更新时间: 25.03.11 
+ * 最后更新时间: 21.03.25 
  */
 #include "define.h"
 #include "representation.h"
@@ -32,12 +32,13 @@ extern UINT64 ZobristKey;                  // 当前局面键值
 extern UINT64 ZobristKeyCheck;             // 当前局面校验值
 extern UINT64 ZobristPlayer;               // 走棋方的键值
 extern UINT64 ZobristPlayerCheck;          // 走棋方校验值
-extern UINT64 ZobristTable[32][256];       // 棋子在棋盘各个位置的键值
-extern UINT64 ZobristTableCheck[32][256];  // 棋子在棋盘各个位置的校验值
+extern UINT64 ZobristTable[48][256];       // 棋子在棋盘各个位置的键值
+extern UINT64 ZobristTableCheck[48][256];  // 棋子在棋盘各个位置的校验值
 
 void InitHashTable();
 void ResetHashTable();
 void DeleteHashTable();
+void ResetZobristKey();
 int ReadHashTable(int depth, int alpha, int beta, Movement& move);
 void SaveHashTable(int depth, int value, UINT8 node_type, Movement move);
 

@@ -92,6 +92,7 @@ const int MVV_VALUES[48] = {
 
 // ======================================================================================
 // 局面表示
+struct Movement;
 struct Situation{
 	int current_player;					// 当前执棋的玩家 用 0 表示红方 1 表示黑方
 	UINT8 current_board[256];			// 当前的棋盘数组，256个位置 0 表示无棋子 其余表示有棋子

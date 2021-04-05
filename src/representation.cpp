@@ -7,6 +7,7 @@
 #include "representation.h"
 #include "preset.h"
 #include "hash_table.h"
+extern int step;
 /* 
  * 函数名：InitSituation
  * 描述：根据FEN串初始化棋盘，包括初始化棋盘棋子数组，执棋玩家，局面对应的FEN串
@@ -50,7 +51,9 @@ void AddPiece(int piece_position, int piece_id, Situation & situation){
     situation.bit_row[row] ^= BIT_ROW_MASK[piece_position];
     situation.bit_col[col] ^= BIT_COL_MASK[piece_position];
 
-    // 3. 更新xxx
+    // 3. 更新置换表
+    ZobristKey ^= ZobristTable[piece_id][piece_position];
+    ZobristKeyCheck ^= ZobristTableCheck[piece_id][piece_position];
 
     // 4. 更新xxx
 }
@@ -169,6 +172,8 @@ void FenToSituation(Situation & situation, const char* fen){
             piece_id_index = PieceOfFen(*p);
             piece_id = piece_id_array[piece_id_index];
             piece_id_array[piece_id_index] ++;
+            if(piece_id > 48)
+                piece_id = 0;
             AddPiece(GetPosition(col, row), piece_id, situation);
             col ++;
         }
@@ -443,6 +448,7 @@ bool BeChecked(const Situation & situation){
 bool MakeAMove (Situation & situation, const Movement move){
     // 1. 放入走法栈
     situation.moves_stack.push(move);
+    step++;
 
     // 2. 置换表更新
     // 2.1 当前局面哈希值
@@ -508,6 +514,7 @@ void UnMakeAMove (Situation & situation){
     // 1. 从走法栈中弹出，进行回滚
     Movement move = situation.moves_stack.top();
     situation.moves_stack.pop();
+    step--;
 
     // 2. 置换表更新
     // 2.1 当前局面哈希值
@@ -586,4 +593,8 @@ bool KingFacing(const Situation & situation){
     
     // 3. 返回假想的车吃到的是否为上下两个将
     return (down_pos == red_king_pos && up_pos == black_king_pos) || (down_pos == black_king_pos && up_pos == red_king_pos); 
+}
+
+int IfProtected(int side, const int dst){
+    return 0;
 }

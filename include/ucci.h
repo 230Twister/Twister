@@ -26,10 +26,8 @@ union UcciCommStruct {
 	};
 };
 
-// 下面三个函数用来解释UCCI指令，但适用于不同场合
-UcciCommEnum BootLine(void);                                  // UCCI引擎启动的第一条指令，只接收"ucci"
-UcciCommEnum IdleLine(UcciCommStruct& UcciComm, bool bDebug); // 引擎空闲时接收指令
-UcciCommEnum BusyLine(UcciCommStruct& UcciComm, bool bDebug); // 引擎思考时接收指令，只允许接收"stop"、"ponderhit"和"probe"
+UcciCommEnum BootLine(void);                       	// UCCI引擎启动的第一条指令，只接收"ucci"
+UcciCommEnum IdleLine(UcciCommStruct& UcciComm); 	// 引擎空闲时接收指令
 
 bool strEqual(const char* str1, const char* str2);
 bool strEqualSkip(char*& str1, const char* str2);

@@ -56,7 +56,7 @@ UcciCommEnum BootLine(void) {
     //UCCI_COMM_UCCI和UCCI_COMM_UNKNOWN都是ucci指令类型
 }
 
-UcciCommEnum IdleLine(UcciCommStruct& UcciComm, bool bDebug) {
+UcciCommEnum IdleLine(UcciCommStruct& UcciComm) {
     //如果bDebug指令为1，输出当前读到的指令
     char szLineStr[LINE_INPUT_MAX_CHAR];
     char* lp;
@@ -64,10 +64,6 @@ UcciCommEnum IdleLine(UcciCommStruct& UcciComm, bool bDebug) {
 
     while (!std::cin.getline(szLineStr, LINE_INPUT_MAX_CHAR));
     lp = szLineStr;
-    if (bDebug) {
-        printf("info idleline [%s]\n", lp);
-        fflush(stdout);//清空输入缓冲区
-    }
 
     // 1. "isready"指令
     if (strEqual(lp, "isready")) {

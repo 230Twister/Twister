@@ -80,10 +80,12 @@ bool cmp(Movement a, Movement b){
  * - void
  * 最后更新时间: 03.26.20
  */
+void showSituation(const Situation& situation);
 void MoveSort(const Situation & situation, int & num_of_all_movements, Movement* all_movements, Movement hash_move, int step){
    int flag, i;
 
    // 吃子着法排序
+   showSituation(situation);
    GetAllCaptureMovements(situation, num_of_all_movements, all_movements);
    CaptureValue(situation, num_of_all_movements, all_movements);
    std::sort(all_movements, all_movements + num_of_all_movements, cmp);

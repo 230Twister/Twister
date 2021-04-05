@@ -1,6 +1,9 @@
 #include "search.h"
 #include "hash_table.h"
 #include "moves_sort.h"
+#include "representation.h"
+#include "moves_sort.h"
+#include "value.h"
 #include <ctime>
 
 Movement BestMove;                                      // 当前局面的最好走法
@@ -11,6 +14,9 @@ const UINT16 MAX_DEPTH = 8;                             // 最大搜索深度
 const UINT32 MAX_TIME = 20000;                          // 最大消耗时间(ms)
 extern const UINT32 MAX_VALUE = 10000;                  // 最大价值，胜利局面绝对分数
 extern const UINT32 WIN_VALUE = MAX_VALUE - MAX_DEPTH;  // 胜利局面的相对分数
+
+Situation tmp;
+Situation& SituationNow = tmp;
 /* 
  * 函数名：AlphaBetaSearch
  * 描述：带置换表的AlphaBeta搜索
@@ -20,7 +26,7 @@ extern const UINT32 WIN_VALUE = MAX_VALUE - MAX_DEPTH;  // 胜利局面的相对
  * - int beta   beta值
  * 返回值：
  * - int 最佳分值
- * 最后更新时间: 26.03.14
+ * 最后更新时间: 21.04.05
  */
 int AlphaBetaSearch(int depth, int alpha, int beta){
     int value;                  // 下一着法的分值
@@ -55,14 +61,14 @@ int AlphaBetaSearch(int depth, int alpha, int beta){
     }
     int move_num = 0;       // 着法数量
     // 生成着法
-    // do-something
+    MoveSort(SituationNow, move_num, move_list, move, step);
     for(int i = 0; i < move_num; i++){
         move = move_list[i];
         // 下子
-        /* do-something */
+        MakeAMove(SituationNow, move);
         value = -AlphaBetaSearch(depth - 1, alpha, beta);
         // 回溯
-        /* do-something */
+        UnMakeAMove(SituationNow);
 
         // 当前为beta结点，执行剪枝
         if(value >= beta){
@@ -121,7 +127,7 @@ int QuiescentSearch(int alpha, int beta){
     }
     
     // 调用评估函数进行评估
-    /* do-something */
+    Eval(SituationNow);
     if(value > beta)
         return beta;
     if(value > alpha)
@@ -129,14 +135,14 @@ int QuiescentSearch(int alpha, int beta){
     
     int move_num = 0;       // 着法数量
     // 生成所有吃子着法
-    /* do-something */
+    MoveSort(SituationNow, move_num, move_list, move, step);
     for(int i = 0; i < move_num; i++){
         move = move_list[i];
         // 下子
-        /* do-something */
+        MakeAMove(SituationNow, move);
         value = -QuiescentSearch(alpha, beta);
         // 回溯
-        /* do-something */
+        UnMakeAMove(SituationNow);
         if(value >= beta){
             return beta;
         }
@@ -157,10 +163,11 @@ int QuiescentSearch(int alpha, int beta){
  * - void
  * 返回值：
  * - void
- * 最后更新时间: 25.03.21
+ * 最后更新时间: 21.04.05
  */
-void ComputerThink(){
+void ComputerThink(Situation& situation){
     Movement best_move_backup;
+    SituationNow = situation;
     StartTime = clock();
     ResetHashTable();
 
@@ -174,6 +181,5 @@ void ComputerThink(){
         }
     }
 
-    // 正式执行下子
-    /* do-something */
+    MakeAMove(situation, BestMove);
 }
