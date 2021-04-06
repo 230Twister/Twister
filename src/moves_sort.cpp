@@ -83,17 +83,8 @@ bool cmp(Movement a, Movement b){
 void MoveSort(const Situation & situation, int & num_of_all_movements, Movement* all_movements, Movement hash_move, int step){
    int flag, i;
    int no_hash_movement = 0, no_killer_1_movement = 0, no_killer_2_movement = 0, no_movement = 0;
-   // 吃子着法排序
-   GetAllCaptureMovements(situation, num_of_all_movements, all_movements);
-   CaptureValue(situation, num_of_all_movements, all_movements);
-   std::sort(all_movements, all_movements + num_of_all_movements, cmp);
-   // 不吃子着法排序
-   flag = num_of_all_movements;
-   GetAllNotCaptureMovements(situation, num_of_all_movements, all_movements);
-   NoCaptureValue(situation, num_of_all_movements, all_movements, flag);
-   std::sort(all_movements + flag, all_movements + num_of_all_movements, cmp);
+
    // 判断置换表和杀手着法是否为空
-   flag = num_of_all_movements;
    if(!hash_move.from && !hash_move.to)
       no_hash_movement ++;
    if(!KillerTable[step][0].from && !KillerTable[step][0].to)
@@ -102,15 +93,24 @@ void MoveSort(const Situation & situation, int & num_of_all_movements, Movement*
       no_killer_2_movement ++;
    no_movement = no_hash_movement + no_killer_1_movement + no_killer_2_movement;
 
-   for(i = num_of_all_movements + 3 - no_movement; i = 3 - no_movement; i --){
-      all_movements[i] = all_movements[i-3+no_movement];
-   }
    if(!no_hash_movement)
       all_movements[0] = hash_move;
    if(!no_killer_1_movement)
       all_movements[1-no_hash_movement] = KillerTable[step][0];
    if(!no_killer_2_movement)
       all_movements[2-no_hash_movement-no_killer_1_movement] = KillerTable[step][1];
+   // 更新着法总数
+   num_of_all_movements += (3 - no_movement);
+
+   // 吃子着法排序
+   GetAllCaptureMovements(situation, num_of_all_movements, all_movements);
+   CaptureValue(situation, num_of_all_movements, all_movements);
+   std::sort(all_movements + 3 - no_movement, all_movements + num_of_all_movements, cmp);
+   // 不吃子着法排序
+   flag = num_of_all_movements;
+   GetAllNotCaptureMovements(situation, num_of_all_movements, all_movements);
+   NoCaptureValue(situation, num_of_all_movements, all_movements, flag);
+   std::sort(all_movements + flag, all_movements + num_of_all_movements, cmp);
 }
 
 /* 
