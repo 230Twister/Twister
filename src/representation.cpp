@@ -629,6 +629,111 @@ bool KingFacing(const Situation & situation){
     return (down_pos == red_king_pos && up_pos == black_king_pos) || (down_pos == black_king_pos && up_pos == red_king_pos); 
 }
 
+/* 
+ * 函数名：MovementsLegal
+ * 描述：检测是否将对将局面
+ * 入参：
+ * - const Movement move : 需要判断的走法
+ * - const Situation & situation :当前局面
+ * 返回值：
+ * - bool 该走法在当前局面是否合法
+ * 最后更新时间: 21.04.05
+ */
+bool MovementsLegal(const Movement move, const Situation & situation){
+    int from = move.from, to = move.to, player_flag = GetPlayerFlag(situation.current_player), player = situation.current_player;
+    int piece_id_from = situation.current_board[from];
+    // 1. 判断出发点是否为自己的棋子(包含判断是否是没有棋子)
+    if(piece_id_from & player_flag == 0){
+        return false;
+    }
+    // 2. 对目标点进行判断
+    if((move.capture & player_flag) != 0){
+        return false;
+    }
+    // 3.对出发点的棋子进行分类讨论
+    switch (piece_id_from - player_flag){
+    // 3.1 将(帅)
+    case 0:
+        return (LEGAL_POSITION[player][from] & POSITION_MASK[0]) && (LEGAL_MOVE[to - from + 256] == 1);
+    // 3.2 仕
+    case 1:
+    case 2:
+        return (LEGAL_POSITION[player][from] & POSITION_MASK[1]) && (LEGAL_MOVE[to - from + 256] == 2);
+    // 3.3 象
+    case 3:
+    case 4:
+        return (LEGAL_POSITION[player][from] & POSITION_MASK[2]) && (LEGAL_MOVE[to - from + 256] == 3) && (situation.current_board[(to + from) >> 1] == 0);
+    // 3.4 马
+    case 5:
+    case 6: 
+        int horse_leg = HORSE_LEGAL_MOVE[to - from + 256] + from;
+        return (horse_leg != from) && (situation.current_board[horse_leg] == 0);
+    // 3.5 车
+    case 7:
+    case 8:
+        int from_col = GetCol(from), from_row = GetRow(from), to_col = GetCol(to), to_row = GetRow(to);
+        // 3.5.1 如果在同一列
+        if(from_col == to_col){
+            if(move.capture){
+                return (ROOK_CANNON_CAN_GET_COL_MASK[from_row - 3][situation.bit_col[from_col]].rook_capture & BIT_COL_MASK[to]) != 0;
+            }
+            else{
+                return (ROOK_CANNON_CAN_GET_COL_MASK[from_row - 3][situation.bit_col[from_col]].no_capture & BIT_COL_MASK[to]) != 0;
+            }
+        }
+        // 3.5.2 如果在同一行
+        else if(from_row == to_row){
+            if(move.capture){
+                return (ROOK_CANNON_CAN_GET_ROW_MASK[from_col - 3][situation.bit_row[from_row]].rook_capture & BIT_ROW_MASK[to]) != 0;
+            }
+            else{
+                return (ROOK_CANNON_CAN_GET_ROW_MASK[from_col - 3][situation.bit_row[from_row]].no_capture & BIT_ROW_MASK[to]) != 0;
+            }
+        }
+        // 3.5.2 不在同一行列
+        else{
+            return false;
+        }
+    // 3.6 炮
+    case 9:
+    case 10:
+        int from_col = GetCol(from), from_row = GetRow(from), to_col = GetCol(to), to_row = GetRow(to);
+        // 3.6.1 如果在同一列
+        if(from_col == to_col){
+            if(move.capture){
+                return (ROOK_CANNON_CAN_GET_COL_MASK[from_row - 3][situation.bit_col[from_col]].cannon_capture & BIT_COL_MASK[to]) != 0;
+            }
+            else{
+                return (ROOK_CANNON_CAN_GET_COL_MASK[from_row - 3][situation.bit_col[from_col]].no_capture & BIT_COL_MASK[to]) != 0;
+            }
+        }
+        // 3.6.2 如果在同一行
+        else if(from_row == to_row){
+            if(move.capture){
+                return (ROOK_CANNON_CAN_GET_ROW_MASK[from_col - 3][situation.bit_row[from_row]].cannon_capture & BIT_ROW_MASK[to]) != 0;
+            }
+            else{
+                return (ROOK_CANNON_CAN_GET_ROW_MASK[from_col - 3][situation.bit_row[from_row]].no_capture & BIT_ROW_MASK[to]) != 0;
+            }
+        }
+        // 3.6.2 不在同一行列
+        else{
+            return false;
+        }
+    // 3.7 兵
+    default:
+        if(!(LEGAL_POSITION[player][from] & POSITION_MASK[6])){
+            return false;
+        }
+        for(int i = 0; PAWN_CAN_GET[from][player][i] != 0; i ++){
+            if(PAWN_CAN_GET[from][player][i] == to){
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
 int IfProtected(int side, const int dst){
     return 0;
 }

@@ -159,7 +159,7 @@ struct Movement{
 	UINT8 capture;			// 着法是否吃子 0代表不吃子 其余代表吃的子的类型
 	UINT8 value;			// 着法的价值
 };
-// 着法清空操作
+// 着法清空
 inline void ClearAllMovements(int & num_of_movements){
 	num_of_movements = 0;
 }
@@ -167,12 +167,15 @@ inline void ClearAllMovements(int & num_of_movements){
 void GetAllMovements(const Situation & situation, int & num_of_all_movements, Movement* all_movements);
 void GetAllCaptureMovements(const Situation & situation, int & num_of_all_movements, Movement* all_movements);
 void GetAllNotCaptureMovements(const Situation & situation, int & num_of_all_movements, Movement* all_movements);
-
+// 着法检测
+bool MovementsLegal(const Movement move, const Situation & situation);
 // ============================================================================================
 // 局面状态检测相关函数
 int IfProtected(int side, const int dst);
 bool CheckOpponent(const Situation & situation);
 bool BeChecked(const Situation & situation);
 bool KingFacing(const Situation & situation);
+
+// ============================================================================================
 
 #endif
