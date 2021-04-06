@@ -112,3 +112,23 @@ void MoveSort(const Situation & situation, int & num_of_all_movements, Movement*
    if(!no_killer_2_movement)
       all_movements[2-no_hash_movement-no_killer_1_movement] = KillerTable[step][1];
 }
+
+/* 
+ * 函数名：CaptureMoveSort
+ * 描述：吃子着法排序
+ * 入参: 
+ * - const Situation & situation       局面
+ * - int & num_of_all_movements        当前着法数
+ * - Movement* all_movements           当前着法数组，存储当前所有着法
+ * - Movement hash_move                置换表
+ * - int step                          搜索步数
+ * 返回值：
+ * - void
+ * 最后更新时间: 04.06.20
+ */
+void CaptureMoveSort(const Situation & situation, int & num_of_all_movements, Movement* all_movements, Movement hash_move, int step){
+   // 吃子着法排序
+   GetAllCaptureMovements(situation, num_of_all_movements, all_movements);
+   CaptureValue(situation, num_of_all_movements, all_movements);
+   std::sort(all_movements, all_movements + num_of_all_movements, cmp);
+}
