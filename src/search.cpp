@@ -18,6 +18,10 @@ extern const UINT32 WIN_VALUE = MAX_VALUE - MAX_DEPTH;  // 胜利局面的相对
 
 Situation tmp;
 Situation& SituationNow = tmp;
+
+int debug_beta;
+int debug_node;
+
 /* 
  * 函数名：AlphaBetaSearch
  * 描述：带置换表的AlphaBeta搜索
@@ -63,18 +67,22 @@ int AlphaBetaSearch(int depth, int alpha, int beta){
     int move_num = 0;       // 着法数量
     // 生成着法
     MoveSort(SituationNow, move_num, move_list, move, step);
+    debug_node += move_num;
     for(int i = 0; i < move_num; i++){
         move = move_list[i];
         // 下子
         MakeAMove(SituationNow, move);
-        value = -AlphaBetaSearch(depth - 1, alpha, beta);
+        value = -AlphaBetaSearch(depth - 1, -beta, -alpha);
         // 回溯
         UnMakeAMove(SituationNow);
 
         // 当前为beta结点，执行剪枝
         if(value >= beta){
+            debug_beta++;
             // 此着法是好着法，记录进历史表
             SaveHistoryTable(move, depth);
+            // 好着法，存入杀手表
+            SaveKiller(move, step);
             SaveHashTable(depth, beta, hashBETA, move);
             return beta;
         }
@@ -119,7 +127,7 @@ int QuiescentSearch(int alpha, int beta){
     int value;                  // 下一着法的分值
     int best;                   // 所有着法中的最佳分值
     Movement move;              // 当前着法
-    Movement move_list[128];    // 当前所有着法
+    Movement move_list[64];     // 当前所有着法
 
     best = step - MAX_VALUE;
     // 必输局面直接返回
@@ -138,7 +146,7 @@ int QuiescentSearch(int alpha, int beta){
     
     int move_num = 0;       // 着法数量
     // 生成所有吃子着法
-    GetAllCaptureMovements(SituationNow, move_num, move_list);
+    CaptureMoveSort(SituationNow, move_num, move_list);
     for(int i = 0; i < move_num; i++){
         move = move_list[i];
         // 下子

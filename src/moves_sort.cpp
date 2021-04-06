@@ -18,10 +18,29 @@ Movement KillerTable[256][2];    // 杀手表
  * - int depth              深度
  * 返回值：
  * - void
- * 最后更新时间: 25.03.13
+ * 最后更新时间: 21.03.25
  */
 void SaveHistoryTable(const Movement& move, int depth){
    HistoryTable[move.from][move.to] += depth;
+}
+
+/* 
+ * 函数名：SaveKiller
+ * 描述：更新杀手着法
+ * 入参: 
+ * - const Movement& move   着法
+ * - int step               搜索步数
+ * 返回值：
+ * - void
+ * 最后更新时间: 21.04.06
+ */
+void SaveKiller(const Movement& move, int step){
+   if(KillerTable[step][0].value < move.value){
+      KillerTable[step][0] = move;
+   }
+   else if(KillerTable[step][1].value < move.value){
+      KillerTable[step][1] = move;
+   }
 }
 
 /* 
@@ -120,13 +139,11 @@ void MoveSort(const Situation & situation, int & num_of_all_movements, Movement*
  * - const Situation & situation       局面
  * - int & num_of_all_movements        当前着法数
  * - Movement* all_movements           当前着法数组，存储当前所有着法
- * - Movement hash_move                置换表
- * - int step                          搜索步数
  * 返回值：
  * - void
- * 最后更新时间: 04.06.20
+ * 最后更新时间: 21.04.06
  */
-void CaptureMoveSort(const Situation & situation, int & num_of_all_movements, Movement* all_movements, Movement hash_move, int step){
+void CaptureMoveSort(const Situation& situation, int& num_of_all_movements, Movement* all_movements){
    // 吃子着法排序
    GetAllCaptureMovements(situation, num_of_all_movements, all_movements);
    CaptureValue(situation, num_of_all_movements, all_movements);

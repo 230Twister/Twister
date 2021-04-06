@@ -10,8 +10,8 @@
 const UINT8 hashEXACT = 0;                  // PV结点类型
 const UINT8 hashALPHA = 1;                  // ALPHA结点类型
 const UINT8 hashBETA = 2;                   // BETA结点类型
-const UINT32 HASHTABLE_SIZE = 1 << 22;      // 置换表大小 4MB
-const UINT32 HASHTABLE_MASK = (1 << 22) - 1;
+const UINT32 HASHTABLE_SIZE = 1 << 24;      // 置换表大小 16MB
+const UINT32 HASHTABLE_MASK = (1 << 24) - 1;
 
 const int NONE_VALUE = 1 << 20;             // 空价值
 const Movement NONE_MOVE = {0, 0, 0};       // 空着
