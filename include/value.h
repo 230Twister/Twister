@@ -8,7 +8,7 @@
 #ifndef VALUE_H
 #define VALUE_H
 
-extern const char PieceNumToType[48];
+extern const UINT8 PieceNumToType[48];
 extern const UINT8 PositionValues[2][7][256];
 void Eval(Situation &s);
 

@@ -2,12 +2,12 @@
  * 文件名： value.cpp
  * 描述	：评估局面价值
  * 作者 : yuanthree
- * 最后更新时间: 21.03.26
+ * 最后更新时间: 21.04.06
  */
 #include "value.h"
 
 //将棋子与位置数组的序号对应
-const char PieceNumToType[48] = {
+const UINT8 PieceNumToType[48] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 6, 6, 6,
     0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 6, 6, 6};
@@ -255,13 +255,9 @@ const UINT8 PositionValues[2][7][256] =
 
 void Eval(Situation &s)
 {
-    INT16 i, j, k, r;
-    UINT8 p;      //棋子位置
-    UINT8 n;      //用于记录下一步的可能位置
-    UINT8 m;      //用于记录马腿象眼位置
+    int i, r;
     int SideTag;  //用于标志行走方
-    int OverFlag; //炮的翻山标志
-    INT16 bValue, wValue = 0;
+    INT16 bValue = 0, wValue = 0;
     INT16 fValue[2] = {0, 0};
 
     //计算位置价值
@@ -278,7 +274,7 @@ void Eval(Situation &s)
 
     for (r = 0; r <= 1; r++)
     {
-        SideTag = 16 + r << 4;
+        SideTag = 16 + (r << 4);
 
         //将的灵活性
         for (i = 0; i <= 0; i++)
