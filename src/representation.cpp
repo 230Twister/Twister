@@ -642,6 +642,7 @@ bool KingFacing(const Situation & situation){
 bool MovementsLegal(const Movement move, const Situation & situation){
     int from = move.from, to = move.to, player_flag = GetPlayerFlag(situation.current_player), player = situation.current_player;
     int piece_id_from = situation.current_board[from];
+    int from_col = 0, from_row = 0, to_col = 0, to_row = 0;
     // 1. 判断出发点是否为自己的棋子(包含判断是否是没有棋子)
     if(piece_id_from & player_flag == 0){
         return false;
@@ -665,13 +666,14 @@ bool MovementsLegal(const Movement move, const Situation & situation){
         return (LEGAL_POSITION[player][from] & POSITION_MASK[2]) && (LEGAL_MOVE[to - from + 256] == 3) && (situation.current_board[(to + from) >> 1] == 0);
     // 3.4 马
     case 5:
-    case 6: 
+    case 6: {
         int horse_leg = HORSE_LEGAL_MOVE[to - from + 256] + from;
         return (horse_leg != from) && (situation.current_board[horse_leg] == 0);
+    }
     // 3.5 车
     case 7:
     case 8:
-        int from_col = GetCol(from), from_row = GetRow(from), to_col = GetCol(to), to_row = GetRow(to);
+        from_col = GetCol(from), from_row = GetRow(from), to_col = GetCol(to), to_row = GetRow(to);
         // 3.5.1 如果在同一列
         if(from_col == to_col){
             if(move.capture){
@@ -697,7 +699,7 @@ bool MovementsLegal(const Movement move, const Situation & situation){
     // 3.6 炮
     case 9:
     case 10:
-        int from_col = GetCol(from), from_row = GetRow(from), to_col = GetCol(to), to_row = GetRow(to);
+        from_col = GetCol(from), from_row = GetRow(from), to_col = GetCol(to), to_row = GetRow(to);
         // 3.6.1 如果在同一列
         if(from_col == to_col){
             if(move.capture){

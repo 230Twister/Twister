@@ -19,7 +19,7 @@ extern int BISHOP_CAN_GET[256][2][10];     	// 象在各个位置所能到的地
 extern int BISHOP_EYE[256][2][10];        	// 象在各个位置象眼所在的地方
 
 extern const UINT8 LEGAL_MOVE[512];
-extern const UINT8 HORSE_LEGAL_MOVE[512];
+extern const int HORSE_LEGAL_MOVE[512];
 
 // 车炮预置数组中的结构表示
 struct RookCannonCanGet{
