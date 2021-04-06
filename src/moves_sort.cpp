@@ -94,10 +94,13 @@ void MoveSort(const Situation & situation, int & num_of_all_movements, Movement*
    std::sort(all_movements + flag, all_movements + num_of_all_movements, cmp);
 
    flag = num_of_all_movements;
-   // for(i = num_of_all_movements + 3; i = 3; i --){
-   //    all_movements[i] = all_movements[i-3];
-   // }
-   // all_movements[0] = hash_move;
+   if(hash_move.from != 0){
+      for(i = num_of_all_movements + 1; i = 1; i --){
+         all_movements[i] = all_movements[i-1];
+      }
+      all_movements[0] = hash_move;
+   }
+   
    // all_movements[1] = KillerTable[step][0];
    // all_movements[1] = KillerTable[step][1];
 }

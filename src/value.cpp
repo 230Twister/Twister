@@ -261,7 +261,7 @@ void Eval(Situation &s)
     UINT8 m;      //用于记录马腿象眼位置
     int SideTag;  //用于标志行走方
     int OverFlag; //炮的翻山标志
-    INT16 bValue, wValue = 0;
+    INT16 bValue = 0, wValue = 0;
     INT16 fValue[2] = {0, 0};
 
     //计算位置价值
@@ -278,7 +278,7 @@ void Eval(Situation &s)
 
     for (r = 0; r <= 1; r++)
     {
-        SideTag = 16 + r << 4;
+        SideTag = 16 + (r << 4);
 
         //将的灵活性
         for (i = 0; i <= 0; i++)
