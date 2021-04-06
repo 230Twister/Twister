@@ -21,6 +21,47 @@ RookCannonMask ROOK_CANNON_CAN_GET_COL_MASK[10][1 << 10];    // 车炮在某列�
 UINT16 BIT_ROW_MASK[256];                                    // 行屏蔽位
 UINT16 BIT_COL_MASK[256];                                    // 列屏蔽位
 
+// 合法跨度数组 1表示将跨度合法 2表示仕跨度合理 3表示象跨度合理
+const UINT8 LEGAL_MOVE[512] = {
+  0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 2, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 2, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
+// 马的合法跨度数组 0表示不能走 非0表示该步的马脚增量
+const UINT8 HORSE_LEGAL_MOVE[512] = {
+   0,  0,  0,  0,  0,  0,  0,  0,  0,
+   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0,  0,  0,  0,  0,  0,-16,  0,-16,  0,  0,  0,  0,  0,  0,  0,
+   0,  0,  0,  0,  0, -1,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+   0,  0,  0,  0,  0, -1,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0, 0,  0,  0,  0,  0,  0, 16,  0, 16,  0,  0,  0,  0,  0,  0,  0,
+   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0,  0,  0,  0,  0,  0,  0
+};
+
 /* 
  * 函数名：
  * 描述：生成预置数组
@@ -199,12 +240,12 @@ void InitPresetArray(){
                 // 此状态下，该列没有棋子
                 if((j & (1 << RowBitOpration(col))) == 0){
                     ROOK_CANNON_CAN_GET_ROW[i][j].no_capture[0] = col + 3;
-                    // ROOK_CANNON_CAN_GET_ROW_MASK[i][j].no_capture = ROOK_CANNON_CAN_GET_ROW_MASK[i][j].no_capture | (1 << col);
+                    ROOK_CANNON_CAN_GET_ROW_MASK[i][j].no_capture |= (1 << RowBitOpration(col));
                 }
                 // 此状态下，该列有棋子,可生成吃子着法
                 else{
                     ROOK_CANNON_CAN_GET_ROW[i][j].rook_capture[0] = col + 3;
-                    // ROOK_CANNON_CAN_GET_ROW_MASK[i][j].rook_capture = ROOK_CANNON_CAN_GET_ROW_MASK[i][j].rook_capture | (1 << col);
+                    ROOK_CANNON_CAN_GET_ROW_MASK[i][j].rook_capture |= (1 << RowBitOpration(col));
                     break;
                 }
             }
@@ -212,7 +253,7 @@ void InitPresetArray(){
                 // 已经隔了一子，判断炮是否有吃子着法
                 if((j & (1 << RowBitOpration(col))) != 0){
                     ROOK_CANNON_CAN_GET_ROW[i][j].connon_capture[0] = col + 3;
-                    // ROOK_CANNON_CAN_GET_ROW_MASK[i][j].cannon_capture = ROOK_CANNON_CAN_GET_COL_MASK[i][j].cannon_capture | (1 << col);
+                    ROOK_CANNON_CAN_GET_ROW_MASK[i][j].cannon_capture |= (1 << RowBitOpration(col));
                     break;
                 }
             }
@@ -221,12 +262,12 @@ void InitPresetArray(){
                 // 此状态下，该列没有棋子
                 if((j & (1 << RowBitOpration(col))) == 0){
                     ROOK_CANNON_CAN_GET_ROW[i][j].no_capture[1] = col + 3;
-                    // ROOK_CANNON_CAN_GET_ROW_MASK[i][j].no_capture = ROOK_CANNON_CAN_GET_ROW_MASK[i][j].no_capture | (1 << col);
+                    ROOK_CANNON_CAN_GET_ROW_MASK[i][j].no_capture |= (1 << RowBitOpration(col));
                 }
                 // 此状态下，该列有棋子,可生成吃子着法
                 else{
                     ROOK_CANNON_CAN_GET_ROW[i][j].rook_capture[1] = col + 3;
-                    // ROOK_CANNON_CAN_GET_ROW_MASK[i][j].rook_capture = ROOK_CANNON_CAN_GET_ROW_MASK[i][j].rook_capture | (1 << col);
+                    ROOK_CANNON_CAN_GET_ROW_MASK[i][j].rook_capture |= (1 << RowBitOpration(col));
                     break;
                 }
             }
@@ -234,7 +275,7 @@ void InitPresetArray(){
                 // 已经隔了一子，判断炮是否有吃子着法
                 if((j & (1 << RowBitOpration(col))) != 0){
                     ROOK_CANNON_CAN_GET_ROW[i][j].connon_capture[1] = col + 3;
-                    // ROOK_CANNON_CAN_GET_ROW_MASK[i][j].cannon_capture = ROOK_CANNON_CAN_GET_COL_MASK[i][j].cannon_capture | (1 << col);
+                    ROOK_CANNON_CAN_GET_ROW_MASK[i][j].cannon_capture |= (1 << RowBitOpration(col));
                     break;
                 }
             }
@@ -255,12 +296,12 @@ void InitPresetArray(){
                 // 当前状态下该行无棋子
                 if((j & (1 << ColBitOpration(row))) == 0){
                     ROOK_CANNON_CAN_GET_COL[i][j].no_capture[0] = row + 3;
-                    // ROOK_CANNON_CAN_GET_COL_MASK[i][j].no_capture = ROOK_CANNON_CAN_GET_COL_MASK[i][j].no_capture | (1 << row);
+                    ROOK_CANNON_CAN_GET_COL_MASK[i][j].no_capture |= (1 << ColBitOpration(row));
                 }
                 // 当前状态下该行有棋子
                 else{
                     ROOK_CANNON_CAN_GET_COL[i][j].rook_capture[0] = row + 3;
-                    // ROOK_CANNON_CAN_GET_COL_MASK[i][j].rook_capture = ROOK_CANNON_CAN_GET_COL_MASK[i][j].rook_capture | (1 << row);
+                    ROOK_CANNON_CAN_GET_COL_MASK[i][j].rook_capture |= (1 << ColBitOpration(row));
                     break;
                 }
             }
@@ -268,7 +309,7 @@ void InitPresetArray(){
                 // 隔了一子，生成炮吃法
                 if((j & (1 << ColBitOpration(row))) != 0){
                     ROOK_CANNON_CAN_GET_COL[i][j].connon_capture[0] = row + 3;
-                    // ROOK_CANNON_CAN_GET_COL_MASK[i][j].cannon_capture = ROOK_CANNON_CAN_GET_COL_MASK[i][j].cannon_capture | (1 << row);
+                    ROOK_CANNON_CAN_GET_COL_MASK[i][j].cannon_capture |= (1 << ColBitOpration(row));
                     break;
                 }
             }
@@ -277,12 +318,12 @@ void InitPresetArray(){
                 // 当前状态下该行无棋子
                 if((j & (1 << ColBitOpration(row))) == 0){
                     ROOK_CANNON_CAN_GET_COL[i][j].no_capture[1] = row + 3;
-                    // ROOK_CANNON_CAN_GET_COL_MASK[i][j].no_capture = ROOK_CANNON_CAN_GET_COL_MASK[i][j].no_capture | (1 << row);
+                    ROOK_CANNON_CAN_GET_COL_MASK[i][j].no_capture |= (1 << ColBitOpration(row));
                 }
                 // 当前状态下该行有棋子
                 else{
                     ROOK_CANNON_CAN_GET_COL[i][j].rook_capture[1] = row + 3;
-                    // ROOK_CANNON_CAN_GET_COL_MASK[i][j].rook_capture = ROOK_CANNON_CAN_GET_COL_MASK[i][j].rook_capture | (1 << row);
+                    ROOK_CANNON_CAN_GET_COL_MASK[i][j].rook_capture |= (1 << ColBitOpration(row));
                     break;
                 }
             }
@@ -290,7 +331,7 @@ void InitPresetArray(){
                 // 隔了一子，生成炮吃法
                 if((j & (1 << ColBitOpration(row))) != 0){
                     ROOK_CANNON_CAN_GET_COL[i][j].connon_capture[1] = row + 3;
-                    // ROOK_CANNON_CAN_GET_COL_MASK[i][j].cannon_capture = ROOK_CANNON_CAN_GET_COL_MASK[i][j].cannon_capture | (1 << row);
+                    ROOK_CANNON_CAN_GET_COL_MASK[i][j].cannon_capture |= (1 << ColBitOpration(row));
                     break;
                 }
             }

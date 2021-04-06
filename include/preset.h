@@ -18,6 +18,9 @@ extern int PAWN_CAN_GET[256][2][10];        // 兵(卒)在各个位置所能到�
 extern int BISHOP_CAN_GET[256][2][10];     	// 象在各个位置所能到的地方
 extern int BISHOP_EYE[256][2][10];        	// 象在各个位置象眼所在的地方
 
+extern const UINT8 LEGAL_MOVE[512];
+extern const UINT8 HORSE_LEGAL_MOVE[512];
+
 // 车炮预置数组中的结构表示
 struct RookCannonCanGet{
     UINT8 no_capture[2];        // 不吃子的着法 最左(或最上)[0] 最右(或最下)[1]
