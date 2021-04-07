@@ -27,7 +27,6 @@ int main() {
 				// 构造局面
                 InitSituation(situation);
                 FenToSituation(situation, UcciComm.szFenStr);
-                PrintLn(UcciComm.szFenStr);
 				break;
 			case UCCI_COMM_GO:
 				ComputerThink(situation);

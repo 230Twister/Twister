@@ -9,8 +9,8 @@
 #define SEARCH_H
 
 struct Situation;
-int AlphaBetaSearch(int depth, int alpha, int beta);
-int QuiescentSearch(int alpha, int beta);
+int AlphaBetaSearch(Situation& situation, int depth, int alpha, int beta);
+int QuiescentSearch(Situation& situation, int alpha, int beta);
 void ComputerThink(Situation& situation);
 
 #endif

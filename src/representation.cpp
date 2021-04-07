@@ -532,12 +532,12 @@ bool MakeAMove (Situation & situation, const Movement move){
     // 4. 如果...返回False
 
     // 5. 交换走棋方
-    if(!situation.current_pieces[GetPlayerFlag(OpponentPlayer(situation.current_player))]){
+    if(BeChecked(situation)){
         ChangePlayer(situation.current_player);
         return true;
     }
     ChangePlayer(situation.current_player);
-    return false;
+    return KingFacing(situation);
 }
 
 /* 
@@ -614,8 +614,8 @@ void UnMakeAMove (Situation & situation){
  */
 bool KingFacing(const Situation & situation){
     // 1. 如果有一方没有将 则无效
-    int red_king_pos = situation.current_board[GetPlayerFlag(RED) + 0], black_king_pos = situation.current_board[GetPlayerFlag(BLACK) + 0];
-    if(situation.current_pieces[GetPlayerFlag(RED) + 0] == 0 || situation.current_pieces[GetPlayerFlag(BLACK) + 0] == 0){
+    int red_king_pos = situation.current_pieces[GetPlayerFlag(RED) + 0], black_king_pos = situation.current_pieces[GetPlayerFlag(BLACK) + 0];
+    if(red_king_pos == 0 || black_king_pos == 0){
         return false;
     }
 

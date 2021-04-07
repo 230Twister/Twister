@@ -12,12 +12,9 @@ time_t StartTime;                                       // 开始搜索的时间
 bool isTimeLimit = 0;                                   // 时间是否超限
 int NowMaxDepth;
 const UINT16 MAX_DEPTH = 24;                            // 最大搜索深度
-const UINT64 MAX_TIME = 600000;                          // 最大消耗时间(ms)
+const time_t MAX_TIME = 40000;                          // 最大消耗时间(ms)
 extern const int MAX_VALUE = 10000;                     // 最大价值，胜利局面绝对分数
 extern const int WIN_VALUE = MAX_VALUE - MAX_DEPTH;     // 胜利局面的相对分数
-
-Situation tmp;
-Situation& SituationNow = tmp;
 
 int debug_beta;
 int debug_node;
@@ -33,7 +30,7 @@ int debug_node;
  * - int 最佳分值
  * 最后更新时间: 21.04.05
  */
-int AlphaBetaSearch(int depth, int alpha, int beta){
+int AlphaBetaSearch(Situation& situation, int depth, int alpha, int beta){
     int value;                  // 下一着法的分值
     int best;                   // 所有着法中的最佳分值
     Movement move_list[128];    // 当前所有着法
@@ -49,8 +46,8 @@ int AlphaBetaSearch(int depth, int alpha, int beta){
     }
     // 时间检测，避免超限
     if(isTimeLimit || clock() - StartTime > MAX_TIME){
-        isTimeLimit = 1;
-        return NONE_VALUE;
+        // isTimeLimit = 1;
+        // return NONE_VALUE;
     }
     
     best = -NONE_VALUE;
@@ -59,26 +56,26 @@ int AlphaBetaSearch(int depth, int alpha, int beta){
     // 到达搜索深度
     if(depth <= 0){
         // 静态搜索评估
-        value = QuiescentSearch(alpha, beta);
+        value = QuiescentSearch(situation, alpha, beta);
         // 保存到置换表
         // SaveHashTable(depth, value, hashEXACT, NONE_MOVE);
         return value;
     }
     int move_num = 0;       // 着法数量
     // 生成着法
-    MoveSort(SituationNow, move_num, move_list, move, step);
+    MoveSort(situation, move_num, move_list, move, step);
     debug_node += move_num;
     for(int i = 0; i < move_num; i++){
         move = move_list[i];
         // 下子
-        if(MakeAMove(SituationNow, move)){
-            value = MAX_VALUE - step;
+        if(MakeAMove(situation, move)){
+            value = -MAX_VALUE + step;
         }
         else{
-            value = -AlphaBetaSearch(depth - 1, -beta, -alpha);
+            value = -AlphaBetaSearch(situation, depth - 1, -beta, -alpha);
         }
         // 回溯
-        UnMakeAMove(SituationNow);
+        UnMakeAMove(situation);
 
         // 当前为beta结点，执行剪枝
         if(value >= beta){
@@ -127,7 +124,7 @@ int AlphaBetaSearch(int depth, int alpha, int beta){
  * - int 最佳分值
  * 最后更新时间: 26.03.15
  */
-int QuiescentSearch(int alpha, int beta){
+int QuiescentSearch(Situation& situation, int alpha, int beta){
     int value;                  // 下一着法的分值
     int best;                   // 所有着法中的最佳分值
     Movement move;              // 当前着法
@@ -140,9 +137,9 @@ int QuiescentSearch(int alpha, int beta){
     }
     
     // 调用评估函数进行评估
-    Eval(SituationNow);
-    value = SituationNow.value_black - SituationNow.value_red;
-    if(!SituationNow.current_player) value = -value;
+    Eval(situation);
+    value = situation.value_black - situation.value_red;
+    if(!situation.current_player) value = -value;
     if(value > beta)
         return beta;
     if(value > alpha)
@@ -150,18 +147,18 @@ int QuiescentSearch(int alpha, int beta){
     
     int move_num = 0;       // 着法数量
     // 生成所有吃子着法
-    CaptureMoveSort(SituationNow, move_num, move_list);
+    CaptureMoveSort(situation, move_num, move_list);
     for(int i = 0; i < move_num; i++){
         move = move_list[i];
         // 下子
-        if(MakeAMove(SituationNow, move)){
-            value = MAX_VALUE - step;
+        if(MakeAMove(situation, move)){
+            value = -MAX_VALUE + step;
         }
         else{
-            value = -QuiescentSearch(-beta, -alpha);
+            value = -QuiescentSearch(situation, -beta, -alpha);
         }
         // 回溯
-        UnMakeAMove(SituationNow);
+        UnMakeAMove(situation);
         if(value >= beta){
             return beta;
         }
@@ -187,13 +184,13 @@ int QuiescentSearch(int alpha, int beta){
 void ComputerThink(Situation& situation){
     int value, max_depth;
     Movement best_move_save;
-    SituationNow = situation;
     StartTime = clock();
+    ResetHashTable();
 
     for(max_depth = 1; max_depth <= MAX_DEPTH; max_depth++){
-        ResetHashTable();
+        
         NowMaxDepth = max_depth;
-        value = AlphaBetaSearch(max_depth, -NONE_VALUE, NONE_VALUE);
+        value = AlphaBetaSearch(situation, max_depth, -NONE_VALUE, NONE_VALUE);
         if(isTimeLimit){
             break;
         }
