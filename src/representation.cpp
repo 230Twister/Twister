@@ -532,7 +532,12 @@ bool MakeAMove (Situation & situation, const Movement move){
     // 4. 如果...返回False
 
     // 5. 交换走棋方
+    if(!situation.current_pieces[GetPlayerFlag(OpponentPlayer(situation.current_player))]){
+        ChangePlayer(situation.current_player);
+        return true;
+    }
     ChangePlayer(situation.current_player);
+    return false;
 }
 
 /* 

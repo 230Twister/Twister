@@ -100,23 +100,23 @@ bool cmp(Movement a, Movement b){
  * 最后更新时间: 03.26.20
  */
 void MoveSort(const Situation & situation, int & num_of_all_movements, Movement* all_movements, Movement hash_move, int step){
-   int flag, i;
+   int flag;
    int no_hash_movement = 0, no_killer_1_movement = 0, no_killer_2_movement = 0, no_movement = 0;
 
    // 判断置换表和杀手着法是否为空
-   if(hash_move.from && hash_move.to)
+   if((!hash_move.from && !hash_move.to) || !MovementsLegal(hash_move, situation))
       no_hash_movement ++;
-   if(KillerTable[step][0].from && KillerTable[step][0].to && MovementsLegal(KillerTable[step][0], situation))
+   if((!KillerTable[step][0].from && !KillerTable[step][0].to) || !MovementsLegal(KillerTable[step][0], situation))
       no_killer_1_movement ++;
-   if(KillerTable[step][1].from && KillerTable[step][1].to && MovementsLegal(KillerTable[step][1], situation))
+   if((!KillerTable[step][1].from && !KillerTable[step][1].to) || !MovementsLegal(KillerTable[step][1], situation))
       no_killer_2_movement ++;
    no_movement = no_hash_movement + no_killer_1_movement + no_killer_2_movement;
 
-   if(no_hash_movement)
+   if(!no_hash_movement)
       all_movements[0] = hash_move;
-   if(no_killer_1_movement)
+   if(!no_killer_1_movement)
       all_movements[1-no_hash_movement] = KillerTable[step][0];
-   if(no_killer_2_movement)
+   if(!no_killer_2_movement)
       all_movements[2-no_hash_movement-no_killer_1_movement] = KillerTable[step][1];
    // 更新着法总数
    num_of_all_movements += (3 - no_movement);

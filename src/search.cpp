@@ -10,11 +10,11 @@ Movement BestMove;                                      // 当前局面的最好
 int step = 0;                                           // 搜索步数
 time_t StartTime;                                       // 开始搜索的时间
 bool isTimeLimit = 0;                                   // 时间是否超限
-UINT32 NowMaxDepth;
-const UINT16 MAX_DEPTH = 8;                             // 最大搜索深度
-const UINT64 MAX_TIME = 60000;                          // 最大消耗时间(ms)
-extern const UINT32 MAX_VALUE = 10000;                  // 最大价值，胜利局面绝对分数
-extern const UINT32 WIN_VALUE = MAX_VALUE - MAX_DEPTH;  // 胜利局面的相对分数
+int NowMaxDepth;
+const UINT16 MAX_DEPTH = 24;                            // 最大搜索深度
+const UINT64 MAX_TIME = 600000;                          // 最大消耗时间(ms)
+extern const int MAX_VALUE = 10000;                     // 最大价值，胜利局面绝对分数
+extern const int WIN_VALUE = MAX_VALUE - MAX_DEPTH;     // 胜利局面的相对分数
 
 Situation tmp;
 Situation& SituationNow = tmp;
@@ -71,8 +71,12 @@ int AlphaBetaSearch(int depth, int alpha, int beta){
     for(int i = 0; i < move_num; i++){
         move = move_list[i];
         // 下子
-        MakeAMove(SituationNow, move);
-        value = -AlphaBetaSearch(depth - 1, -beta, -alpha);
+        if(MakeAMove(SituationNow, move)){
+            value = MAX_VALUE - step;
+        }
+        else{
+            value = -AlphaBetaSearch(depth - 1, -beta, -alpha);
+        }
         // 回溯
         UnMakeAMove(SituationNow);
 
@@ -150,8 +154,12 @@ int QuiescentSearch(int alpha, int beta){
     for(int i = 0; i < move_num; i++){
         move = move_list[i];
         // 下子
-        MakeAMove(SituationNow, move);
-        value = -QuiescentSearch(-beta, -alpha);
+        if(MakeAMove(SituationNow, move)){
+            value = MAX_VALUE - step;
+        }
+        else{
+            value = -QuiescentSearch(-beta, -alpha);
+        }
         // 回溯
         UnMakeAMove(SituationNow);
         if(value >= beta){
@@ -177,21 +185,26 @@ int QuiescentSearch(int alpha, int beta){
  * 最后更新时间: 21.04.05
  */
 void ComputerThink(Situation& situation){
-    Movement best_move_backup;
+    int value, max_depth;
+    Movement best_move_save;
     SituationNow = situation;
     StartTime = clock();
-    ResetHashTable();
 
-    for(int max_depth = 1; max_depth <= MAX_DEPTH; max_depth++){
+    for(max_depth = 1; max_depth <= MAX_DEPTH; max_depth++){
+        ResetHashTable();
         NowMaxDepth = max_depth;
-        AlphaBetaSearch(max_depth, -NONE_VALUE, NONE_VALUE);
+        value = AlphaBetaSearch(max_depth, -NONE_VALUE, NONE_VALUE);
         if(isTimeLimit){
             break;
         }
         else{
-            best_move_backup = BestMove;
+            best_move_save = BestMove;
         }
+        if(value > WIN_VALUE) break;
     }
 
-    MakeAMove(situation, BestMove);
+    MakeAMove(situation, best_move_save);
+    char fen[100];
+    SituationToFen(situation, fen);
+    std::cout << fen;
 }

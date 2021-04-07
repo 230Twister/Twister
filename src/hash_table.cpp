@@ -6,6 +6,7 @@
  */
 #include <random>
 #include "hash_table.h"
+#include <cstring>
 
 const UINT8 hashEXACT = 0;                  // PV结点类型
 const UINT8 hashALPHA = 1;                  // ALPHA结点类型
@@ -25,8 +26,8 @@ UINT64 ZobristTable[48][256];               // 棋子在棋盘各个位置的键
 UINT64 ZobristTableCheck[48][256];          // 棋子在棋盘各个位置的校验值
 
 extern int step;
-extern const UINT32 MAX_VALUE;
-extern const UINT32 WIN_VALUE;
+extern const int MAX_VALUE;
+extern const int WIN_VALUE;
 /* 
  * 函数名：InitHashTable
  * 描述：生成置换表以及相关键值
@@ -38,6 +39,7 @@ extern const UINT32 WIN_VALUE;
  */
 void InitHashTable(){
     HashTable = new HashNode[HASHTABLE_SIZE];
+    memset(HashTable, 0, HASHTABLE_SIZE * sizeof(HashNode));
     std::independent_bits_engine<std::default_random_engine, 64, UINT64> engine;
 
     ZobristPlayer = engine();       // 生成走棋方键值
@@ -68,6 +70,7 @@ void InitHashTable(){
 void ResetHashTable(){
     DeleteHashTable();
     HashTable = new HashNode[HASHTABLE_SIZE];
+    memset(HashTable, 0, HASHTABLE_SIZE * sizeof(HashNode));
 }
 
 /* 
