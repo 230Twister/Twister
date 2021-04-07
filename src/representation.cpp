@@ -649,7 +649,7 @@ bool MovementsLegal(const Movement move, const Situation & situation){
     int piece_id_from = situation.current_board[from];
     int from_col = 0, from_row = 0, to_col = 0, to_row = 0;
     // 1. 判断出发点是否为自己的棋子(包含判断是否是没有棋子)
-    if(piece_id_from & player_flag == 0){
+    if((piece_id_from & player_flag) == 0){
         return false;
     }
     // 2. 对目标点进行判断

@@ -46,8 +46,8 @@ int AlphaBetaSearch(Situation& situation, int depth, int alpha, int beta){
     }
     // 时间检测，避免超限
     if(isTimeLimit || clock() - StartTime > MAX_TIME){
-        // isTimeLimit = 1;
-        // return NONE_VALUE;
+        isTimeLimit = 1;
+        return NONE_VALUE;
     }
     
     best = -NONE_VALUE;
