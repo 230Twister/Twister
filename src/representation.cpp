@@ -648,9 +648,10 @@ bool MovementsLegal(const Movement move, const Situation & situation){
         return false;
     }
     // 2. 对目标点进行判断
-    if((move.capture & player_flag) != 0){
+    if(situation.current_board[to] != move.capture){
         return false;
     }
+    
     // 3.对出发点的棋子进行分类讨论
     switch (piece_id_from - player_flag){
     // 3.1 将(帅)
