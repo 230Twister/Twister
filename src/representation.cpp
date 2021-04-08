@@ -496,8 +496,8 @@ bool MakeAMove (Situation & situation, const Movement move){
     ZobristKeyCheck ^= ZobristPlayerCheck;
     ZobristKeyCheck ^= ZobristTableCheck[situation.current_board[move.from]][move.from];
     if(move.capture != 0)
-        ZobristKey ^= ZobristTableCheck[move.capture][move.to];
-    ZobristKey ^= ZobristTableCheck[situation.current_board[move.from]][move.to];
+        ZobristKeyCheck ^= ZobristTableCheck[move.capture][move.to];
+    ZobristKeyCheck ^= ZobristTableCheck[situation.current_board[move.from]][move.to];
 
     // 3. 移动棋子
     int piece_id_from = situation.current_board[move.from];
@@ -567,8 +567,8 @@ void UnMakeAMove (Situation & situation){
     ZobristKeyCheck ^= ZobristPlayerCheck;
     ZobristKeyCheck ^= ZobristTableCheck[situation.current_board[move.to]][move.to];
     if(move.capture != 0)
-        ZobristKey ^= ZobristTableCheck[move.capture][move.to];
-    ZobristKey ^= ZobristTableCheck[situation.current_board[move.to]][move.from];
+        ZobristKeyCheck ^= ZobristTableCheck[move.capture][move.to];
+    ZobristKeyCheck ^= ZobristTableCheck[situation.current_board[move.to]][move.from];
 
     // 3. 返回棋子
     int piece_id_from = situation.current_board[move.to];

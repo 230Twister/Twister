@@ -3,7 +3,7 @@
 #ifndef MOVESORT_H
 #define MOVESORT_H
 
-extern int HistoryTable[256][256];     // 历史表
+void ResetHistory();
 
 void SaveHistoryTable(const Movement& move, int depth);
 void SaveKiller(const Movement& move, int step);

@@ -10,6 +10,11 @@
 int HistoryTable[256][256];      // 历史表
 Movement KillerTable[256][2];    // 杀手表 
 
+void ResetHistory(){
+   memset(HistoryTable, 256 * 256, sizeof(int));
+   memset(KillerTable, 256 * 2, sizeof(Movement));
+}
+
 /* 
  * 函数名：SaveHistoryTable
  * 描述：写入历史表

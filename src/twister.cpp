@@ -39,6 +39,7 @@ int main() {
 		}
 	}
 	PrintLn("bye");
+	DeleteHashTable();
 }
 
 void PrintLn(const char* str){

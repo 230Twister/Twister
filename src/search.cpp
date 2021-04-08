@@ -18,6 +18,8 @@ extern const int WIN_VALUE = MAX_VALUE - MAX_DEPTH;     // 胜利局面的相对
 
 int debug_beta;
 int debug_node;
+int debug_hash;
+int debug_value;
 
 /* 
  * 函数名：AlphaBetaSearch
@@ -42,6 +44,7 @@ int AlphaBetaSearch(Situation& situation, int depth, int alpha, int beta){
 
     // 读取成功
     if(value != NONE_VALUE){
+        debug_hash++;
         return value;
     }
     // 时间检测，避免超限
@@ -184,8 +187,12 @@ int QuiescentSearch(Situation& situation, int alpha, int beta){
 void ComputerThink(Situation& situation){
     int value, max_depth;
     Movement best_move_save;
+    isTimeLimit = false;
+    step = 0;
+    debug_beta = debug_node = debug_hash = 0;
+    ResetHashTable();   // 清空置换表
+    ResetHistory();     // 清空历史表和杀手表
     StartTime = clock();
-    ResetHashTable();
 
     for(max_depth = 1; max_depth <= MAX_DEPTH; max_depth++){
         
@@ -196,6 +203,8 @@ void ComputerThink(Situation& situation){
         }
         else{
             best_move_save = BestMove;
+            debug_value = value;
+            std::cout << max_depth << " complete " << clock() - StartTime << "ms \n";
         }
         if(value > WIN_VALUE) break;
     }
@@ -203,5 +212,9 @@ void ComputerThink(Situation& situation){
     MakeAMove(situation, best_move_save);
     char fen[100];
     SituationToFen(situation, fen);
-    std::cout << fen;
+    std::cout << "best value: " << debug_value << '\n';
+    std::cout << "total node: " << debug_node << '\n';
+    std::cout << "beta  node: " << debug_beta << '\n';
+    std::cout << "hash   hit: " << debug_hash << '\n';
+    std::cout << fen << '\n';
 }

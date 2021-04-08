@@ -68,8 +68,6 @@ void InitHashTable(){
  * 最后更新时间: 21.03.25
  */
 void ResetHashTable(){
-    DeleteHashTable();
-    HashTable = new HashNode[HASHTABLE_SIZE];
     memset(HashTable, 0, HASHTABLE_SIZE * sizeof(HashNode));
 }
 
