@@ -13,7 +13,7 @@ time_t StartTime;                                       // 开始搜索的时间
 bool isTimeLimit = 0;                                   // 时间是否超限
 int NowMaxDepth;
 const UINT16 MAX_DEPTH = 24;                            // 最大搜索深度
-const time_t MAX_TIME = 20000;                          // 最大消耗时间(ms)
+const time_t MAX_TIME = 40000;                          // 最大消耗时间(ms)
 extern const int MAX_VALUE = 10000;                     // 最大价值，胜利局面绝对分数
 extern const int WIN_VALUE = MAX_VALUE - MAX_DEPTH;     // 胜利局面的相对分数
 
@@ -204,7 +204,11 @@ void ComputerThink(Situation& situation){
         else{
             best_move_save = BestMove;
             debug_value = value;
-            std::cout << max_depth << " complete " << clock() - StartTime << "ms \n";
+            // 输出日志文件(每层搜索结果)
+            std::ofstream f;
+            f.open("debug.log", std::ios::app | std::ios::out);
+            f << "Depth: " << max_depth << " Time: " << clock() - StartTime << "ms \n";
+            f.close();
         }
         if(value > WIN_VALUE) break;
     }
@@ -220,16 +224,14 @@ void ComputerThink(Situation& situation){
 		fflush (stdout);
     }
 
-    // 输出日志文件
+    // 输出日志文件(返回最佳着法)
     std::ofstream f;
     f.open("debug.log", std::ios::app | std::ios::out);
-    f << "====================================\n";
-    f << "best value: " << debug_value << '\n';
-    f << "total node: " << debug_node << '\n';
-    f << "beta node: " << debug_beta << '\n';
-    f << "hash hit: " << debug_hash << '\n';
-    f << "best move:" << "from:" << (int)best_move_save.from << " to:" << (int)best_move_save.to  << '\n';
-    f << "====================================\n";
+    f << "Bestmove's value: " << debug_value << '\n';
+    f << "Total node: " << debug_node << '\n';
+    f << "Beta node: " << debug_beta << '\n';
+    f << "Hash hit: " << debug_hash << '\n';
+    f << "=========================================\n";
     f.close();
     return ;
 }

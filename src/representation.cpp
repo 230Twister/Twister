@@ -190,9 +190,9 @@ void FenToSituation(Situation & situation, const char* fen, const int num_of_mov
     else situation.current_player = BLACK;
 
     // 3. 将后续着法转入局面
-    std::ofstream f;
-    f.open("debug.log", std::ios::app | std::ios::out);
-    f << "后续着法:\n";
+    // std::ofstream f;
+    // f.open("debug.log", std::ios::app | std::ios::out);
+    // f << "后续着法:\n";
     int j = 0;
     for ( int n = 0; n < num_of_movements; n ++ ) {
     	std::string s = "";
@@ -200,11 +200,11 @@ void FenToSituation(Situation & situation, const char* fen, const int num_of_mov
     		s += movements[k];
     	}
     	Movement move = StrToMovement(s);
-        f << "From:" << (int)move.from << " To:" << (int)move.to << std::endl;
+        // f << "From:" << (int)move.from << " To:" << (int)move.to << std::endl;
         MakeAMove(situation, move);
     	j += 5;
     }
-    f.close();
+    // f.close();
 
     // 4. 清空栈中的后续着法
     while(!situation.moves_stack.empty()){
