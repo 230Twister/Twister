@@ -3,47 +3,55 @@
 #include "hash_table.h"
 #include "search.h"
 #include "preset.h"
-
-void PrintLn(const char* str);
-
-int main() {
-    UcciCommStruct UcciComm;
-    Situation situation;
-	if (BootLine() != UCCI_COMM_UCCI) {
-		return 0;
-	}
-    InitHashTable();
-    InitPresetArray();
-	PrintLn("ucciok");
-
-    bool quit = false;
-	while (!quit) {
-		switch (IdleLine(UcciComm)) {
-			case UCCI_COMM_ISREADY:
-				PrintLn("readyok");
+int main ( int argc, char *argv[] ) {
+	if ( BootLine() == e_CommUcci ) {
+		printf( "id name twister\n" );
+		printf( "id version 0.1\n" );
+		printf( "id author twister230\n" );
+		printf( "ucciok\n" );
+		fflush( stdout );
+        Situation situation;
+        InitHashTable();
+        InitPresetArray();
+		while ( true ) {
+			CommEnum Order = IdleLine ( Command, 0 );
+			if ( Order == e_CommAnnotation ) {
+				printf( "%s\n", Command.Annotation.String );
+				fflush( stdout );
+			}
+			else if ( Order == e_CommQuit ) { // quit
+				printf( "bye\n" );
+				fflush( stdout );
 				break;
-			case UCCI_COMM_POSITION:
-                ResetZobristKey();
-				// 构造局面
+			}
+			else if ( Order == e_CommIsReady ) { // isready
+				printf( "readyok\n" );
+				fflush( stdout );
+			}
+			else if ( Order == e_CommSetOption ) {
+				if( Command.Option.Type == e_NewGame ) { // newgame
+                    ResetZobristKey();
+				}
+			}
+			else if ( Order == e_CommPosition ) { // position [ startpos | fen ] moves ...
+				ResetZobristKey();
                 InitSituation(situation);
-                FenToSituation(situation, UcciComm.szFenStr);
-				break;
-			case UCCI_COMM_GO:
+                // 输出日志文件
+                std::ofstream f;
+                f.open("debug.log", std::ios::app | std::ios::out);
+                f << "界面传给引擎的ucci指令: " << Command.Position.FenStr << "||" << Command.Position.MoveNum << " " << Command.Position.MoveStr << std::endl;
+                FenToSituation(situation, Command.Position.FenStr, Command.Position.MoveNum, Command.Position.MoveStr);
+                char fen[100];
+                SituationToFen(situation, fen);
+                f << "引擎处理完的当前局面的FEN: " << fen << std::endl;
+                f << "=======================================\n";
+                f.close();
+
+			}
+			else if ( Order == e_CommGo || Order == e_CommGoPonder ) { // go ...
 				ComputerThink(situation);
-				break;
-			case UCCI_COMM_QUIT:
-				quit = true;
-				break;
-			default:
-				break;
+			}
 		}
 	}
-	PrintLn("bye");
-	DeleteHashTable();
-}
-
-void PrintLn(const char* str){
-    printf(str);
-    printf("\n");
-    fflush(stdout);
+	return 0;
 }

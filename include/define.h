@@ -6,6 +6,13 @@
  */
 #include<iostream>
 #include<string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <string>
+#include <algorithm>
+#include <cctype>
+#include <cassert>
+#include <fstream>
 
 #ifndef DEFINE_H
 #define DEFINE_H

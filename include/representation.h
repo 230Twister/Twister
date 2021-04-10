@@ -146,10 +146,12 @@ void InitSituation(Situation & situation);
 int PieceOfFen(const char fen_char);
 void AddPiece(int piece_position, int piece_id, Situation & situation);
 void DeletePiece(int piece_position, int piece_id, Situation & situation);
-void FenToSituation(Situation & situation, const char* fen);
+void FenToSituation(Situation & situation, const char* fen, const int num_of_movements, const char *movements);
 void SituationToFen(Situation & situation, char* fen);
 bool MakeAMove (Situation & situation, const Movement move);
 void UnMakeAMove (Situation & situation);
+std::string MovementToStr (const Movement move);
+Movement StrToMovement ( const std::string move );
 
 // ==========================================================================================
 // 着法表示

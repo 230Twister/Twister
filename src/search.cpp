@@ -5,6 +5,7 @@
 #include "moves_sort.h"
 #include "value.h"
 #include <ctime>
+#include <fstream>
 
 Movement BestMove;                                      // 当前局面的最好走法
 int step = 0;                                           // 搜索步数
@@ -12,7 +13,7 @@ time_t StartTime;                                       // 开始搜索的时间
 bool isTimeLimit = 0;                                   // 时间是否超限
 int NowMaxDepth;
 const UINT16 MAX_DEPTH = 24;                            // 最大搜索深度
-const time_t MAX_TIME = 40000;                          // 最大消耗时间(ms)
+const time_t MAX_TIME = 20000;                          // 最大消耗时间(ms)
 extern const int MAX_VALUE = 10000;                     // 最大价值，胜利局面绝对分数
 extern const int WIN_VALUE = MAX_VALUE - MAX_DEPTH;     // 胜利局面的相对分数
 
@@ -195,7 +196,6 @@ void ComputerThink(Situation& situation){
     StartTime = clock();
 
     for(max_depth = 1; max_depth <= MAX_DEPTH; max_depth++){
-        
         NowMaxDepth = max_depth;
         value = AlphaBetaSearch(situation, max_depth, -NONE_VALUE, NONE_VALUE);
         if(isTimeLimit){
@@ -209,12 +209,27 @@ void ComputerThink(Situation& situation){
         if(value > WIN_VALUE) break;
     }
 
-    MakeAMove(situation, best_move_save);
-    char fen[100];
-    SituationToFen(situation, fen);
-    std::cout << "best value: " << debug_value << '\n';
-    std::cout << "total node: " << debug_node << '\n';
-    std::cout << "beta  node: " << debug_beta << '\n';
-    std::cout << "hash   hit: " << debug_hash << '\n';
-    std::cout << fen << '\n';
+    // 必败 认输
+    if(best_move_save.from == best_move_save.to){
+        printf ( "bestmove a0a1 resign\n" ); // 认输
+		fflush (stdout);
+    }
+    // 输出最优着法
+    else{
+        printf ("bestmove %s\n", MovementToStr(best_move_save).c_str());
+		fflush (stdout);
+    }
+
+    // 输出日志文件
+    std::ofstream f;
+    f.open("debug.log", std::ios::app | std::ios::out);
+    f << "====================================\n";
+    f << "best value: " << debug_value << '\n';
+    f << "total node: " << debug_node << '\n';
+    f << "beta node: " << debug_beta << '\n';
+    f << "hash hit: " << debug_hash << '\n';
+    f << "best move:" << "from:" << (int)best_move_save.from << " to:" << (int)best_move_save.to  << '\n';
+    f << "====================================\n";
+    f.close();
+    return ;
 }

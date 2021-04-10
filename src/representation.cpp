@@ -28,6 +28,10 @@ void InitSituation(Situation & situation){
     situation.current_player = RED;
     situation.value_black = 0;
     situation.value_red = 0;
+    // 清空着法栈
+    while(!situation.moves_stack.empty()){
+        situation.moves_stack.pop();
+    }
 }
 
 /* 
@@ -150,11 +154,13 @@ int PieceOfFen(const char fen_char){
  * 入参：
  * - Situation & situation :当前局面
  * - const char* fen : 传入的FEN串
+ * - const int num_of_movements 后续着法数
+ * - const char *movements 后续着法字符串
  * 返回值：
  * - void
  * 最后更新时间: 21.03.25
  */
-void FenToSituation(Situation & situation, const char* fen){
+void FenToSituation(Situation & situation, const char* fen, const int num_of_movements, const char *movements){
     const char *p = fen;
     int piece_id_array[14] = {16, 17, 19, 21, 23, 25, 27, 32, 33, 35, 37, 39, 41, 43};
     int col = GetCol(BOARD_FIRST_POSITION), row = GetRow(BOARD_FIRST_POSITION), piece_id_index, piece_id;
@@ -177,10 +183,34 @@ void FenToSituation(Situation & situation, const char* fen){
         }
         p ++;
     }
+
     // 2. 写入当前玩家
     p ++;
-    if(*p == 'r') situation.current_player = RED;
+    if(*p == 'w') situation.current_player = RED;
     else situation.current_player = BLACK;
+
+    // 3. 将后续着法转入局面
+    std::ofstream f;
+    f.open("debug.log", std::ios::app | std::ios::out);
+    f << "后续着法:\n";
+    int j = 0;
+    for ( int n = 0; n < num_of_movements; n ++ ) {
+    	std::string s = "";
+    	for (int k = j; k < j + 4; k ++ ) {
+    		s += movements[k];
+    	}
+    	Movement move = StrToMovement(s);
+        f << "From:" << (int)move.from << " To:" << (int)move.to << std::endl;
+        MakeAMove(situation, move);
+    	j += 5;
+    }
+    f.close();
+
+    // 4. 清空栈中的后续着法
+    while(!situation.moves_stack.empty()){
+        situation.moves_stack.pop();
+    }
+
 }
 
 /* 
@@ -229,6 +259,56 @@ void SituationToFen(Situation & situation, char* fen){
     *fent = (situation.current_player == RED ? 'w' : 'b');
     fent ++;
     *fent = '\0';
+}
+
+/* 
+ * 函数：着法与字符串的互转
+ * 描述：着法与字符串的互转
+ * 入参：
+ * - string 或 movement
+ * 返回值：
+ * - string 或 movement
+ * 最后更新时间: 21.04.09
+ */
+const int P1[] = { 0, 0, 0, +6, +4, +2, 0, -2, -4, -6, -8, -10, -12 };
+std::string IntToStr (const int pos){
+	int row = GetRow (pos);
+	int col = GetCol(pos);
+	std::string s = "";
+	s += (char) (col - 3 + 'a');
+	s += (char) (row + P1[row] + '0');
+	return s;
+}
+const int P2[] = {+12, +10, +8, +6, +4, +2, 0, -2, -4, -6};
+int StrToInt (const std::string move ) {
+	int col = (int) (move[0] - 'a' + 3);
+	int t = (int) (move[1] - '0');
+	int row = t + P2[t];
+	return GetPosition(col, row);
+}
+std::string MovementToStr (const Movement move ) {
+	if (move.from == move.to) {
+		return "   0";
+	}
+	std::string s = "";
+	s += IntToStr (move.from);
+	s += IntToStr (move.to);
+	return s;
+}
+Movement  StrToMovement(const std::string move) {
+	std::string s = "";
+	s += move[0]; 
+    s += move[1];
+	int from = StrToInt (s);
+	s = ""; 
+    s += move[2]; 
+    s += move[3];
+	int to = StrToInt (s);
+    Movement movement;
+    movement.from = from;
+    movement.to = to;
+    movement.capture = 0;
+	return movement;
 }
 
 /* 
@@ -480,6 +560,10 @@ bool BeChecked(const Situation & situation){
  * 最后更新时间: 21.04.05
  */
 bool MakeAMove (Situation & situation, const Movement move){
+
+    int piece_id_from = situation.current_board[move.from];
+    int piece_id_to = situation.current_board[move.to];
+
     // 1. 放入走法栈
     situation.moves_stack.push(move);
     step++;
@@ -488,20 +572,18 @@ bool MakeAMove (Situation & situation, const Movement move){
     // 2.1 当前局面哈希值
     ZobristKey ^= ZobristPlayer;
     ZobristKey ^= ZobristTable[situation.current_board[move.from]][move.from];
-    if(move.capture != 0)
-        ZobristKey ^= ZobristTable[move.capture][move.to];
+    if(piece_id_to != 0)
+        ZobristKey ^= ZobristTable[piece_id_to][move.to];
     ZobristKey ^= ZobristTable[situation.current_board[move.from]][move.to];
 
     // 2.2 当前局面哈希校验值
     ZobristKeyCheck ^= ZobristPlayerCheck;
     ZobristKeyCheck ^= ZobristTableCheck[situation.current_board[move.from]][move.from];
-    if(move.capture != 0)
-        ZobristKeyCheck ^= ZobristTableCheck[move.capture][move.to];
+    if(piece_id_to != 0)
+        ZobristKeyCheck ^= ZobristTableCheck[piece_id_to][move.to];
     ZobristKeyCheck ^= ZobristTableCheck[situation.current_board[move.from]][move.to];
 
     // 3. 移动棋子
-    int piece_id_from = situation.current_board[move.from];
-    int piece_id_to = situation.current_board[move.to];
     // 3.1 如果是吃子着法
     if(piece_id_to != 0){
         // 3.1.1 只更新起始格的位行位列
@@ -529,9 +611,8 @@ bool MakeAMove (Situation & situation, const Movement move){
         situation.current_pieces[piece_id_from] = move.to;
     
     }
-    // 4. 如果...返回False
 
-    // 5. 交换走棋方
+    // 4. 交换走棋方
     if(BeChecked(situation)){
         ChangePlayer(situation.current_player);
         return true;
