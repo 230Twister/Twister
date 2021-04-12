@@ -56,6 +56,7 @@ int AlphaBetaSearch(Situation& situation, int depth, int alpha, int beta){
     
     best = -NONE_VALUE;
     bool isAlpha = true;    // 当前结点是否为Alpha结点
+    bool PVflag = false;
 
     // 到达搜索深度
     if(depth <= 0){
@@ -76,7 +77,13 @@ int AlphaBetaSearch(Situation& situation, int depth, int alpha, int beta){
             value = -MAX_VALUE + step;
         }
         else{
-            value = -AlphaBetaSearch(situation, depth - 1, -beta, -alpha);
+            if(PVflag){
+                value = -AlphaBetaSearch(situation, depth - 1, -alpha - 1, -alpha);
+                if(value > alpha && value < beta)
+                    value = -AlphaBetaSearch(situation, depth - 1, -beta, -alpha);
+            }
+            else
+                value = -AlphaBetaSearch(situation, depth - 1, -beta, -alpha);
         }
         // 回溯
         UnMakeAMove(situation);
@@ -96,6 +103,7 @@ int AlphaBetaSearch(Situation& situation, int depth, int alpha, int beta){
             good_move = move;       // 更新最佳着法
             if(value > alpha){
                 isAlpha = false;
+                PVflag = true;
                 alpha = value;
                 // 若为第一层，传出着法
                 if(depth == NowMaxDepth)
