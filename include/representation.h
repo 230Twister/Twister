@@ -102,8 +102,7 @@ struct Situation{
 	UINT8 current_pieces[48];			// 当前棋子所在的位置 16-31表示红方棋子 32-47表示黑方棋子
 	UINT16 bit_row[16];					// 位行 用于车和炮着法的生成
 	UINT16 bit_col[16];					// 位列 用于车和炮着法的生成
-	int value_red;						// 局面评估值（红）
-	int value_black;					// 局面评估值（黑）
+	int value;						    // 局面评估值
 	char current_fen[120];				// 当前局面的FEN格式串
 	std::stack<Movement> moves_stack;	// 着法栈
 };

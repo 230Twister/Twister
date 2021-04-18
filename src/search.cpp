@@ -141,8 +141,8 @@ int QuiescentSearch(Situation& situation, int alpha, int beta){
     }
     
     // 调用评估函数进行评估
-    Eval(situation);
-    value = situation.value_black - situation.value_red;
+    PreEvaluate(situation);
+    value = situation.value;
     if(!situation.current_player) value = -value;
     if(value > beta)
         return beta;

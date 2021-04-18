@@ -26,8 +26,7 @@ void InitSituation(Situation & situation){
     memset(situation.bit_row, 0, sizeof(UINT16) * 16);
     // 初始化局面价值 玩家
     situation.current_player = RED;
-    situation.value_black = 0;
-    situation.value_red = 0;
+    situation.value = 0;
     // 清空着法栈
     while(!situation.moves_stack.empty()){
         situation.moves_stack.pop();
