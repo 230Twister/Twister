@@ -41,5 +41,8 @@ void DeleteHashTable();
 void ResetZobristKey();
 int ReadHashTable(int depth, int alpha, int beta, Movement& move);
 void SaveHashTable(int depth, int value, UINT8 node_type, Movement move);
+void SignSituation();
+void UnsignSituation();
+bool CheckRepeat();
 
 #endif

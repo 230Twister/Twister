@@ -13,6 +13,8 @@ const UINT8 hashALPHA = 1;                  // ALPHA结点类型
 const UINT8 hashBETA = 2;                   // BETA结点类型
 const UINT32 HASHTABLE_SIZE = 1 << 24;      // 置换表大小 16MB
 const UINT32 HASHTABLE_MASK = (1 << 24) - 1;
+const UINT32 REPEATTABLE_SIZE = 500;        // 微型置换表大小
+const UINT32 REPEATTABLE_MASK = 499;
 
 const int NONE_VALUE = 1 << 20;             // 空价值
 const Movement NONE_MOVE = {0, 0, 0};       // 空着
@@ -24,6 +26,8 @@ UINT64 ZobristPlayer;                       // 走棋方的键值
 UINT64 ZobristPlayerCheck;                  // 走棋方校验值
 UINT64 ZobristTable[48][256];               // 棋子在棋盘各个位置的键值
 UINT64 ZobristTableCheck[48][256];          // 棋子在棋盘各个位置的校验值
+
+HashNode RepeatTable[REPEATTABLE_SIZE];     // 检测重复局面的小置换表
 
 extern int step;
 extern const int MAX_VALUE;
@@ -69,6 +73,7 @@ void InitHashTable(){
  */
 void ResetHashTable(){
     memset(HashTable, 0, HASHTABLE_SIZE * sizeof(HashNode));
+    memset(RepeatTable, 0, sizeof(RepeatTable));
 }
 
 /* 
@@ -181,4 +186,23 @@ void SaveHashTable(int depth, int value, UINT8 node_type, Movement move){
     else{
         HashTable[index] = new_hash_node;
     }
+}
+
+void SignSituation(){
+    int index = ZobristKey & REPEATTABLE_MASK;
+    HashNode new_hash_node = HashNode{ZobristKeyCheck, 0, 0, 0, NONE_MOVE};
+
+    RepeatTable[index] = new_hash_node;
+}
+
+void UnsignSituation(){
+    int index = ZobristKey & REPEATTABLE_MASK;
+    RepeatTable[index] = HashNode{0, 0, 0, 0, NONE_MOVE};
+}
+
+bool CheckRepeat(){
+    int index = ZobristKey & REPEATTABLE_MASK;
+    HashNode hash_node = RepeatTable[index];
+
+    return hash_node.check == ZobristKeyCheck;
 }
