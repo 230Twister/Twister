@@ -29,5 +29,7 @@ bool WhiteHalf(int i);
 bool BlackHalf(int i);
 int SideValue(int sd, int vl);
 void PreEvaluate(Situation &s);
+void RookMobility(Situation &s);
+void Evaluate(Situation &s);
 
 #endif
