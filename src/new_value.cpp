@@ -267,6 +267,12 @@ const int TOTAL_ATTACK_VALUE = 8;
 const int ADVISOR_BISHOP_ATTACKLESS_VALUE = 80;
 const int TOTAL_ADVISOR_LEAKAGE = 80;
 
+// 偷懒评价的边界
+const int EVAL_MARGIN1 = 160;
+const int EVAL_MARGIN2 = 80;
+const int EVAL_MARGIN3 = 40;
+const int EVAL_MARGIN4 = 20;
+
 int vlWhitePieces[7][256];
 int vlBlackPieces[7][256];
 int vlBlackAdvisorLeakage, vlWhiteAdvisorLeakage;     //缺士
@@ -283,8 +289,9 @@ bool BlackHalf(int i)
     return (i & 128) == 0;
 }
 
-int SideValue(int sd, int vl) {
-  return (sd == 0 ? vl : -vl);
+int SideValue(int sd, int vl)
+{
+    return (sd == 0 ? vl : -vl);
 }
 
 void PreEvaluate(Situation &s)
@@ -306,7 +313,7 @@ void PreEvaluate(Situation &s)
         SideTag = 16 + (r << 4);
         for (int i = 0; i < 16; i++)
         {
-            if (i == 7 || i == 8)
+            if (i == 7 || i == 8) //车
             {
                 if (s.current_pieces[SideTag + i])
                 {
@@ -317,7 +324,7 @@ void PreEvaluate(Situation &s)
                         nRook_b++;
                 }
             }
-            else if (i == 5 || i == 6 || i == 9 || i == 10)
+            else if (i == 5 || i == 6 || i == 9 || i == 10) //马炮
             {
                 if (s.current_pieces[SideTag + i])
                 {
@@ -446,5 +453,87 @@ void PreEvaluate(Situation &s)
             bValue += vlBlackPieces[PieceNumToType[i]][pos];
     }
 
-    s.value = SideValue(s.current_player, wValue - bValue) + vlAdvanced;
+    s.value += SideValue(s.current_player, wValue - bValue) + vlAdvanced;
+}
+
+void RookMobility(Situation &s)
+{
+    int SideTag;
+    int vlRookMobility[2] = {0};
+    for (int r = 0; r < 2; r++)
+    {
+        SideTag = 16 + (r << 4);
+        for (int i = 7; i <= 8; i++)
+        {
+            if (s.current_pieces[SideTag + i] != 0)
+            {
+                int piece_from = s.current_pieces[SideTag + i];
+                int col = GetCol(piece_from), row = GetRow(piece_from);
+
+                int get_col_1 = ROOK_CANNON_CAN_GET_ROW[col - 3][s.bit_row[row]].no_capture[0]; //右方向
+                int get_col_2 = ROOK_CANNON_CAN_GET_ROW[col - 3][s.bit_row[row]].no_capture[1]; //左方向
+                vlRookMobility[r] += abs(get_col_1 - get_col_2);
+
+                int get_row_1 = ROOK_CANNON_CAN_GET_COL[row - 3][s.bit_col[col]].no_capture[0]; //下方向
+                int get_row_2 = ROOK_CANNON_CAN_GET_COL[row - 3][s.bit_col[col]].no_capture[1]; //上方向
+                vlRookMobility[r] += abs(get_row_1 - get_row_2);
+            }
+        }
+    }
+
+    s.value += SideValue(s.current_player, vlRookMobility[0] - vlRookMobility[1]);
+}
+
+// 局面评价过程
+void Evaluate(Situation &s)
+{
+    s.value = 0;
+    // 偷懒的局面评价函数分以下几个层次：
+
+    // 1. 四级偷懒评价(彻底偷懒评价)，只包括子力平衡；
+    PreEvaluate(s);
+    // if (s.value + EVAL_MARGIN1 <= vlAlpha)
+    // {
+    //     s.value += EVAL_MARGIN1;
+    // }
+    // else if (s.value - EVAL_MARGIN1 >= vlBeta)
+    // {
+    //     s.value -= EVAL_MARGIN1;
+    // }
+
+    // // 2. 三级偷懒评价，包括特殊棋型；
+    // AdvisorShape(s);
+    // if (s.value + EVAL_MARGIN2 <= vlAlpha)
+    // {
+    //     s.value += EVAL_MARGIN2;
+    // }
+    // else if (s.value - EVAL_MARGIN2 >= vlBeta)
+    // {
+    //     s.value -= EVAL_MARGIN2;
+    // }
+
+    // // 3. 二级偷懒评价，包括牵制；
+    // StringHold(s);
+    // if (s.value + EVAL_MARGIN3 <= vlAlpha)
+    // {
+    //     s.value += EVAL_MARGIN3;
+    // }
+    // else if (s.value - EVAL_MARGIN3 >= vlBeta)
+    // {
+    //     s.value -= EVAL_MARGIN3;
+    // }
+
+    // 4. 一级偷懒评价，包括车的灵活性；
+    RookMobility(s);
+    // if (s.value + EVAL_MARGIN4 <= vlAlpha)
+    // {
+    //     s.value += EVAL_MARGIN4;
+    // }
+    // else if (s.value - EVAL_MARGIN4 >= vlBeta)
+    // {
+    //     s.value -= EVAL_MARGIN4;
+    // }
+
+    // 5. 零级偷懒评价(完全评价)，包括马的阻碍。
+    //KnightTrap(s);
 }
