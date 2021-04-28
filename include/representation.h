@@ -5,7 +5,7 @@
  * 最后更新时间: 21.02.24
  */
 #include "define.h"
-#include <stack>
+#include <vector>
 #ifndef REPRESENTATION_H
 #define REPRESENTATION_H
 
@@ -103,8 +103,12 @@ struct Situation{
 	UINT16 bit_row[16];					// 位行 用于车和炮着法的生成
 	UINT16 bit_col[16];					// 位列 用于车和炮着法的生成
 	int value;						    // 局面评估值
+	int red_value;
+	int black_value;
 	char current_fen[120];				// 当前局面的FEN格式串
-	std::stack<Movement> moves_stack;	// 着法栈
+	std::vector<Movement> moves_stack;	// 着法栈
+
+	bool verifyNullMove;				// 执行空着检验
 };
 // 行列 <-> 位置转换
 inline int GetRow(const int position){
@@ -149,6 +153,8 @@ void FenToSituation(Situation & situation, const char* fen, const int num_of_mov
 void SituationToFen(Situation & situation, char* fen);
 bool MakeAMove (Situation & situation, const Movement move);
 void UnMakeAMove (Situation & situation);
+void MakeNullMove(Situation & situation);
+void UnMakeNullMove(Situation & situation);
 std::string MovementToStr (const Movement move);
 Movement StrToMovement ( const std::string move );
 

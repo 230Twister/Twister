@@ -273,8 +273,8 @@ const int EVAL_MARGIN2 = 80;
 const int EVAL_MARGIN3 = 40;
 const int EVAL_MARGIN4 = 20;
 
-int vlWhitePieces[7][256];
-int vlBlackPieces[7][256];
+int WhitePiecesValue[7][256];
+int BlackPiecesValue[7][256];
 int vlBlackAdvisorLeakage, vlWhiteAdvisorLeakage;     //缺士
 int vlHollowThreat[16], vlCentralThreat[16];          //空头炮、中炮
 int vlWhiteBottomThreat[16], vlBlackBottomThreat[16]; //沉底炮
@@ -294,137 +294,137 @@ int SideValue(int sd, int vl)
     return (sd == 0 ? vl : -vl);
 }
 
-void PreEvaluate(Situation &s)
+void PreEvaluate(Situation &situation)
 {
-    int vlAdvanced;                           //预估值
-    int SideTag;                              //用于标志行走方
-    int bValue = 0, wValue = 0;               //记录价值
-    int nWhiteAttacks = 0, nBlackAttacks = 0; //双方威胁值
-    int nWhiteSimpleValue, nBlackSimpleValue; //双方轻子价值
-    int nMidgameValue = 0;
-    int vlPawnPiecesAttacking[256], vlPawnPiecesAttackless[256];
+    int advanced_value;                         //预估值
+    int side_tag;                               //用于标志行走方
+    int black_value = 0, red_value = 0;         //记录价值
+    int red_attacks = 0, black_attacks = 0;     //双方威胁值
+    int red_simple_value, black_simple_value;   //双方轻子价值
+    int midgame_value = 0;
+    int attacking_pawn_value[256], attackless_pawn_value[256];
 
     //首先判断局势处于开中局还是残局阶段，方法是计算各种棋子的数量，按照车=6、马炮=3、其它=1相加。
     //统计三类棋子数量
-    int nRook = 0, nHorseCannon = 0, nOthers = 0;
-    int nRook_w = 0, nRook_b = 0, nHorseCannon_w = 0, nHorseCannon_b = 0;
+    int rook_nums = 0, horse_cannon_nums = 0, others_nums = 0;
+    int red_rook_nums = 0, black_rook_nums = 0, red_horse_cannon_nums = 0, black_horsecannon_nums = 0;
     for (int r = 0; r < 2; r++)
     {
-        SideTag = 16 + (r << 4);
+        side_tag = 16 + (r << 4);
         for (int i = 0; i < 16; i++)
         {
             if (i == 7 || i == 8) //车
             {
-                if (s.current_pieces[SideTag + i])
+                if (situation.current_pieces[side_tag + i])
                 {
-                    nRook++;
+                    rook_nums++;
                     if (r == 0)
-                        nRook_w++;
+                        red_rook_nums++;
                     else
-                        nRook_b++;
+                        black_rook_nums++;
                 }
             }
             else if (i == 5 || i == 6 || i == 9 || i == 10) //马炮
             {
-                if (s.current_pieces[SideTag + i])
+                if (situation.current_pieces[side_tag + i])
                 {
-                    nHorseCannon++;
+                    horse_cannon_nums++;
                     if (r == 0)
-                        nHorseCannon_w++;
+                        red_horse_cannon_nums++;
                     else
-                        nHorseCannon_b++;
+                        black_horsecannon_nums++;
                 }
             }
             else
             {
-                if (s.current_pieces[SideTag + i])
-                    nOthers++;
+                if (situation.current_pieces[side_tag + i])
+                    others_nums++;
             }
         }
     }
-    nMidgameValue += nRook * ROOK_MIDGAME_VALUE;
-    nMidgameValue += nHorseCannon * HORSE_CANNON_MIDGAME_VALUE;
-    nMidgameValue += nOthers * OTHER_MIDGAME_VALUE;
+    midgame_value += rook_nums * ROOK_MIDGAME_VALUE;
+    midgame_value += horse_cannon_nums * HORSE_CANNON_MIDGAME_VALUE;
+    midgame_value += others_nums * OTHER_MIDGAME_VALUE;
     //使用二次函数，子力很少时才认为接近残局
-    nMidgameValue = (2 * TOTAL_MIDGAME_VALUE - nMidgameValue) * nMidgameValue / TOTAL_MIDGAME_VALUE;
-    vlAdvanced = (TOTAL_ADVANCED_VALUE * nMidgameValue + TOTAL_ADVANCED_VALUE / 2) / TOTAL_MIDGAME_VALUE;
+    midgame_value = (2 * TOTAL_MIDGAME_VALUE - midgame_value) * midgame_value / TOTAL_MIDGAME_VALUE;
+    advanced_value = (TOTAL_ADVANCED_VALUE * midgame_value + TOTAL_ADVANCED_VALUE / 2) / TOTAL_MIDGAME_VALUE;
     //计算将车马炮的价值
     for (int i = 0; i < 256; i++)
     {
         if (ON_BOARD[i])
         {
-            vlWhitePieces[0][i] = vlBlackPieces[0][254 - i] = ((cvlKingPawnMidgameAttacking[i] * nMidgameValue + cvlKingPawnEndgameAttacking[i] * (TOTAL_MIDGAME_VALUE - nMidgameValue)) / TOTAL_MIDGAME_VALUE);
-            vlWhitePieces[3][i] = vlBlackPieces[3][254 - i] = ((cvlHorseMidgame[i] * nMidgameValue + cvlHorseEndgame[i] * (TOTAL_MIDGAME_VALUE - nMidgameValue)) / TOTAL_MIDGAME_VALUE);
-            vlWhitePieces[4][i] = vlBlackPieces[4][254 - i] = ((cvlRookMidgame[i] * nMidgameValue + cvlRookEndgame[i] * (TOTAL_MIDGAME_VALUE - nMidgameValue)) / TOTAL_MIDGAME_VALUE);
-            vlWhitePieces[5][i] = vlBlackPieces[5][254 - i] = ((cvlCannonMidgame[i] * nMidgameValue + cvlCannonEndgame[i] * (TOTAL_MIDGAME_VALUE - nMidgameValue)) / TOTAL_MIDGAME_VALUE);
-            vlPawnPiecesAttacking[i] = vlWhitePieces[0][i];
-            vlPawnPiecesAttackless[i] = ((cvlKingPawnMidgameAttackless[i] * nMidgameValue + cvlKingPawnEndgameAttackless[i] * (TOTAL_MIDGAME_VALUE - nMidgameValue)) / TOTAL_MIDGAME_VALUE);
+            WhitePiecesValue[0][i] = BlackPiecesValue[0][254 - i] = ((cvlKingPawnMidgameAttacking[i] * midgame_value + cvlKingPawnEndgameAttacking[i] * (TOTAL_MIDGAME_VALUE - midgame_value)) / TOTAL_MIDGAME_VALUE);
+            WhitePiecesValue[3][i] = BlackPiecesValue[3][254 - i] = ((cvlHorseMidgame[i] * midgame_value + cvlHorseEndgame[i] * (TOTAL_MIDGAME_VALUE - midgame_value)) / TOTAL_MIDGAME_VALUE);
+            WhitePiecesValue[4][i] = BlackPiecesValue[4][254 - i] = ((cvlRookMidgame[i] * midgame_value + cvlRookEndgame[i] * (TOTAL_MIDGAME_VALUE - midgame_value)) / TOTAL_MIDGAME_VALUE);
+            WhitePiecesValue[5][i] = BlackPiecesValue[5][254 - i] = ((cvlCannonMidgame[i] * midgame_value + cvlCannonEndgame[i] * (TOTAL_MIDGAME_VALUE - midgame_value)) / TOTAL_MIDGAME_VALUE);
+            attacking_pawn_value[i] = WhitePiecesValue[0][i];
+            attackless_pawn_value[i] = ((cvlKingPawnMidgameAttackless[i] * midgame_value + cvlKingPawnEndgameAttackless[i] * (TOTAL_MIDGAME_VALUE - midgame_value)) / TOTAL_MIDGAME_VALUE);
         }
     }
 
     //计算空头炮和中炮威胁值
     for (int i = 0; i < 16; i++)
     {
-        vlHollowThreat[i] = cvlHollowThreat[i] * (nMidgameValue + TOTAL_MIDGAME_VALUE) / (TOTAL_MIDGAME_VALUE * 2);
+        vlHollowThreat[i] = cvlHollowThreat[i] * (midgame_value + TOTAL_MIDGAME_VALUE) / (TOTAL_MIDGAME_VALUE * 2);
         vlCentralThreat[i] = cvlCentralThreat[i];
     }
 
     //然后判断各方是否处于进攻状态，方法是计算各种过河棋子的数量，按照车马2炮兵1相加。
     for (int i = 16 + 5; i <= 16 + 8; i++)
     {
-        if (s.current_pieces[i] && BlackHalf(s.current_pieces[i]))
-            nWhiteAttacks += 2;
+        if (situation.current_pieces[i] && BlackHalf(situation.current_pieces[i]))
+            red_attacks += 2;
     }
     for (int i = 16 + 9; i <= 16 + 15; i++)
     {
-        if (s.current_pieces[i] && BlackHalf(s.current_pieces[i]))
-            nWhiteAttacks++;
+        if (situation.current_pieces[i] && BlackHalf(situation.current_pieces[i]))
+            red_attacks++;
     }
     for (int i = 32 + 5; i <= 32 + 8; i++)
     {
-        if (s.current_pieces[i] && WhiteHalf(s.current_pieces[i]))
-            nBlackAttacks += 2;
+        if (situation.current_pieces[i] && WhiteHalf(situation.current_pieces[i]))
+            black_attacks += 2;
     }
     for (int i = 32 + 9; i <= 32 + 15; i++)
     {
-        if (s.current_pieces[i] && WhiteHalf(s.current_pieces[i]))
-            nBlackAttacks++;
+        if (situation.current_pieces[i] && WhiteHalf(situation.current_pieces[i]))
+            black_attacks++;
     }
 
     //如果本方轻子数比对方多，那么每多一个轻子(车算2个轻子)威胁值加2。威胁值最多不超过8。
-    nWhiteSimpleValue = nRook_w * 2 + nHorseCannon_w;
-    nBlackSimpleValue = nRook_b * 2 + nHorseCannon_b;
-    if (nWhiteSimpleValue > nBlackSimpleValue)
+    red_simple_value = red_rook_nums * 2 + red_horse_cannon_nums;
+    black_simple_value = black_rook_nums * 2 + black_horsecannon_nums;
+    if (red_simple_value > black_simple_value)
     {
-        nWhiteAttacks += (nWhiteSimpleValue - nBlackSimpleValue) * 2;
+        red_attacks += (red_simple_value - black_simple_value) * 2;
     }
     else
     {
-        nBlackAttacks += (nBlackSimpleValue - nWhiteSimpleValue) * 2;
+        black_attacks += (black_simple_value - red_simple_value) * 2;
     }
-    nWhiteAttacks = std::min(nWhiteAttacks, TOTAL_ATTACK_VALUE);
-    nBlackAttacks = std::min(nBlackAttacks, TOTAL_ATTACK_VALUE);
+    red_attacks = std::min(red_attacks, TOTAL_ATTACK_VALUE);
+    black_attacks = std::min(black_attacks, TOTAL_ATTACK_VALUE);
 
     //计算士的缺值
-    vlBlackAdvisorLeakage = TOTAL_ADVISOR_LEAKAGE * nWhiteAttacks / TOTAL_ATTACK_VALUE;
-    vlWhiteAdvisorLeakage = TOTAL_ADVISOR_LEAKAGE * nBlackAttacks / TOTAL_ATTACK_VALUE;
+    vlBlackAdvisorLeakage = TOTAL_ADVISOR_LEAKAGE * red_attacks / TOTAL_ATTACK_VALUE;
+    vlWhiteAdvisorLeakage = TOTAL_ADVISOR_LEAKAGE * black_attacks / TOTAL_ATTACK_VALUE;
 
     //计算士象兵价值
     for (int i = 0; i < 256; i++)
     {
         if (ON_BOARD[i])
         {
-            vlWhitePieces[1][i] = vlWhitePieces[2][i] = ((cvlAdvisorBishopThreatened[i] * nBlackAttacks +
-                                                          cvlAdvisorBishopThreatless[i] * (TOTAL_ATTACK_VALUE - nBlackAttacks)) /
+            WhitePiecesValue[1][i] = WhitePiecesValue[2][i] = ((cvlAdvisorBishopThreatened[i] * black_attacks +
+                                                          cvlAdvisorBishopThreatless[i] * (TOTAL_ATTACK_VALUE - black_attacks)) /
                                                          TOTAL_ATTACK_VALUE);
-            vlBlackPieces[1][i] = vlBlackPieces[2][i] = ((cvlAdvisorBishopThreatened[254 - i] * nWhiteAttacks +
-                                                          cvlAdvisorBishopThreatless[254 - i] * (TOTAL_ATTACK_VALUE - nWhiteAttacks)) /
+            BlackPiecesValue[1][i] = BlackPiecesValue[2][i] = ((cvlAdvisorBishopThreatened[254 - i] * red_attacks +
+                                                          cvlAdvisorBishopThreatless[254 - i] * (TOTAL_ATTACK_VALUE - red_attacks)) /
                                                          TOTAL_ATTACK_VALUE);
-            vlWhitePieces[6][i] = ((vlPawnPiecesAttacking[i] * nWhiteAttacks +
-                                    vlPawnPiecesAttackless[i] * (TOTAL_ATTACK_VALUE - nWhiteAttacks)) /
+            WhitePiecesValue[6][i] = ((attacking_pawn_value[i] * red_attacks +
+                                    attackless_pawn_value[i] * (TOTAL_ATTACK_VALUE - red_attacks)) /
                                    TOTAL_ATTACK_VALUE);
-            vlBlackPieces[6][i] = ((vlPawnPiecesAttacking[254 - i] * nBlackAttacks +
-                                    vlPawnPiecesAttackless[254 - i] * (TOTAL_ATTACK_VALUE - nBlackAttacks)) /
+            BlackPiecesValue[6][i] = ((attacking_pawn_value[254 - i] * black_attacks +
+                                    attackless_pawn_value[254 - i] * (TOTAL_ATTACK_VALUE - black_attacks)) /
                                    TOTAL_ATTACK_VALUE);
         }
     }
@@ -432,28 +432,28 @@ void PreEvaluate(Situation &s)
     //计算沉底炮威胁值
     for (int i = 0; i < 16; i++)
     {
-        vlWhiteBottomThreat[i] = cvlBottomThreat[i] * nBlackAttacks / TOTAL_ATTACK_VALUE;
-        vlBlackBottomThreat[i] = cvlBottomThreat[i] * nWhiteAttacks / TOTAL_ATTACK_VALUE;
+        vlWhiteBottomThreat[i] = cvlBottomThreat[i] * black_attacks / TOTAL_ATTACK_VALUE;
+        vlBlackBottomThreat[i] = cvlBottomThreat[i] * red_attacks / TOTAL_ATTACK_VALUE;
     }
 
     // 调整不受威胁方少掉的仕(士)相(象)分值
-    wValue = ADVISOR_BISHOP_ATTACKLESS_VALUE * (TOTAL_ATTACK_VALUE - nBlackAttacks) / TOTAL_ATTACK_VALUE;
-    bValue = ADVISOR_BISHOP_ATTACKLESS_VALUE * (TOTAL_ATTACK_VALUE - nWhiteAttacks) / TOTAL_ATTACK_VALUE;
+    red_value = ADVISOR_BISHOP_ATTACKLESS_VALUE * (TOTAL_ATTACK_VALUE - black_attacks) / TOTAL_ATTACK_VALUE;
+    black_value = ADVISOR_BISHOP_ATTACKLESS_VALUE * (TOTAL_ATTACK_VALUE - red_attacks) / TOTAL_ATTACK_VALUE;
     // 最后重新计算子力位置分
     for (int i = 16; i < 32; i++)
     {
-        int pos = s.current_pieces[i];
+        int pos = situation.current_pieces[i];
         if (pos)
-            wValue += vlWhitePieces[PieceNumToType[i]][pos];
+            red_value += WhitePiecesValue[PieceNumToType[i]][pos];
     }
     for (int i = 32; i < 48; i++)
     {
-        int pos = s.current_pieces[i];
+        int pos = situation.current_pieces[i];
         if (pos)
-            bValue += vlBlackPieces[PieceNumToType[i]][pos];
+            black_value += BlackPiecesValue[PieceNumToType[i]][pos];
     }
 
-    s.value += SideValue(s.current_player, wValue - bValue) + vlAdvanced;
+    situation.value += SideValue(situation.current_player, red_value - black_value) + advanced_value;
 }
 
 void RookMobility(Situation &s)

@@ -28,9 +28,7 @@ void InitSituation(Situation & situation){
     situation.current_player = RED;
     situation.value = 0;
     // 清空着法栈
-    while(!situation.moves_stack.empty()){
-        situation.moves_stack.pop();
-    }
+    situation.moves_stack.clear();
 }
 
 /* 
@@ -206,9 +204,7 @@ void FenToSituation(Situation & situation, const char* fen, const int num_of_mov
     // f.close();
 
     // 4. 清空栈中的后续着法
-    while(!situation.moves_stack.empty()){
-        situation.moves_stack.pop();
-    }
+    situation.moves_stack.clear();
 
 }
 
@@ -558,13 +554,14 @@ bool BeChecked(const Situation & situation){
  * - bool 
  * 最后更新时间: 21.04.05
  */
-bool MakeAMove (Situation & situation, const Movement move){
+bool MakeAMove(Situation & situation, const Movement move){
 
     int piece_id_from = situation.current_board[move.from];
     int piece_id_to = situation.current_board[move.to];
 
     // 1. 放入走法栈
-    situation.moves_stack.push(move);
+    situation.moves_stack.push_back(move);
+    SignSituation(step);
     step++;
 
     // 2. 置换表更新
@@ -631,9 +628,10 @@ bool MakeAMove (Situation & situation, const Movement move){
  */
 void UnMakeAMove (Situation & situation){
     // 1. 从走法栈中弹出，进行回滚
-    Movement move = situation.moves_stack.top();
-    situation.moves_stack.pop();
+    Movement move = situation.moves_stack.back();
+    situation.moves_stack.pop_back();
     step--;
+    UnsignSituation(step);
 
     // 2. 置换表更新
     // 2.1 当前局面哈希值
@@ -684,6 +682,44 @@ void UnMakeAMove (Situation & situation){
 }
 
 /* 
+ * 函数名：MakeNullMove
+ * 描述：执行空着
+ * 入参：
+ * - Situation & situation :当前局面
+ * 返回值：
+ * - void 
+ * 最后更新时间: 21.04.28
+ */
+void MakeNullMove(Situation & situation){
+    // 1. 放入走法栈
+    situation.moves_stack.push_back(Movement{0, 0, 0, 0});
+    SignSituation(step);
+    step++;
+
+    // 2. 交换走棋方
+    ChangePlayer(situation.current_player);
+}
+
+/* 
+ * 函数名：UnMakeNullMove
+ * 描述：撤销空着
+ * 入参：
+ * - Situation & situation :当前局面
+ * 返回值：
+ * - void
+ * 最后更新时间: 21.04.28
+ */
+void UnMakeNullMove(Situation & situation){
+    // 1. 从走法栈中弹出，进行回滚
+    situation.moves_stack.pop_back();
+    step--;
+    UnsignSituation(step);
+
+    // 2. 交换走棋方
+    ChangePlayer(situation.current_player);
+}
+
+/* 
  * 函数名：KingFacing
  * 描述：检测是否将对将局面
  * 入参：
@@ -716,7 +752,7 @@ bool KingFacing(const Situation & situation){
 
 /* 
  * 函数名：MovementsLegal
- * 描述：检测是否将对将局面
+ * 描述：判断走法是否合法
  * 入参：
  * - const Movement move : 需要判断的走法
  * - const Situation & situation :当前局面
