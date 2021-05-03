@@ -4,6 +4,8 @@
 #include "hash_table.h"
 #include "search.h"
 #include "preset.h"
+#include "value.h"
+
 int main(int argc, char *argv[]) {
 	if (BootLine() == e_CommUcci) {
 		printf("id name twister\n");
@@ -23,6 +25,7 @@ int main(int argc, char *argv[]) {
 			else if (Order == e_CommQuit) { // quit
 				printf("bye\n");
 				fflush(stdout);
+				DeleteHashTable();
 				break;
 			}
 			else if (Order == e_CommIsReady) { // isready
@@ -47,6 +50,7 @@ int main(int argc, char *argv[]) {
 			else if (Order == e_CommPosition) { // position [ startpos | fen ] moves ...
 				ResetZobristKey();
                 InitSituation(situation);
+				PreEvaluate(situation);
                 // 输出日志文件(FEN)
                 std::ofstream f;
                 f.open("debug.log", std::ios::app | std::ios::out);

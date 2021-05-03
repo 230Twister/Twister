@@ -154,8 +154,7 @@ int QuiescentSearch(Situation& situation, int alpha, int beta){
     }
     
     // 调用评估函数进行评估
-    Evaluate(situation);
-    value = situation.value;
+    value = Evaluate(situation);
     if(value > beta)
         return beta;
     if(value > alpha)

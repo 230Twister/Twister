@@ -26,6 +26,9 @@ UINT64 ZobristPlayer;                       // 走棋方的键值
 UINT64 ZobristPlayerCheck;                  // 走棋方校验值
 UINT64 ZobristTable[48][256];               // 棋子在棋盘各个位置的键值
 UINT64 ZobristTableCheck[48][256];          // 棋子在棋盘各个位置的校验值
+struct KeySave{
+    UINT64 ZobristKey, ZobristKeyCheck;
+}Save;
 
 RepeatNode RepeatTable[REPEATTABLE_SIZE];   // 检测重复局面的小置换表
 
@@ -46,18 +49,28 @@ void InitHashTable(){
     memset(HashTable, 0, HASHTABLE_SIZE * sizeof(HashNode));
     std::independent_bits_engine<std::default_random_engine, 64, UINT64> engine;
 
-    ZobristPlayer = engine();       // 生成走棋方键值
-    ZobristPlayerCheck = engine();  // 生成走棋方校验值
-    ZobristKey = engine();
-    ZobristKeyCheck = engine();
-    for(int i = 16; i < 48; i++){
-        for(int j = 0; j < 256; j++){
-            ZobristTable[i][j] = engine();
-        }
-    }
-    for(int i = 16; i < 48; i++){
-        for(int j = 0; j < 256; j++){
-            ZobristTableCheck[i][j] = engine();
+    ZobristPlayer = engine();           // 生成走棋方键值
+    ZobristPlayerCheck = engine();      // 生成走棋方校验值
+    ZobristKey = engine();              // 局面初始键值
+    ZobristKeyCheck = engine();         // 局面初始校验值
+    Save.ZobristKey = ZobristKey;
+    Save.ZobristKeyCheck = ZobristKeyCheck;
+
+    int piece_id_array[15] = {16, 17, 19, 21, 23, 25, 27, 32, 33, 35, 37, 39, 41, 43, 48};
+    for(int i = 0; i < 14; i++){
+        int count = 0;
+        while(piece_id_array[i] + count < piece_id_array[i + 1]){
+            for(int j = 0; j < 256; j++){
+                if(count == 0){
+                    ZobristTable[piece_id_array[i]][j] = engine();
+                    ZobristTableCheck[piece_id_array[i]][j] = engine();
+                }
+                else{
+                    ZobristTable[piece_id_array[i] + count][j] = ZobristTable[piece_id_array[i]][j];
+                    ZobristTableCheck[piece_id_array[i] + count][j] = ZobristTable[piece_id_array[i]][j];
+                }
+            }
+            count++;
         }
     }
 }
@@ -99,9 +112,8 @@ void DeleteHashTable(){
  * 最后更新时间: 21.04.05
  */
 void ResetZobristKey(){
-    std::independent_bits_engine<std::default_random_engine, 64, UINT64> engine;
-    ZobristKey = engine();
-    ZobristKeyCheck = engine();
+    ZobristKey = Save.ZobristKey;
+    ZobristKeyCheck = Save.ZobristKeyCheck;
 }
 
 /* 

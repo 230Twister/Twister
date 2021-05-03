@@ -7,6 +7,7 @@
 #include "representation.h"
 #include "preset.h"
 #include "hash_table.h"
+#include "value.h"
 extern int step;
 /* 
  * 函数名：InitSituation
@@ -26,7 +27,8 @@ void InitSituation(Situation & situation){
     memset(situation.bit_row, 0, sizeof(UINT16) * 16);
     // 初始化局面价值 玩家
     situation.current_player = RED;
-    situation.value = 0;
+    situation.value[RED] = 0;
+    situation.value[BLACK] = 0;
     // 清空着法栈
     situation.moves_stack.clear();
 }
@@ -206,6 +208,11 @@ void FenToSituation(Situation & situation, const char* fen, const int num_of_mov
     // 4. 清空栈中的后续着法
     situation.moves_stack.clear();
 
+    // 5. 若轮到红方走子，局面哈希值异或额外标记
+    if(situation.current_player == RED){
+        ZobristKey ^= ZobristPlayer;
+        ZobristKeyCheck ^= ZobristPlayerCheck;
+    }
 }
 
 /* 
@@ -567,48 +574,53 @@ bool MakeAMove(Situation & situation, const Movement move){
     // 2. 置换表更新
     // 2.1 当前局面哈希值
     ZobristKey ^= ZobristPlayer;
-    ZobristKey ^= ZobristTable[situation.current_board[move.from]][move.from];
+    ZobristKey ^= ZobristTable[piece_id_from][move.from];
     if(piece_id_to != 0)
         ZobristKey ^= ZobristTable[piece_id_to][move.to];
-    ZobristKey ^= ZobristTable[situation.current_board[move.from]][move.to];
+    ZobristKey ^= ZobristTable[piece_id_from][move.to];
 
     // 2.2 当前局面哈希校验值
     ZobristKeyCheck ^= ZobristPlayerCheck;
-    ZobristKeyCheck ^= ZobristTableCheck[situation.current_board[move.from]][move.from];
+    ZobristKeyCheck ^= ZobristTableCheck[piece_id_from][move.from];
     if(piece_id_to != 0)
         ZobristKeyCheck ^= ZobristTableCheck[piece_id_to][move.to];
     ZobristKeyCheck ^= ZobristTableCheck[situation.current_board[move.from]][move.to];
 
-    // 3. 移动棋子
-    // 3.1 如果是吃子着法
+    // 3. 更新子力价值
+    situation.value[situation.current_player] -= PiecesValue[situation.current_player][PieceNumToType[piece_id_from]][move.from];
+    situation.value[situation.current_player] += PiecesValue[situation.current_player][PieceNumToType[piece_id_from]][move.to];
+
+    // 4. 移动棋子
+    // 4.1 如果是吃子着法
     if(piece_id_to != 0){
-        // 3.1.1 只更新起始格的位行位列
+        // 4.1.1 更新子力价值
+        situation.value[ColorOfPiece(piece_id_to)] -= PiecesValue[ColorOfPiece(piece_id_to)][PieceNumToType[piece_id_to]][move.to];
+        // 4.1.2 只更新起始格的位行位列
         int row = GetRow(move.from), col = GetCol(move.from);
         situation.bit_row[row] ^= BIT_ROW_MASK[move.from];
         situation.bit_col[col] ^= BIT_COL_MASK[move.from];
-        // 3.1.2 更新棋子棋盘数组
+        // 4.1.3 更新棋子棋盘数组
         situation.current_board[move.from] = 0;
         situation.current_board[move.to] = piece_id_from;
         situation.current_pieces[piece_id_from] = move.to;
         situation.current_pieces[piece_id_to] = 0;
-
     }else{
-        // 3.1.1 更新起始格的位行位列
+        // 4.1.1 更新起始格的位行位列
         int row = GetRow(move.from), col = GetCol(move.from);
         situation.bit_row[row] ^= BIT_ROW_MASK[move.from];
         situation.bit_col[col] ^= BIT_COL_MASK[move.from];
-        // 3.1.2 更新目标格的位行位列
+        // 4.1.2 更新目标格的位行位列
         row = GetRow(move.to), col = GetCol(move.to);
         situation.bit_row[row] ^= BIT_ROW_MASK[move.to];
         situation.bit_col[col] ^= BIT_COL_MASK[move.to];
-        // 3.1.3 更新棋子棋盘数组
+        // 4.1.3 更新棋子棋盘数组
         situation.current_board[move.from] = 0;
         situation.current_board[move.to] = piece_id_from;
         situation.current_pieces[piece_id_from] = move.to;
     
     }
 
-    // 4. 交换走棋方
+    // 5. 交换走棋方
     if(BeChecked(situation)){
         ChangePlayer(situation.current_player);
         return true;
@@ -627,51 +639,59 @@ bool MakeAMove(Situation & situation, const Movement move){
  * 最后更新时间: 21.04.05
  */
 void UnMakeAMove (Situation & situation){
+    
     // 1. 从走法栈中弹出，进行回滚
     Movement move = situation.moves_stack.back();
     situation.moves_stack.pop_back();
     step--;
     UnsignSituation(step);
 
+    int piece_id_from = situation.current_board[move.to];
+    int piece_id_to = move.capture;
+
     // 2. 置换表更新
     // 2.1 当前局面哈希值
     ZobristKey ^= ZobristPlayer;
-    ZobristKey ^= ZobristTable[situation.current_board[move.to]][move.to];
-    if(move.capture != 0)
-        ZobristKey ^= ZobristTable[move.capture][move.to];
-    ZobristKey ^= ZobristTable[situation.current_board[move.to]][move.from];
+    ZobristKey ^= ZobristTable[piece_id_from][move.to];
+    if(piece_id_to != 0)
+        ZobristKey ^= ZobristTable[piece_id_to][move.to];
+    ZobristKey ^= ZobristTable[piece_id_from][move.from];
 
     // 2.2 当前局面哈希校验值
     ZobristKeyCheck ^= ZobristPlayerCheck;
-    ZobristKeyCheck ^= ZobristTableCheck[situation.current_board[move.to]][move.to];
-    if(move.capture != 0)
-        ZobristKeyCheck ^= ZobristTableCheck[move.capture][move.to];
+    ZobristKeyCheck ^= ZobristTableCheck[piece_id_from][move.to];
+    if(piece_id_to != 0)
+        ZobristKeyCheck ^= ZobristTableCheck[piece_id_to][move.to];
     ZobristKeyCheck ^= ZobristTableCheck[situation.current_board[move.to]][move.from];
 
-    // 3. 返回棋子
-    int piece_id_from = situation.current_board[move.to];
-    int piece_id_to = move.capture;
-    // 3.1 如果是吃子着法
+    // 3. 更新子力价值
+    situation.value[ColorOfPiece(piece_id_from)] -= PiecesValue[ColorOfPiece(piece_id_from)][PieceNumToType[piece_id_from]][move.to];
+    situation.value[ColorOfPiece(piece_id_from)] += PiecesValue[ColorOfPiece(piece_id_from)][PieceNumToType[piece_id_from]][move.from];
+
+    // 4. 返回棋子
+    // 4.1 如果是吃子着法
     if(piece_id_to != 0){
-        // 3.1.1 只更新起始格的位行位列
+        // 4.1.1 更新子力价值
+        situation.value[ColorOfPiece(piece_id_to)] += PiecesValue[ColorOfPiece(piece_id_to)][PieceNumToType[piece_id_to]][move.to];
+        // 4.1.2 只更新起始格的位行位列
         int row = GetRow(move.from), col = GetCol(move.from);
         situation.bit_row[row] ^= BIT_ROW_MASK[move.from];
         situation.bit_col[col] ^= BIT_COL_MASK[move.from];
-        // 3.1.2 更新棋子棋盘数组
+        // 4.1.3 更新棋子棋盘数组
         situation.current_board[move.from] = piece_id_from;
         situation.current_board[move.to] = piece_id_to;
         situation.current_pieces[piece_id_from] = move.from;
         situation.current_pieces[piece_id_to] = move.to;
     }else{
-        // 3.1.1 更新起始格的位行位列
+        // 4.1.1 更新起始格的位行位列
         int row = GetRow(move.from), col = GetCol(move.from);
         situation.bit_row[row] ^= BIT_ROW_MASK[move.from];
         situation.bit_col[col] ^= BIT_COL_MASK[move.from];
-        // 3.1.2 更新目标格的位行位列
+        // 4.1.2 更新目标格的位行位列
         row = GetRow(move.to), col = GetCol(move.to);
         situation.bit_row[row] ^= BIT_ROW_MASK[move.to];
         situation.bit_col[col] ^= BIT_COL_MASK[move.to];
-        // 3.1.3 更新棋子棋盘数组
+        // 4.1.3 更新棋子棋盘数组
         situation.current_board[move.from] = piece_id_from;
         situation.current_board[move.to] = 0;
         situation.current_pieces[piece_id_from] = move.from;

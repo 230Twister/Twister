@@ -9,27 +9,10 @@
 #define VALUE_H
 
 extern const int PieceNumToType[48];
-extern const int cvlKingPawnMidgameAttacking[256];
-extern const int cvlKingPawnMidgameAttackless[256];
-extern const int cvlKingPawnEndgameAttacking[256];
-extern const int cvlKingPawnEndgameAttackless[256];
-extern const int cvlAdvisorBishopThreatless[256];
-extern const int cvlAdvisorBishopThreatened[256];
-extern const int cvlHorseMidgame[256];
-extern const int cvlHorseEndgame[256];
-extern const int cvlRookMidgame[256];
-extern const int cvlRookEndgame[256];
-extern const int cvlCannonMidgame[256];
-extern const int cvlCannonEndgame[256];
-extern const int cvlHollowThreat[16];
-extern const int cvlCentralThreat[16];
-extern const int cvlBottomThreat[16];
+extern int PiecesValue[2][7][256];
 
-bool WhiteHalf(int i);
-bool BlackHalf(int i);
-int SideValue(int sd, int vl);
 void PreEvaluate(Situation &s);
-void RookMobility(Situation &s);
-void Evaluate(Situation &s);
+int RookMobility(Situation &s);
+int Evaluate(Situation &s);
 
 #endif

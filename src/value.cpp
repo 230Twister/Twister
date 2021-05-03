@@ -273,8 +273,7 @@ const int EVAL_MARGIN2 = 80;
 const int EVAL_MARGIN3 = 40;
 const int EVAL_MARGIN4 = 20;
 
-int WhitePiecesValue[7][256];
-int BlackPiecesValue[7][256];
+int PiecesValue[2][7][256];
 int vlBlackAdvisorLeakage, vlWhiteAdvisorLeakage;     //缺士
 int vlHollowThreat[16], vlCentralThreat[16];          //空头炮、中炮
 int vlWhiteBottomThreat[16], vlBlackBottomThreat[16]; //沉底炮
@@ -289,8 +288,7 @@ bool BlackHalf(int i)
     return (i & 128) == 0;
 }
 
-int SideValue(int sd, int vl)
-{
+int SideValue(int sd, int vl){
     return (sd == 0 ? vl : -vl);
 }
 
@@ -353,11 +351,11 @@ void PreEvaluate(Situation &situation)
     {
         if (ON_BOARD[i])
         {
-            WhitePiecesValue[0][i] = BlackPiecesValue[0][254 - i] = ((cvlKingPawnMidgameAttacking[i] * midgame_value + cvlKingPawnEndgameAttacking[i] * (TOTAL_MIDGAME_VALUE - midgame_value)) / TOTAL_MIDGAME_VALUE);
-            WhitePiecesValue[3][i] = BlackPiecesValue[3][254 - i] = ((cvlHorseMidgame[i] * midgame_value + cvlHorseEndgame[i] * (TOTAL_MIDGAME_VALUE - midgame_value)) / TOTAL_MIDGAME_VALUE);
-            WhitePiecesValue[4][i] = BlackPiecesValue[4][254 - i] = ((cvlRookMidgame[i] * midgame_value + cvlRookEndgame[i] * (TOTAL_MIDGAME_VALUE - midgame_value)) / TOTAL_MIDGAME_VALUE);
-            WhitePiecesValue[5][i] = BlackPiecesValue[5][254 - i] = ((cvlCannonMidgame[i] * midgame_value + cvlCannonEndgame[i] * (TOTAL_MIDGAME_VALUE - midgame_value)) / TOTAL_MIDGAME_VALUE);
-            attacking_pawn_value[i] = WhitePiecesValue[0][i];
+            PiecesValue[RED][0][i] = PiecesValue[BLACK][0][254 - i] = ((cvlKingPawnMidgameAttacking[i] * midgame_value + cvlKingPawnEndgameAttacking[i] * (TOTAL_MIDGAME_VALUE - midgame_value)) / TOTAL_MIDGAME_VALUE);
+            PiecesValue[RED][3][i] = PiecesValue[BLACK][3][254 - i] = ((cvlHorseMidgame[i] * midgame_value + cvlHorseEndgame[i] * (TOTAL_MIDGAME_VALUE - midgame_value)) / TOTAL_MIDGAME_VALUE);
+            PiecesValue[RED][4][i] = PiecesValue[BLACK][4][254 - i] = ((cvlRookMidgame[i] * midgame_value + cvlRookEndgame[i] * (TOTAL_MIDGAME_VALUE - midgame_value)) / TOTAL_MIDGAME_VALUE);
+            PiecesValue[RED][5][i] = PiecesValue[BLACK][5][254 - i] = ((cvlCannonMidgame[i] * midgame_value + cvlCannonEndgame[i] * (TOTAL_MIDGAME_VALUE - midgame_value)) / TOTAL_MIDGAME_VALUE);
+            attacking_pawn_value[i] = PiecesValue[RED][0][i];
             attackless_pawn_value[i] = ((cvlKingPawnMidgameAttackless[i] * midgame_value + cvlKingPawnEndgameAttackless[i] * (TOTAL_MIDGAME_VALUE - midgame_value)) / TOTAL_MIDGAME_VALUE);
         }
     }
@@ -414,16 +412,16 @@ void PreEvaluate(Situation &situation)
     {
         if (ON_BOARD[i])
         {
-            WhitePiecesValue[1][i] = WhitePiecesValue[2][i] = ((cvlAdvisorBishopThreatened[i] * black_attacks +
+            PiecesValue[RED][1][i] = PiecesValue[RED][2][i] = ((cvlAdvisorBishopThreatened[i] * black_attacks +
                                                           cvlAdvisorBishopThreatless[i] * (TOTAL_ATTACK_VALUE - black_attacks)) /
                                                          TOTAL_ATTACK_VALUE);
-            BlackPiecesValue[1][i] = BlackPiecesValue[2][i] = ((cvlAdvisorBishopThreatened[254 - i] * red_attacks +
+            PiecesValue[BLACK][1][i] = PiecesValue[BLACK][2][i] = ((cvlAdvisorBishopThreatened[254 - i] * red_attacks +
                                                           cvlAdvisorBishopThreatless[254 - i] * (TOTAL_ATTACK_VALUE - red_attacks)) /
                                                          TOTAL_ATTACK_VALUE);
-            WhitePiecesValue[6][i] = ((attacking_pawn_value[i] * red_attacks +
+            PiecesValue[RED][6][i] = ((attacking_pawn_value[i] * red_attacks +
                                     attackless_pawn_value[i] * (TOTAL_ATTACK_VALUE - red_attacks)) /
                                    TOTAL_ATTACK_VALUE);
-            BlackPiecesValue[6][i] = ((attacking_pawn_value[254 - i] * black_attacks +
+            PiecesValue[BLACK][6][i] = ((attacking_pawn_value[254 - i] * black_attacks +
                                     attackless_pawn_value[254 - i] * (TOTAL_ATTACK_VALUE - black_attacks)) /
                                    TOTAL_ATTACK_VALUE);
         }
@@ -444,19 +442,20 @@ void PreEvaluate(Situation &situation)
     {
         int pos = situation.current_pieces[i];
         if (pos)
-            red_value += WhitePiecesValue[PieceNumToType[i]][pos];
+            red_value += PiecesValue[RED][PieceNumToType[i]][pos];
     }
     for (int i = 32; i < 48; i++)
     {
         int pos = situation.current_pieces[i];
         if (pos)
-            black_value += BlackPiecesValue[PieceNumToType[i]][pos];
+            black_value += PiecesValue[BLACK][PieceNumToType[i]][pos];
     }
 
-    situation.value += SideValue(situation.current_player, red_value - black_value) + advanced_value;
+    situation.value[RED] = red_value;
+    situation.value[BLACK] = black_value;
 }
 
-void RookMobility(Situation &s)
+int RookMobility(Situation &s)
 {
     int SideTag;
     int vlRookMobility[2] = {0};
@@ -481,59 +480,15 @@ void RookMobility(Situation &s)
         }
     }
 
-    s.value += SideValue(s.current_player, vlRookMobility[0] - vlRookMobility[1]);
+    return SideValue(s.current_player, vlRookMobility[0] - vlRookMobility[1]);
 }
 
 // 局面评价过程
-void Evaluate(Situation &s)
+int Evaluate(Situation &situation)
 {
-    s.value = 0;
-    // 偷懒的局面评价函数分以下几个层次：
-
-    // 1. 四级偷懒评价(彻底偷懒评价)，只包括子力平衡；
-    PreEvaluate(s);
-    // if (s.value + EVAL_MARGIN1 <= vlAlpha)
-    // {
-    //     s.value += EVAL_MARGIN1;
-    // }
-    // else if (s.value - EVAL_MARGIN1 >= vlBeta)
-    // {
-    //     s.value -= EVAL_MARGIN1;
-    // }
-
-    // // 2. 三级偷懒评价，包括特殊棋型；
-    // AdvisorShape(s);
-    // if (s.value + EVAL_MARGIN2 <= vlAlpha)
-    // {
-    //     s.value += EVAL_MARGIN2;
-    // }
-    // else if (s.value - EVAL_MARGIN2 >= vlBeta)
-    // {
-    //     s.value -= EVAL_MARGIN2;
-    // }
-
-    // // 3. 二级偷懒评价，包括牵制；
-    // StringHold(s);
-    // if (s.value + EVAL_MARGIN3 <= vlAlpha)
-    // {
-    //     s.value += EVAL_MARGIN3;
-    // }
-    // else if (s.value - EVAL_MARGIN3 >= vlBeta)
-    // {
-    //     s.value -= EVAL_MARGIN3;
-    // }
-
-    // 4. 一级偷懒评价，包括车的灵活性；
-    RookMobility(s);
-    // if (s.value + EVAL_MARGIN4 <= vlAlpha)
-    // {
-    //     s.value += EVAL_MARGIN4;
-    // }
-    // else if (s.value - EVAL_MARGIN4 >= vlBeta)
-    // {
-    //     s.value -= EVAL_MARGIN4;
-    // }
-
-    // 5. 零级偷懒评价(完全评价)，包括马的阻碍。
-    //KnightTrap(s);
+    int value = SideValue(situation.current_player, situation.value[RED] - situation.value[BLACK]);
+    // PreEvaluate(s);
+    value += RookMobility(situation);
+    
+    return value;
 }
