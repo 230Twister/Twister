@@ -12,8 +12,6 @@ using namespace std;
 #ifndef BOOK_H
 #define BOOK_H
 
-extern const UINT32 BOOK_HASHTABLE_SIZE;        // 哈希表大小 1MB
-
 // 置换表结点
 struct BookHashNode{
     UINT64 check;                               // 校验值
@@ -29,5 +27,7 @@ struct BookBoardNode{
 extern BookHashNode* BookHashTable;             // 哈希表
 extern UINT64 BookZobristKey;                   // 当前局面键值
 extern UINT64 BookZobristKeyCheck;              // 当前局面校验值
+
+void FENToHash(const char* fen, string move, const char* score);
 
 #endif

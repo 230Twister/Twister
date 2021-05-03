@@ -12,6 +12,9 @@
 #include <stdlib.h>
 
 const UINT32 BOOK_HASHTABLE_SIZE = 1 << 20;         // 哈希表大小 1MB
+BookHashNode* BookHashTable;                        // 哈希表
+UINT64 BookZobristKey;                              // 当前局面键值
+UINT64 BookZobristKeyCheck;                         // 当前局面校验值
 
 /* 
  * 函数名：InitBookZobrist
