@@ -12,6 +12,7 @@ int step = 0;                                           // 搜索步数
 time_t StartTime;                                       // 开始搜索的时间
 bool isTimeLimit = 0;                                   // 时间是否超限
 int NowMaxDepth;
+const int NULL_REDUCTION = 2;                           // 空着裁剪度
 const UINT16 MAX_DEPTH = 24;                            // 最大搜索深度
 const time_t MAX_TIME = 40000;                          // 最大消耗时间(ms)
 extern const int MAX_VALUE = 10000;                     // 最大价值，胜利局面绝对分数
@@ -33,21 +34,41 @@ int debug_value;
  * - int 最佳分值
  * 最后更新时间: 21.04.05
  */
-int AlphaBetaSearch(Situation& situation, int depth, int alpha, int beta){
+int AlphaBetaSearch(Situation& situation, int depth, int alpha, int beta, bool allowNullMove){
     int value;                  // 下一着法的分值
     int best;                   // 所有着法中的最佳分值
     Movement move_list[128];    // 当前所有着法
     Movement move;              // 当前着法
     Movement good_move;         // 当前局面最佳着法
     move = good_move = NONE_MOVE;
-    // 读取置换表
-    value = ReadHashTable(depth, alpha, beta, move);
 
-    // 读取成功
+    // 到达搜索深度
+    if(depth <= 0){
+        // 静态搜索评估
+        return QuiescentSearch(situation, alpha, beta);
+    }
+
+    // 重复裁剪
+    if(CheckRepeat(situation, step)) 
+        return 0;
+
+    // 置换表裁剪
+    value = ReadHashTable(depth, alpha, beta, move);
     if(value != NONE_VALUE){
         debug_hash++;
         return value;
     }
+
+    // // 空着裁剪(不带检验)
+    // if(allowNullMove && !BeChecked(situation)){
+    //     MakeNullMove(situation);
+    //     value = -AlphaBetaSearch(situation, depth - 1 - NULL_REDUCTION, -beta, 1 - beta, false);
+    //     UnMakeNullMove(situation);
+
+    //     if(value >= beta)
+    //         return beta;
+    // }
+
     // 时间检测，避免超限
     if(isTimeLimit || clock() - StartTime > MAX_TIME){
         isTimeLimit = 1;
@@ -57,14 +78,6 @@ int AlphaBetaSearch(Situation& situation, int depth, int alpha, int beta){
     best = -NONE_VALUE;
     bool isAlpha = true;    // 当前结点是否为Alpha结点
 
-    // 到达搜索深度
-    if(depth <= 0){
-        // 静态搜索评估
-        value = QuiescentSearch(situation, alpha, beta);
-        // 保存到置换表
-        // SaveHashTable(depth, value, hashEXACT, NONE_MOVE);
-        return value;
-    }
     int move_num = 0;       // 着法数量
     // 生成着法
     MoveSort(situation, move_num, move_list, move, step);
@@ -76,7 +89,7 @@ int AlphaBetaSearch(Situation& situation, int depth, int alpha, int beta){
             value = -MAX_VALUE + step;
         }
         else{
-            value = -AlphaBetaSearch(situation, depth - 1, -beta, -alpha);
+            value = -AlphaBetaSearch(situation, depth - 1, -beta, -alpha, true);
         }
         // 回溯
         UnMakeAMove(situation);
@@ -126,7 +139,7 @@ int AlphaBetaSearch(Situation& situation, int depth, int alpha, int beta){
  * - int beta   beta值
  * 返回值：
  * - int 最佳分值
- * 最后更新时间: 26.03.15
+ * 最后更新时间: 21.03.26
  */
 int QuiescentSearch(Situation& situation, int alpha, int beta){
     int value;                  // 下一着法的分值
@@ -141,9 +154,7 @@ int QuiescentSearch(Situation& situation, int alpha, int beta){
     }
     
     // 调用评估函数进行评估
-    Eval(situation);
-    value = situation.value_black - situation.value_red;
-    if(!situation.current_player) value = -value;
+    value = Evaluate(situation);
     if(value > beta)
         return beta;
     if(value > alpha)
@@ -197,7 +208,7 @@ void ComputerThink(Situation& situation){
 
     for(max_depth = 1; max_depth <= MAX_DEPTH; max_depth++){
         NowMaxDepth = max_depth;
-        value = AlphaBetaSearch(situation, max_depth, -NONE_VALUE, NONE_VALUE);
+        value = AlphaBetaSearch(situation, max_depth, -NONE_VALUE, NONE_VALUE, false);
         if(isTimeLimit){
             break;
         }

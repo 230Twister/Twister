@@ -13,6 +13,8 @@ const UINT8 hashALPHA = 1;                  // ALPHA结点类型
 const UINT8 hashBETA = 2;                   // BETA结点类型
 const UINT32 HASHTABLE_SIZE = 1 << 24;      // 置换表大小 16MB
 const UINT32 HASHTABLE_MASK = (1 << 24) - 1;
+const UINT32 REPEATTABLE_SIZE = 1000;       // 微型置换表大小
+const UINT32 REPEATTABLE_MASK = 999;
 
 const int NONE_VALUE = 1 << 20;             // 空价值
 const Movement NONE_MOVE = {0, 0, 0};       // 空着
@@ -24,6 +26,11 @@ UINT64 ZobristPlayer;                       // 走棋方的键值
 UINT64 ZobristPlayerCheck;                  // 走棋方校验值
 UINT64 ZobristTable[48][256];               // 棋子在棋盘各个位置的键值
 UINT64 ZobristTableCheck[48][256];          // 棋子在棋盘各个位置的校验值
+struct KeySave{
+    UINT64 ZobristKey, ZobristKeyCheck;
+}Save;
+
+RepeatNode RepeatTable[REPEATTABLE_SIZE];   // 检测重复局面的小置换表
 
 extern int step;
 extern const int MAX_VALUE;
@@ -42,18 +49,28 @@ void InitHashTable(){
     memset(HashTable, 0, HASHTABLE_SIZE * sizeof(HashNode));
     std::independent_bits_engine<std::default_random_engine, 64, UINT64> engine;
 
-    ZobristPlayer = engine();       // 生成走棋方键值
-    ZobristPlayerCheck = engine();  // 生成走棋方校验值
-    ZobristKey = engine();
-    ZobristKeyCheck = engine();
-    for(int i = 16; i < 48; i++){
-        for(int j = 0; j < 256; j++){
-            ZobristTable[i][j] = engine();
-        }
-    }
-    for(int i = 16; i < 48; i++){
-        for(int j = 0; j < 256; j++){
-            ZobristTableCheck[i][j] = engine();
+    ZobristPlayer = engine();           // 生成走棋方键值
+    ZobristPlayerCheck = engine();      // 生成走棋方校验值
+    ZobristKey = engine();              // 局面初始键值
+    ZobristKeyCheck = engine();         // 局面初始校验值
+    Save.ZobristKey = ZobristKey;
+    Save.ZobristKeyCheck = ZobristKeyCheck;
+
+    int piece_id_array[15] = {16, 17, 19, 21, 23, 25, 27, 32, 33, 35, 37, 39, 41, 43, 48};
+    for(int i = 0; i < 14; i++){
+        int count = 0;
+        while(piece_id_array[i] + count < piece_id_array[i + 1]){
+            for(int j = 0; j < 256; j++){
+                if(count == 0){
+                    ZobristTable[piece_id_array[i]][j] = engine();
+                    ZobristTableCheck[piece_id_array[i]][j] = engine();
+                }
+                else{
+                    ZobristTable[piece_id_array[i] + count][j] = ZobristTable[piece_id_array[i]][j];
+                    ZobristTableCheck[piece_id_array[i] + count][j] = ZobristTable[piece_id_array[i]][j];
+                }
+            }
+            count++;
         }
     }
 }
@@ -69,6 +86,7 @@ void InitHashTable(){
  */
 void ResetHashTable(){
     memset(HashTable, 0, HASHTABLE_SIZE * sizeof(HashNode));
+    memset(RepeatTable, 0, sizeof(RepeatTable));
 }
 
 /* 
@@ -94,9 +112,8 @@ void DeleteHashTable(){
  * 最后更新时间: 21.04.05
  */
 void ResetZobristKey(){
-    std::independent_bits_engine<std::default_random_engine, 64, UINT64> engine;
-    ZobristKey = engine();
-    ZobristKeyCheck = engine();
+    ZobristKey = Save.ZobristKey;
+    ZobristKeyCheck = Save.ZobristKeyCheck;
 }
 
 /* 
@@ -181,4 +198,60 @@ void SaveHashTable(int depth, int value, UINT8 node_type, Movement move){
     else{
         HashTable[index] = new_hash_node;
     }
+}
+
+/* 
+ * 函数名：SignSituation
+ * 描述：局面标记
+ * 入参: 
+ * - void
+ * 返回值：
+ * - void
+ * 最后更新时间: 21.04.28
+ */
+void SignSituation(int step){
+    int index = ZobristKey & REPEATTABLE_MASK;
+    RepeatNode new_node = RepeatNode{ZobristKeyCheck, step};
+
+    if(RepeatTable[index].check != 0)
+        RepeatTable[index] = new_node;
+}
+
+/* 
+ * 函数名：UnsignSituation
+ * 描述：去除局面标记
+ * 入参: 
+ * - void
+ * 返回值：
+ * - void
+ * 最后更新时间: 21.04.28
+ */
+void UnsignSituation(int step){
+    int index = ZobristKey & REPEATTABLE_MASK;
+    if(RepeatTable[index].check == ZobristKeyCheck && step == RepeatTable[index].step)
+        RepeatTable[index] = RepeatNode{0, 0};
+}
+
+/* 
+ * 函数名：CheckRepeat
+ * 描述：检查局面是否重复
+ * 入参: 
+ * - void
+ * 返回值：
+ * - bool 是否重复
+ * 最后更新时间: 21.04.28
+ */
+bool CheckRepeat(Situation& situation, int step){
+    int index = ZobristKey & REPEATTABLE_MASK;
+    RepeatNode node = RepeatTable[index];
+
+    if(node.check != ZobristKeyCheck)
+        return false;
+    
+    int move_nums = node.step;
+    std::vector<Movement>& move_list = situation.moves_stack;
+    while(move_nums < step && move_list[move_nums].from != 0 && move_list[move_nums].capture == 0){
+        move_nums++;
+    }
+    return move_nums == step;
 }
