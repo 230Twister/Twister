@@ -52,14 +52,13 @@ void LoadBookHashTable(){
         InitBookZobrist();
         char* temp = new char[strlen(line.c_str()) + 1];
 		strcpy(temp, line.c_str());
-		string move = strtok(temp, " ");
-		string s = strtok(NULL, " ");
+        string move_s = strtok(temp, ":");
+
 		line = strtok(NULL, " ");
 		string side = strtok(NULL, " ");
 		line = line + " " + side;       // line存放FEN串
         delete temp;
-
-        FENToHash(line.c_str(), move, atoi(s.c_str()));                 // 将对应局面存入哈希表
+        FENToHash(line.c_str(), move_s);                 // 将对应局面存入哈希表
     }
 }
 
@@ -69,13 +68,12 @@ void LoadBookHashTable(){
  * 描述：根据fen串存入哈希表
  * 入参: 
  * - const char* fen      fen串
- * - string move          对应着法
- * - const int score        对应分数
+ * - string move_s        对应着法和分数
  * 返回值：
  * - void
  * 最后更新时间: 21.05.03
  */
-void FENToHash(const char* fen, string move, const int score){
+void FENToHash(const char* fen, string move_s){
     const char *p = fen;
     int piece_id_array[14] = {16, 17, 19, 21, 23, 25, 27, 32, 33, 35, 37, 39, 41, 43};
     int col = GetCol(BOARD_FIRST_POSITION), row = GetRow(BOARD_FIRST_POSITION), piece_id_index, piece_id;
@@ -113,22 +111,37 @@ void FENToHash(const char* fen, string move, const int score){
 
     if(!BookHashTable[place].check){                            // 位置为空，存入哈希表
         BookHashTable[place].check = BookZobristKeyCheck;
+
+        char* temp = new char[strlen(move_s.c_str()) + 1];
+        strcpy(temp, move_s.c_str());
+        string each_move_s = strtok(temp, "/");
+        int num = move_s.find('/');
+
         BookBoardNode *node = new BookBoardNode;
         node->next = NULL;
         BookHashTable[place].next = node;
-        node->move = StrToMovement(move);
-        node->move.value = score;
-    }
-    else{                                                       // 同一局面，新着法排在后面
-        BookBoardNode* p = BookHashTable[place].next;
-        while(p->next){
-            p = p->next;
+        node->move = StrToMovement(each_move_s.substr(0, 4));
+        node->move.value = atoi(each_move_s.substr(5, each_move_s.length()-6).c_str());
+        
+        while(num + 1 < move_s.length() && (move_s.find('/', num + 1) + 1) != move_s.length()){
+            each_move_s = strtok(NULL, "/");
+            num = move_s.find('/', num + 1);
+
+            node->next = new BookBoardNode;
+            node = node->next;
+            node->next = NULL;
+            node->move = StrToMovement(each_move_s.substr(0, 4));
+            node->move.value = atoi(each_move_s.substr(5, each_move_s.length()-6).c_str());
         }
-        BookBoardNode *node = new BookBoardNode;
-        node->next = NULL;
-        p->next = node;
-        node->move = StrToMovement(move);
-        node->move.value = score;
+
+        if(num + 1 < move_s.length()){
+            each_move_s = strtok(NULL, "/");
+            node->next = new BookBoardNode;
+            node = node->next;
+            node->next = NULL;
+            node->move = StrToMovement(each_move_s.substr(0, 4));
+            node->move.value = atoi(each_move_s.substr(5, each_move_s.length()-6).c_str());
+        }
     }
 }
 
