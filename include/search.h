@@ -9,7 +9,7 @@
 #define SEARCH_H
 
 struct Situation;
-int AlphaBetaSearch(Situation& situation, int depth, int alpha, int beta, bool allowNullMove);
+int PVSearch(Situation& situation, int depth, int alpha, int beta, bool allowNullMove);
 int QuiescentSearch(Situation& situation, int alpha, int beta);
 void ComputerThink(Situation& situation);
 

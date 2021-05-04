@@ -44,9 +44,9 @@ void LoadBookHashTable(){
     BookHashTable = new BookHashNode[BOOK_HASHTABLE_SIZE];
     memset(BookHashTable, 0, BOOK_HASHTABLE_SIZE * sizeof(BookHashNode));
 
-    ifstream f("book.txt");
+    ifstream f("../resources/book.txt");
     if(!f.is_open())
-        cout << "未能打开book.txt" << endl;
+        cout << "can not open book.txt" << endl;
     string line;
     while(getline(f, line)){
         InitBookZobrist();
@@ -58,10 +58,8 @@ void LoadBookHashTable(){
 		string side = strtok(NULL, " ");
 		line = line + " " + side;       // line存放FEN串
         delete temp;
-        char* fen = new char[strlen(line.c_str()) + 1];
-        char* score = new char[strlen(s.c_str()) + 1];
-        FENToHash(fen, move, score);                 // 将对应局面存入哈希表
-        delete fen;
+
+        FENToHash(line.c_str(), move, atoi(s.c_str()));                 // 将对应局面存入哈希表
     }
 }
 
@@ -72,12 +70,12 @@ void LoadBookHashTable(){
  * 入参: 
  * - const char* fen      fen串
  * - string move          对应着法
- * - const char* score    对应分数
+ * - const int score        对应分数
  * 返回值：
  * - void
  * 最后更新时间: 21.05.03
  */
-void FENToHash(const char* fen, string move, const char* score){
+void FENToHash(const char* fen, string move, const int score){
     const char *p = fen;
     int piece_id_array[14] = {16, 17, 19, 21, 23, 25, 27, 32, 33, 35, 37, 39, 41, 43};
     int col = GetCol(BOARD_FIRST_POSITION), row = GetRow(BOARD_FIRST_POSITION), piece_id_index, piece_id;
@@ -119,8 +117,7 @@ void FENToHash(const char* fen, string move, const char* score){
         node->next = NULL;
         BookHashTable[place].next = node;
         node->move = StrToMovement(move);
-        int s = atoi(score);
-        node->move.value = s;
+        node->move.value = score;
     }
     else{                                                       // 同一局面，新着法排在后面
         BookBoardNode* p = BookHashTable[place].next;
@@ -131,22 +128,21 @@ void FENToHash(const char* fen, string move, const char* score){
         node->next = NULL;
         p->next = node;
         node->move = StrToMovement(move);
-        int s = atoi(score);
-        node->move.value = s;
+        node->move.value = score;
     }
 }
 
 
 /* 
- * 函数名：ReadHashTable
+ * 函数名：ReadBookTable
  * 描述：读取哈希表
  * 入参: 
- * - Situation situation 当前局面
+ * - Situation& situation 当前局面
  * 返回值：
  * - Movement 对应着法
  * 最后更新时间: 21.05.03
  */
-Movement ReadHashTable(Situation situation){
+Movement ReadBookTable(Situation& situation){
     Movement m;
     m.from = 0;
     m.to = 0;
@@ -157,10 +153,7 @@ Movement ReadHashTable(Situation situation){
         place ++;
     if(BookHashTable[place].check){
         m = BookHashTable[place].next->move;
-        if(situation.current_board[m.to])
-            m.capture = 1;
-        else
-            m.capture = 0;
+        m.capture = situation.current_board[m.to];
     }
     return m;
 }

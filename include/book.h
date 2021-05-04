@@ -28,6 +28,8 @@ extern BookHashNode* BookHashTable;             // 哈希表
 extern UINT64 BookZobristKey;                   // 当前局面键值
 extern UINT64 BookZobristKeyCheck;              // 当前局面校验值
 
-void FENToHash(const char* fen, string move, const char* score);
+void FENToHash(const char* fen, string move, const int score);
+void LoadBookHashTable();
+Movement ReadBookTable(Situation& situation);
 
 #endif

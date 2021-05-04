@@ -67,7 +67,7 @@ void InitHashTable(){
                 }
                 else{
                     ZobristTable[piece_id_array[i] + count][j] = ZobristTable[piece_id_array[i]][j];
-                    ZobristTableCheck[piece_id_array[i] + count][j] = ZobristTable[piece_id_array[i]][j];
+                    ZobristTableCheck[piece_id_array[i] + count][j] = ZobristTableCheck[piece_id_array[i]][j];
                 }
             }
             count++;

@@ -188,7 +188,13 @@ void FenToSituation(Situation & situation, const char* fen, const int num_of_mov
     if(*p == 'w') situation.current_player = RED;
     else situation.current_player = BLACK;
 
-    // 3. 将后续着法转入局面
+    // 3. 若轮到红方走子，局面哈希值异或额外标记
+    if(situation.current_player == RED){
+        ZobristKey ^= ZobristPlayer;
+        ZobristKeyCheck ^= ZobristPlayerCheck;
+    }
+
+    // 4. 将后续着法转入局面
     // std::ofstream f;
     // f.open("debug.log", std::ios::app | std::ios::out);
     // f << "后续着法:\n";
@@ -205,14 +211,8 @@ void FenToSituation(Situation & situation, const char* fen, const int num_of_mov
     }
     // f.close();
 
-    // 4. 清空栈中的后续着法
+    // 5. 清空栈中的后续着法
     situation.moves_stack.clear();
-
-    // 5. 若轮到红方走子，局面哈希值异或额外标记
-    if(situation.current_player == RED){
-        ZobristKey ^= ZobristPlayer;
-        ZobristKeyCheck ^= ZobristPlayerCheck;
-    }
 }
 
 /* 

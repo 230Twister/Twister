@@ -5,6 +5,7 @@
 #include "search.h"
 #include "preset.h"
 #include "value.h"
+#include "book.h"
 
 int main(int argc, char *argv[]) {
 	if (BootLine() == e_CommUcci) {
@@ -16,6 +17,7 @@ int main(int argc, char *argv[]) {
         Situation situation;
         InitHashTable();
         InitPresetArray();
+		LoadBookHashTable();
 		while (true) {
 			CommEnum Order = IdleLine (Command, 0);
 			if (Order == e_CommAnnotation) {
@@ -50,7 +52,6 @@ int main(int argc, char *argv[]) {
 			else if (Order == e_CommPosition) { // position [ startpos | fen ] moves ...
 				ResetZobristKey();
                 InitSituation(situation);
-				PreEvaluate(situation);
                 // 输出日志文件(FEN)
                 std::ofstream f;
                 f.open("debug.log", std::ios::app | std::ios::out);
@@ -60,6 +61,8 @@ int main(int argc, char *argv[]) {
                 SituationToFen(situation, fen);
                 f << "引擎处理完的当前局面的FEN: " << fen << std::endl;
                 f.close();
+				// 预评估
+				PreEvaluate(situation);
 			}
 			else if (Order == e_CommGo || Order == e_CommGoPonder) { // go ...
 				ComputerThink(situation);

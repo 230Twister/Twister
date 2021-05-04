@@ -4,6 +4,7 @@
 #include "representation.h"
 #include "moves_sort.h"
 #include "value.h"
+#include "book.h"
 #include <ctime>
 #include <fstream>
 
@@ -11,6 +12,7 @@ Movement BestMove;                                      // 当前局面的最好
 int step = 0;                                           // 搜索步数
 time_t StartTime;                                       // 开始搜索的时间
 bool isTimeLimit = 0;                                   // 时间是否超限
+bool UseBook = true;
 int NowMaxDepth;
 const int NULL_REDUCTION = 2;                           // 空着裁剪度
 const UINT16 MAX_DEPTH = 24;                            // 最大搜索深度
@@ -24,8 +26,8 @@ int debug_hash;
 int debug_value;
 
 /* 
- * 函数名：AlphaBetaSearch
- * 描述：带置换表的AlphaBeta搜索
+ * 函数名：PVSearch
+ * 描述：带置换表的主要变例搜索
  * 入参: 
  * - int depth  深度
  * - int alpha  alpha值
@@ -34,7 +36,7 @@ int debug_value;
  * - int 最佳分值
  * 最后更新时间: 21.04.05
  */
-int AlphaBetaSearch(Situation& situation, int depth, int alpha, int beta, bool allowNullMove){
+int PVSearch(Situation& situation, int depth, int alpha, int beta, bool allowNullMove){
     int value;                  // 下一着法的分值
     int best;                   // 所有着法中的最佳分值
     Movement move_list[128];    // 当前所有着法
@@ -91,12 +93,12 @@ int AlphaBetaSearch(Situation& situation, int depth, int alpha, int beta, bool a
         }
         else{
             if(PVflag){
-                value = -AlphaBetaSearch(situation, depth - 1, -alpha - 1, -alpha, true);
+                value = -PVSearch(situation, depth - 1, -alpha - 1, -alpha, true);
                 if(value > alpha && value < beta)
-                    value = -AlphaBetaSearch(situation, depth - 1, -beta, -alpha, true);
+                    value = -PVSearch(situation, depth - 1, -beta, -alpha, true);
             }
             else
-                value = -AlphaBetaSearch(situation, depth - 1, -beta, -alpha, true);
+                value = -PVSearch(situation, depth - 1, -beta, -alpha, true);
         }
         // 回溯
         UnMakeAMove(situation);
@@ -214,9 +216,23 @@ void ComputerThink(Situation& situation){
     ResetHistory();     // 清空历史表和杀手表
     StartTime = clock();
 
+    // 读取开局库
+    if(UseBook){
+        Movement book_move = ReadBookTable(situation);
+        if(book_move.from != 0 && MovementsLegal(book_move, situation)){
+            printf ("bestmove %s\n", MovementToStr(book_move).c_str());
+		    fflush (stdout);
+            return;
+        }
+        else{
+            UseBook = false;
+        }
+    }
+
+    // 迭代加深搜索
     for(max_depth = 1; max_depth <= MAX_DEPTH; max_depth++){
         NowMaxDepth = max_depth;
-        value = AlphaBetaSearch(situation, max_depth, -NONE_VALUE, NONE_VALUE, false);
+        value = PVSearch(situation, max_depth, -NONE_VALUE, NONE_VALUE, false);
         if(isTimeLimit){
             break;
         }
