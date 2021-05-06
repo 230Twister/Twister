@@ -14,9 +14,9 @@ time_t StartTime;                                       // 开始搜索的时间
 bool isTimeLimit = 0;                                   // 时间是否超限
 bool UseBook = true;
 int NowMaxDepth;
-const int NULL_REDUCTION = 3;                           // 空着裁剪度
+const int NULL_REDUCTION = 2;                           // 空着裁剪度
 const UINT16 MAX_DEPTH = 24;                            // 最大搜索深度
-const time_t MAX_TIME = 60000;                          // 最大消耗时间(ms)
+const time_t MAX_TIME = 40000;                          // 最大消耗时间(ms)
 extern const int MAX_VALUE = 10000;                     // 最大价值，胜利局面绝对分数
 extern const int WIN_VALUE = MAX_VALUE - MAX_DEPTH;     // 胜利局面的相对分数
 
