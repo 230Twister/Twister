@@ -713,7 +713,6 @@ void UnMakeAMove (Situation & situation){
 void MakeNullMove(Situation & situation){
     // 1. 放入走法栈
     situation.moves_stack.push_back(Movement{0, 0, 0, 0});
-    SignSituation(step);
     step++;
 
     // 2. 交换走棋方
@@ -733,7 +732,6 @@ void UnMakeNullMove(Situation & situation){
     // 1. 从走法栈中弹出，进行回滚
     situation.moves_stack.pop_back();
     step--;
-    UnsignSituation(step);
 
     // 2. 交换走棋方
     ChangePlayer(situation.current_player);
