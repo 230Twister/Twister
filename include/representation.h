@@ -142,6 +142,13 @@ inline int GetPlayerFlag(const int current_player){
 inline int ColorOfPiece(const int piece_id){
 	return (piece_id == 0) ? 0 : ((piece_id & GetPlayerFlag(0)) ? RED : BLACK);
 }
+inline bool InHomeHalf(int pos, int player){
+	return (pos & 0x80) != (player << 7);
+}
+inline int SquareBack(int pos, int player){
+	return pos + 16 - (player << 5);
+}
+
 // 局面操作
 void InitSituation(Situation & situation);
 int PieceOfFen(const char fen_char);
@@ -176,7 +183,7 @@ void GetAllNotCaptureMovements(const Situation & situation, int & num_of_all_mov
 bool MovementsLegal(const Movement move, const Situation & situation);
 // ============================================================================================
 // 局面状态检测相关函数
-int IfProtected(int side, const int dst);
+int IfProtected(int player, const int to, const Situation & situation, int exp = 0);
 bool CheckOpponent(const Situation & situation);
 bool BeChecked(const Situation & situation);
 bool KingFacing(const Situation & situation);

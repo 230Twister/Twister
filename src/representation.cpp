@@ -792,20 +792,19 @@ bool MovementsLegal(const Movement move, const Situation & situation){
     if(situation.current_board[to] != move.capture){
         return false;
     }
-    
     // 3.对出发点的棋子进行分类讨论
     switch (piece_id_from - player_flag){
     // 3.1 将(帅)
     case 0:
-        return (LEGAL_POSITION[player][from] & POSITION_MASK[0]) && (LEGAL_MOVE[to - from + 256] == 1);
+        return (LEGAL_POSITION[player][to] & POSITION_MASK[0]) && (LEGAL_MOVE[to - from + 256] == 1);
     // 3.2 仕
     case 1:
     case 2:
-        return (LEGAL_POSITION[player][from] & POSITION_MASK[1]) && (LEGAL_MOVE[to - from + 256] == 2);
+        return (LEGAL_POSITION[player][to] & POSITION_MASK[1]) && (LEGAL_MOVE[to - from + 256] == 2);
     // 3.3 象
     case 3:
     case 4:
-        return (LEGAL_POSITION[player][from] & POSITION_MASK[2]) && (LEGAL_MOVE[to - from + 256] == 3) && (situation.current_board[(to + from) >> 1] == 0);
+        return (LEGAL_POSITION[player][to] & POSITION_MASK[2]) && (LEGAL_MOVE[to - from + 256] == 3) && (situation.current_board[(to + from) >> 1] == 0);
     // 3.4 马
     case 5:
     case 6: {
@@ -866,7 +865,7 @@ bool MovementsLegal(const Movement move, const Situation & situation){
         }
     // 3.7 兵
     default:
-        if(!(LEGAL_POSITION[player][from] & POSITION_MASK[6])){
+        if(!(LEGAL_POSITION[player][to] & POSITION_MASK[6])){
             return false;
         }
         for(int i = 0; PAWN_CAN_GET[from][player][i] != 0; i ++){
@@ -878,6 +877,88 @@ bool MovementsLegal(const Movement move, const Situation & situation){
     }
 }
 
-int IfProtected(int side, const int dst){
-    return 0;
+int IfProtected(int player, const int to, const Situation & situation, int exp){
+    // 对手的player_flag
+    int player_flag = GetPlayerFlag(player);
+
+    // 对手的棋子所在的位置，即判断保护的from
+    int from;
+
+    // 被将(帅)保护
+    for(int i = player_flag + 0; i <= player_flag + 0; i ++){
+        from = situation.current_pieces[i];
+        if (from && (LEGAL_POSITION[player][to] & POSITION_MASK[0]) && (LEGAL_MOVE[to - from + 256] == 1))
+            return true;
+    }
+
+    // 被士(仕)保护
+    for(int i = player_flag + 1; i <= player_flag + 2; i ++){
+        from = situation.current_pieces[i];
+        if (from && (LEGAL_POSITION[player][to] & POSITION_MASK[1]) && (LEGAL_MOVE[to - from + 256] == 2))
+            return true;
+    }
+
+    // 被象(相)保护
+    for(int i = player_flag + 3; i <= player_flag + 4; i ++){
+        from = situation.current_pieces[i];
+        if(from && (LEGAL_POSITION[player][to] & POSITION_MASK[2]) && (LEGAL_MOVE[to - from + 256] == 3) && situation.current_board[(to + from) >> 1] == 0)
+            return true;
+    }
+
+    // 被马保护
+    for(int i = player_flag + 5; i <= player_flag + 6; i ++){
+        from = situation.current_pieces[i];
+        int horse_leg = HORSE_LEGAL_MOVE[to - from + 256] + from;
+        if(from && horse_leg != from && situation.current_board[horse_leg] == 0)
+            return true;
+    }
+
+    int from_col = GetCol(from), from_row = GetRow(from), to_col = GetCol(to), to_row = GetRow(to);
+
+    // 被车保护
+    for(int i = player_flag + 7; i <= player_flag + 8; i ++){
+        from = situation.current_pieces[i];
+        if(from && from != to){
+            if(from_row == to_row){
+                if((ROOK_CANNON_CAN_GET_ROW_MASK[from_col - 3][situation.bit_row[from_row]].rook_capture & BIT_ROW_MASK[to]) != 0)
+                    return true;
+            }
+            else if(from_col == to_col){
+                if((ROOK_CANNON_CAN_GET_COL_MASK[from_row - 3][situation.bit_col[from_col]].rook_capture & BIT_COL_MASK[to]) != 0)
+                    return true;
+            }
+        }
+    }
+
+    // 被炮保护
+    for(int i = player_flag + 9; i <= player_flag + 10; i ++){
+        from = situation.current_pieces[i];
+        if(from && from != to){
+            if(from_row == to_row){
+                if((ROOK_CANNON_CAN_GET_ROW_MASK[from_col - 3][situation.bit_row[from_row]].cannon_capture & BIT_ROW_MASK[to]) != 0)
+                    return true;
+            }
+            else if(from_col == to_col){
+                if((ROOK_CANNON_CAN_GET_COL_MASK[from_row - 3][situation.bit_col[from_col]].cannon_capture & BIT_COL_MASK[to]) != 0)
+                    return true;
+            }
+        }
+    }
+
+    // 被兵保护(纵向)
+    from = SquareBack(to, player);
+    int from_id = situation.current_board[from];
+    if(((from_id & player_flag) != 0) && ((from_id & 15) >= 11))
+        return true;
+    
+
+    // 被兵保护(横向)
+    if(!InHomeHalf(to, player)){
+        for(from = to - 1; from <= to + 1; from += 2){
+            int from_id = situation.current_board[from];
+            if(((from_id & player_flag) != 0) && ((from_id & 15) >= 11) )
+                return true;
+        }
+    }
+    return false;
 }
