@@ -25,6 +25,85 @@ int debug_node;
 int debug_hash;
 int debug_value;
 
+int SearchCut(Situation& situation, int depth, int beta, bool allowNullMove = false){
+    int value;                      // 下一着法的分值
+    int best;                       // 所有着法中的最佳分值
+    Movement move_list[128];        // 当前所有着法
+    Movement move;                  // 当前着法
+    Movement good_move;             // 当前局面最佳着法
+    move = good_move = NONE_MOVE;
+    best = -NONE_VALUE;
+
+    // 到达搜索深度
+    if(depth <= 0){
+        // 静态搜索评估
+        return QuiescentSearch(situation, beta - 1, beta);
+    }
+
+    // 重复裁剪
+    if(CheckRepeat(situation, step)) 
+        return 0;
+
+    // 置换表裁剪
+    value = ReadHashTable(depth, beta - 1, beta, move);
+    if(value != NONE_VALUE){
+        debug_hash++;
+        return value;
+    }
+
+    // 空着裁剪(带检验)
+    if(allowNullMove && !BeChecked(situation)){
+        MakeNullMove(situation);
+        value = -SearchCut(situation, depth - 1 - NULL_REDUCTION, 1 - beta);
+        UnMakeNullMove(situation);
+
+        // 检验
+        if(value >= beta && SearchCut(situation, depth - NULL_REDUCTION, beta) >= beta){
+            SaveHashTable(max(depth, NULL_REDUCTION), beta, hashBETA, NONE_MOVE);
+            return beta;
+        }
+    }
+
+    // 时间检测，避免超限
+    if(isTimeLimit || clock() - StartTime > MAX_TIME){
+        isTimeLimit = 1;
+        return NONE_VALUE;
+    }
+
+    int move_num = 0;       // 着法数量
+    // 生成着法
+    MoveSort(situation, move_num, move_list, move, step);
+    debug_node += move_num;
+    for(int i = 0; i < move_num; i++){
+        move = move_list[i];
+        // 下子
+        if(MakeAMove(situation, move)){
+            value = -MAX_VALUE + step;
+        }
+        else{
+            value = -SearchCut(situation, depth - 1, 1 - beta, true);
+        }
+        // 回溯
+        UnMakeAMove(situation);
+
+        if(value > best){
+            best = value;           // 更新最佳分数
+            good_move = move;       // 更新最佳着法
+            if(value >= beta){
+                // 此着法是好着法，记录进历史表
+                SaveHistoryTable(move, depth);
+                // 好着法，存入杀手表
+                SaveKiller(move, step);
+                SaveHashTable(depth, beta, hashBETA, move);
+                return beta;
+            }
+        }
+    }
+
+    SaveHashTable(depth, beta - 1, hashALPHA, good_move);
+    return beta - 1;
+}
+
 /* 
  * 函数名：PVSearch
  * 描述：带置换表的主要变例搜索
@@ -36,12 +115,12 @@ int debug_value;
  * - int 最佳分值
  * 最后更新时间: 21.04.05
  */
-int PVSearch(Situation& situation, int depth, int alpha, int beta, bool allowNullMove){
-    int value;                  // 下一着法的分值
-    int best;                   // 所有着法中的最佳分值
-    Movement move_list[128];    // 当前所有着法
-    Movement move;              // 当前着法
-    Movement good_move;         // 当前局面最佳着法
+int PVSearch(Situation& situation, int depth, int alpha, int beta){
+    int value;                      // 下一着法的分值
+    int best;                       // 所有着法中的最佳分值
+    Movement move_list[128];        // 当前所有着法
+    Movement move;                  // 当前着法
+    Movement good_move;             // 当前局面最佳着法
     move = good_move = NONE_MOVE;
 
     // 到达搜索深度
@@ -60,16 +139,6 @@ int PVSearch(Situation& situation, int depth, int alpha, int beta, bool allowNul
         debug_hash++;
         return value;
     }
-
-    // // 空着裁剪(不带检验)
-    // if(allowNullMove && !BeChecked(situation)){
-    //     MakeNullMove(situation);
-    //     value = -AlphaBetaSearch(situation, depth - 1 - NULL_REDUCTION, -beta, 1 - beta, false);
-    //     UnMakeNullMove(situation);
-
-    //     if(value >= beta)
-    //         return beta;
-    // }
 
     // 时间检测，避免超限
     if(isTimeLimit || clock() - StartTime > MAX_TIME){
@@ -93,12 +162,12 @@ int PVSearch(Situation& situation, int depth, int alpha, int beta, bool allowNul
         }
         else{
             if(PVflag){
-                value = -PVSearch(situation, depth - 1, -alpha - 1, -alpha, true);
+                value = -SearchCut(situation, depth - 1, -alpha);
                 if(value > alpha && value < beta)
-                    value = -PVSearch(situation, depth - 1, -beta, -alpha, true);
+                    value = -PVSearch(situation, depth - 1, -beta, -alpha);
             }
             else
-                value = -PVSearch(situation, depth - 1, -beta, -alpha, true);
+                value = -PVSearch(situation, depth - 1, -beta, -alpha);
         }
         // 回溯
         UnMakeAMove(situation);
@@ -120,9 +189,6 @@ int PVSearch(Situation& situation, int depth, int alpha, int beta, bool allowNul
                 isAlpha = false;
                 PVflag = true;
                 alpha = value;
-                // 若为第一层，传出着法
-                if(depth == NowMaxDepth)
-                    BestMove = move;
             }
         }
     }
@@ -197,6 +263,47 @@ int QuiescentSearch(Situation& situation, int alpha, int beta){
     return alpha;
 }
 
+int SearchRoot(Situation& situation, int depth){
+    int value;                      // 下一着法的分值
+    int best;                       // 所有着法中的最佳分值
+    Movement move_list[128];        // 当前所有着法
+    Movement move;                  // 当前着法
+    Movement good_move;             // 当前局面最佳着法
+    move = good_move = NONE_MOVE;
+    best = -NONE_VALUE;
+
+    int move_num = 0;               // 着法数量
+    // 生成着法
+    MoveSort(situation, move_num, move_list, move, step);
+    debug_node += move_num;
+    for(int i = 0; i < move_num; i++){
+        move = move_list[i];
+        // 下子
+        if(MakeAMove(situation, move)){
+            value = -MAX_VALUE + step;
+        }
+        else{
+            if(best != -NONE_VALUE){
+                value = -SearchCut(situation, depth - 1, -best);
+                if(value > best)
+                    value = -PVSearch(situation, depth - 1, -NONE_VALUE, -best);
+            }
+            else
+                value = -PVSearch(situation, depth - 1, -NONE_VALUE, NONE_VALUE);
+        }
+        // 回溯
+        UnMakeAMove(situation);
+
+        if(value > best){
+            best = value;           // 更新最佳分数
+            good_move = move;       // 更新最佳着法
+        }
+    }
+
+    BestMove = good_move;
+    return best;
+}
+
 /* 
  * 函数名：ComputerThink
  * 描述：电脑迭代加深思考，获取最佳走法
@@ -232,7 +339,7 @@ void ComputerThink(Situation& situation){
     // 迭代加深搜索
     for(max_depth = 1; max_depth <= MAX_DEPTH; max_depth++){
         NowMaxDepth = max_depth;
-        value = PVSearch(situation, max_depth, -NONE_VALUE, NONE_VALUE, false);
+        value = SearchRoot(situation, max_depth);
         if(isTimeLimit){
             break;
         }

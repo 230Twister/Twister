@@ -44,7 +44,7 @@ void LoadBookHashTable(){
     BookHashTable = new BookHashNode[BOOK_HASHTABLE_SIZE];
     memset(BookHashTable, 0, BOOK_HASHTABLE_SIZE * sizeof(BookHashNode));
 
-    ifstream f("../resources/book.txt");
+    ifstream f("./resources/book.txt");
     if(!f.is_open())
         cout << "can not open book.txt" << endl;
     string line;
