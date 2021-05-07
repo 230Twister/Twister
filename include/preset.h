@@ -23,9 +23,10 @@ extern const int HORSE_LEGAL_MOVE[512];
 
 // 车炮预置数组中的结构表示
 struct RookCannonCanGet{
-    UINT8 no_capture[2];        // 不吃子的着法 最左(或最上)[0] 最右(或最下)[1]
-    UINT8 rook_capture[2];      // 车的吃子着法 最左(或最上)[0] 最右(或最下)[1]
-    UINT8 cannon_capture[2];    // 炮的吃子着法 最左(或最上)[0] 最右(或最下)[1]
+    UINT8 no_capture[2];            // 不吃子的着法 最左(或最上)[0] 最右(或最下)[1]
+    UINT8 rook_capture[2];          // 车的吃子着法 最左(或最上)[0] 最右(或最下)[1]
+    UINT8 cannon_capture[2];        // 炮的吃子着法 最左(或最上)[0] 最右(或最下)[1]
+    UINT8 supercannon_capture[2];
 };
 
 // 车炮预置数组中的结构表示

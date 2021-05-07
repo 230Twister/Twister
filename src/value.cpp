@@ -262,7 +262,7 @@ const int ROOK_VALUE = 6;
 const int HORSE_CANNON_VALUE = 3;
 const int OTHER_VALUE = 1;
 const int TOTAL_MIDGAME_VALUE = ROOK_VALUE * 4 + HORSE_CANNON_VALUE * 8 + OTHER_VALUE * 18;
-const int TOTAL_ADVANCED_VALUE = 4;
+const int TOTAL_AdvancedValue = 4;
 const int TOTAL_ATTACK_VALUE = 8;
 const int ADVISOR_BISHOP_ATTACKLESS_VALUE = 80;
 const int TOTAL_ADVISOR_LEAKAGE = 80;
@@ -277,7 +277,7 @@ int PiecesValue[2][7][256];
 int BlackAdvisorLeakage, WhiteAdvisorLeakage;           //缺士
 int HollowThreat[16], CentralThreat[16];                //空头炮、中炮
 int WhiteBottomThreat[16], BlackBottomThreat[16];       //沉底炮
-int advanced_value;                                     //预估值
+int AdvancedValue;                                     //预估值
 
 bool WhiteHalf(int i)
 {
@@ -347,7 +347,7 @@ void PreEvaluate(Situation &situation)
     //使用二次函数，子力很少时才认为接近残局
     midgame_value = (2 * TOTAL_MIDGAME_VALUE - midgame_value) * midgame_value / TOTAL_MIDGAME_VALUE;
     situation.banNullMove = midgame_value < 40;
-    advanced_value = (TOTAL_ADVANCED_VALUE * midgame_value + TOTAL_ADVANCED_VALUE / 2) / TOTAL_MIDGAME_VALUE;
+    AdvancedValue = (TOTAL_AdvancedValue * midgame_value + TOTAL_AdvancedValue / 2) / TOTAL_MIDGAME_VALUE;
     //计算将车马炮的价值
     for (int i = 0; i < 256; i++)
     {
@@ -1016,6 +1016,7 @@ int Evaluate(Situation &situation)
 {
     int value = 0;
     // 偷懒的局面评价函数分以下几个层次：
+    value += SideValue(situation.current_player, situation.value[RED] - situation.value[BLACK]) + AdvancedValue;
 
     // 1. 三级偷懒评价，包括特殊棋型；
     value += AdvisorShape(situation);
