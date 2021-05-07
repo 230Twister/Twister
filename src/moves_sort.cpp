@@ -135,6 +135,19 @@ void MoveSort(const Situation & situation, int & num_of_all_movements, Movement*
    GetAllNotCaptureMovements(situation, num_of_all_movements, all_movements);
    NoCaptureValue(situation, num_of_all_movements, all_movements, flag);
    std::sort(all_movements + flag, all_movements + num_of_all_movements, cmp);
+
+   // 过滤可能的重复走法
+   if(no_movement < 3){
+      for(int i = 3 - no_movement; i < num_of_all_movements; i++){
+         for(int j = 0; j < 3 - no_movement; j++){
+            if(isMoveEqual(all_movements[i], all_movements[j])){
+               // 出现重复需标记删除
+               all_movements[i].from = all_movements[i].to = 0;
+               break;
+            }
+         }
+      }
+   }
 }
 
 /* 

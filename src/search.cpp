@@ -52,7 +52,7 @@ int SearchCut(Situation& situation, int depth, int beta, bool allowNullMove = fa
     }
 
     // 空着裁剪(带检验)
-    if(allowNullMove && !BeChecked(situation)){
+    if(!situation.banNullMove && allowNullMove && !BeChecked(situation)){
         MakeNullMove(situation);
         value = -SearchCut(situation, depth - 1 - NULL_REDUCTION, 1 - beta);
         UnMakeNullMove(situation);
@@ -76,6 +76,7 @@ int SearchCut(Situation& situation, int depth, int beta, bool allowNullMove = fa
     debug_node += move_num;
     for(int i = 0; i < move_num; i++){
         move = move_list[i];
+        if(move.from == 0 && move.to == 0) continue;
         // 下子
         if(MakeAMove(situation, move)){
             value = -MAX_VALUE + step;
@@ -156,6 +157,7 @@ int PVSearch(Situation& situation, int depth, int alpha, int beta){
     debug_node += move_num;
     for(int i = 0; i < move_num; i++){
         move = move_list[i];
+        if(move.from == 0 && move.to == 0) continue;
         // 下子
         if(MakeAMove(situation, move)){
             value = -MAX_VALUE + step;
@@ -278,6 +280,7 @@ int SearchRoot(Situation& situation, int depth){
     debug_node += move_num;
     for(int i = 0; i < move_num; i++){
         move = move_list[i];
+        if(move.from == 0 && move.to == 0) continue;
         // 下子
         if(MakeAMove(situation, move)){
             value = -MAX_VALUE + step;

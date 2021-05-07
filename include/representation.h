@@ -106,7 +106,7 @@ struct Situation{
 	char current_fen[120];				// 当前局面的FEN格式串
 	std::vector<Movement> moves_stack;	// 着法栈
 
-	bool verifyNullMove;				// 执行空着检验
+	bool banNullMove;					// 禁止空着检验
 };
 // 行列 <-> 位置转换
 inline int GetRow(const int position){
@@ -171,6 +171,9 @@ struct Movement{
 	UINT8 capture;			// 着法是否吃子 0代表不吃子 其余代表吃的子的类型
 	UINT8 value;			// 着法的价值
 };
+inline bool isMoveEqual(Movement& move1, Movement& move2){
+	return move1.from == move2.from && move1.to == move2.to && move1.capture == move2.capture;
+}
 // 着法清空
 inline void ClearAllMovements(int & num_of_movements){
 	num_of_movements = 0;

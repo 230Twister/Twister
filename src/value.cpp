@@ -274,9 +274,10 @@ const int EVAL_MARGIN3 = 40;
 const int EVAL_MARGIN4 = 20;
 
 int PiecesValue[2][7][256];
-int vlBlackAdvisorLeakage, vlWhiteAdvisorLeakage;     //缺士
-int vlHollowThreat[16], vlCentralThreat[16];          //空头炮、中炮
-int vlWhiteBottomThreat[16], vlBlackBottomThreat[16]; //沉底炮
+int vlBlackAdvisorLeakage, vlWhiteAdvisorLeakage;       //缺士
+int vlHollowThreat[16], vlCentralThreat[16];            //空头炮、中炮
+int vlWhiteBottomThreat[16], vlBlackBottomThreat[16];   //沉底炮
+int advanced_value;                                     //预估值
 
 bool WhiteHalf(int i)
 {
@@ -294,7 +295,6 @@ int SideValue(int sd, int vl){
 
 void PreEvaluate(Situation &situation)
 {
-    int advanced_value;                         //预估值
     int side_tag;                               //用于标志行走方
     int black_value = 0, red_value = 0;         //记录价值
     int red_attacks = 0, black_attacks = 0;     //双方威胁值
@@ -345,6 +345,7 @@ void PreEvaluate(Situation &situation)
     midgame_value += others_nums * OTHER_MIDGAME_VALUE;
     //使用二次函数，子力很少时才认为接近残局
     midgame_value = (2 * TOTAL_MIDGAME_VALUE - midgame_value) * midgame_value / TOTAL_MIDGAME_VALUE;
+    situation.banNullMove = midgame_value < 40;
     advanced_value = (TOTAL_ADVANCED_VALUE * midgame_value + TOTAL_ADVANCED_VALUE / 2) / TOTAL_MIDGAME_VALUE;
     //计算将车马炮的价值
     for (int i = 0; i < 256; i++)
@@ -487,7 +488,7 @@ int RookMobility(Situation &s)
 int Evaluate(Situation &situation)
 {
     int value = SideValue(situation.current_player, situation.value[RED] - situation.value[BLACK]);
-    // PreEvaluate(s);
+    value += advanced_value;
     value += RookMobility(situation);
     
     return value;
