@@ -387,7 +387,7 @@ bool CheckOpponent(const Situation & situation){
 
             // 右 左 方向的吃子
             for(int j = 0; j < 2; j ++){
-                int capture_col = ROOK_CANNON_CAN_GET_ROW[col - 3][situation.bit_row[row]].connon_capture[j];
+                int capture_col = ROOK_CANNON_CAN_GET_ROW[col - 3][situation.bit_row[row]].cannon_capture[j];
                 if(capture_col != col){
                     piece_to = GetPosition(capture_col, row);
                     piece_to_id = situation.current_board[piece_to];
@@ -398,7 +398,7 @@ bool CheckOpponent(const Situation & situation){
             }
             // 下 上 方向的吃子
             for(int j = 0; j < 2; j ++){
-                int capture_row = ROOK_CANNON_CAN_GET_COL[row - 3][situation.bit_col[col]].connon_capture[j];
+                int capture_row = ROOK_CANNON_CAN_GET_COL[row - 3][situation.bit_col[col]].cannon_capture[j];
                 if(capture_row != row){
                     piece_to = GetPosition(col, capture_row);
                     piece_to_id = situation.current_board[piece_to];
@@ -506,7 +506,7 @@ bool BeChecked(const Situation & situation){
 
             // 右 左 方向的吃子
             for(int j = 0; j < 2; j ++){
-                int capture_col = ROOK_CANNON_CAN_GET_ROW[col - 3][situation.bit_row[row]].connon_capture[j];
+                int capture_col = ROOK_CANNON_CAN_GET_ROW[col - 3][situation.bit_row[row]].cannon_capture[j];
                 if(capture_col != col){
                     piece_to = GetPosition(capture_col, row);
                     piece_to_id = situation.current_board[piece_to];
@@ -517,7 +517,7 @@ bool BeChecked(const Situation & situation){
             }
             // 下 上 方向的吃子
             for(int j = 0; j < 2; j ++){
-                int capture_row = ROOK_CANNON_CAN_GET_COL[row - 3][situation.bit_col[col]].connon_capture[j];
+                int capture_row = ROOK_CANNON_CAN_GET_COL[row - 3][situation.bit_col[col]].cannon_capture[j];
                 if(capture_row != row){
                     piece_to = GetPosition(col, capture_row);
                     piece_to_id = situation.current_board[piece_to];
@@ -587,14 +587,14 @@ bool MakeAMove(Situation & situation, const Movement move){
     ZobristKeyCheck ^= ZobristTableCheck[situation.current_board[move.from]][move.to];
 
     // 3. 更新子力价值
-    situation.value[situation.current_player] -= PiecesValue[situation.current_player][PieceNumToType[piece_id_from]][move.from];
-    situation.value[situation.current_player] += PiecesValue[situation.current_player][PieceNumToType[piece_id_from]][move.to];
+    situation.value[situation.current_player] -= PiecesValue[situation.current_player][PIECE_NUM_TO_TYPE[piece_id_from]][move.from];
+    situation.value[situation.current_player] += PiecesValue[situation.current_player][PIECE_NUM_TO_TYPE[piece_id_from]][move.to];
 
     // 4. 移动棋子
     // 4.1 如果是吃子着法
     if(piece_id_to != 0){
         // 4.1.1 更新子力价值
-        situation.value[ColorOfPiece(piece_id_to)] -= PiecesValue[ColorOfPiece(piece_id_to)][PieceNumToType[piece_id_to]][move.to];
+        situation.value[ColorOfPiece(piece_id_to)] -= PiecesValue[ColorOfPiece(piece_id_to)][PIECE_NUM_TO_TYPE[piece_id_to]][move.to];
         // 4.1.2 只更新起始格的位行位列
         int row = GetRow(move.from), col = GetCol(move.from);
         situation.bit_row[row] ^= BIT_ROW_MASK[move.from];
@@ -665,14 +665,14 @@ void UnMakeAMove (Situation & situation){
     ZobristKeyCheck ^= ZobristTableCheck[situation.current_board[move.to]][move.from];
 
     // 3. 更新子力价值
-    situation.value[ColorOfPiece(piece_id_from)] -= PiecesValue[ColorOfPiece(piece_id_from)][PieceNumToType[piece_id_from]][move.to];
-    situation.value[ColorOfPiece(piece_id_from)] += PiecesValue[ColorOfPiece(piece_id_from)][PieceNumToType[piece_id_from]][move.from];
+    situation.value[ColorOfPiece(piece_id_from)] -= PiecesValue[ColorOfPiece(piece_id_from)][PIECE_NUM_TO_TYPE[piece_id_from]][move.to];
+    situation.value[ColorOfPiece(piece_id_from)] += PiecesValue[ColorOfPiece(piece_id_from)][PIECE_NUM_TO_TYPE[piece_id_from]][move.from];
 
     // 4. 返回棋子
     // 4.1 如果是吃子着法
     if(piece_id_to != 0){
         // 4.1.1 更新子力价值
-        situation.value[ColorOfPiece(piece_id_to)] += PiecesValue[ColorOfPiece(piece_id_to)][PieceNumToType[piece_id_to]][move.to];
+        situation.value[ColorOfPiece(piece_id_to)] += PiecesValue[ColorOfPiece(piece_id_to)][PIECE_NUM_TO_TYPE[piece_id_to]][move.to];
         // 4.1.2 只更新起始格的位行位列
         int row = GetRow(move.from), col = GetCol(move.from);
         situation.bit_row[row] ^= BIT_ROW_MASK[move.from];

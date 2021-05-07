@@ -230,7 +230,7 @@ void InitPresetArray(){
         // 循环一行中的每种状态(位置是否有棋子)
         for(int j = 0; j < (1 << 9); j ++){
             // 3.1.1 将着法初始化(用当前位置初始化)
-            ROOK_CANNON_CAN_GET_ROW[i][j].connon_capture[0] = ROOK_CANNON_CAN_GET_ROW[i][j].connon_capture[1] = i + 3;
+            ROOK_CANNON_CAN_GET_ROW[i][j].cannon_capture[0] = ROOK_CANNON_CAN_GET_ROW[i][j].cannon_capture[1] = i + 3;
             ROOK_CANNON_CAN_GET_ROW[i][j].no_capture[0] = ROOK_CANNON_CAN_GET_ROW[i][j].no_capture[1] = i + 3;
             ROOK_CANNON_CAN_GET_ROW[i][j].rook_capture[0] = ROOK_CANNON_CAN_GET_ROW[i][j].rook_capture[1] = i + 3;
             ROOK_CANNON_CAN_GET_ROW_MASK[i][j].cannon_capture = ROOK_CANNON_CAN_GET_ROW_MASK[i][j].no_capture = ROOK_CANNON_CAN_GET_ROW_MASK[i][j].rook_capture = 0;
@@ -252,7 +252,7 @@ void InitPresetArray(){
             for(col++; col < 9; col ++){
                 // 已经隔了一子，判断炮是否有吃子着法
                 if((j & (1 << RowBitOpration(col))) != 0){
-                    ROOK_CANNON_CAN_GET_ROW[i][j].connon_capture[0] = col + 3;
+                    ROOK_CANNON_CAN_GET_ROW[i][j].cannon_capture[0] = col + 3;
                     ROOK_CANNON_CAN_GET_ROW_MASK[i][j].cannon_capture |= (1 << RowBitOpration(col));
                     break;
                 }
@@ -274,7 +274,7 @@ void InitPresetArray(){
             for(col --; col >=0; col --){
                 // 已经隔了一子，判断炮是否有吃子着法
                 if((j & (1 << RowBitOpration(col))) != 0){
-                    ROOK_CANNON_CAN_GET_ROW[i][j].connon_capture[1] = col + 3;
+                    ROOK_CANNON_CAN_GET_ROW[i][j].cannon_capture[1] = col + 3;
                     ROOK_CANNON_CAN_GET_ROW_MASK[i][j].cannon_capture |= (1 << RowBitOpration(col));
                     break;
                 }
@@ -286,7 +286,7 @@ void InitPresetArray(){
         // 循环一列的每一个状态
         for(int j = 0; j < (1 << 10); j ++){
             // 3.2.1 着法初始化
-            ROOK_CANNON_CAN_GET_COL[i][j].connon_capture[0] = ROOK_CANNON_CAN_GET_COL[i][j].connon_capture[1] = i + 3;
+            ROOK_CANNON_CAN_GET_COL[i][j].cannon_capture[0] = ROOK_CANNON_CAN_GET_COL[i][j].cannon_capture[1] = i + 3;
             ROOK_CANNON_CAN_GET_COL[i][j].no_capture[0] = ROOK_CANNON_CAN_GET_COL[i][j].no_capture[1] = i + 3;
             ROOK_CANNON_CAN_GET_COL[i][j].rook_capture[0] = ROOK_CANNON_CAN_GET_COL[i][j].rook_capture[1] = i + 3;
             ROOK_CANNON_CAN_GET_COL_MASK[i][j].cannon_capture = ROOK_CANNON_CAN_GET_COL_MASK[i][j].no_capture = ROOK_CANNON_CAN_GET_COL_MASK[i][j].rook_capture = 0;
@@ -308,7 +308,7 @@ void InitPresetArray(){
             for(row ++; row < 10; row ++){
                 // 隔了一子，生成炮吃法
                 if((j & (1 << ColBitOpration(row))) != 0){
-                    ROOK_CANNON_CAN_GET_COL[i][j].connon_capture[0] = row + 3;
+                    ROOK_CANNON_CAN_GET_COL[i][j].cannon_capture[0] = row + 3;
                     ROOK_CANNON_CAN_GET_COL_MASK[i][j].cannon_capture |= (1 << ColBitOpration(row));
                     break;
                 }
@@ -330,7 +330,7 @@ void InitPresetArray(){
             for(row --; row >= 0; row --){
                 // 隔了一子，生成炮吃法
                 if((j & (1 << ColBitOpration(row))) != 0){
-                    ROOK_CANNON_CAN_GET_COL[i][j].connon_capture[1] = row + 3;
+                    ROOK_CANNON_CAN_GET_COL[i][j].cannon_capture[1] = row + 3;
                     ROOK_CANNON_CAN_GET_COL_MASK[i][j].cannon_capture |= (1 << ColBitOpration(row));
                     break;
                 }
