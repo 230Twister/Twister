@@ -2,7 +2,7 @@
  * 文件名 : new_value.cpp
  * 描述	: 评估局面价值
  * 作者 : yuanthree
- * 最后更新时间: 21.04.18
+ * 最后更新时间: 21.05.07
  */
 #include "value.h"
 
@@ -273,8 +273,7 @@ const int EVAL_MARGIN2 = 80;
 const int EVAL_MARGIN3 = 40;
 const int EVAL_MARGIN4 = 20;
 
-int white_pieces_value[7][256];
-int black_pieces_value[7][256];
+int pieces_value[2][7][256];
 int black_advisor_leakage_value, white_advisor_leakage_value;     //缺士
 int hollow_threat_value[16], central_threat_value[16];            //空头炮、中炮
 int white_bottom_threat_value[16], black_bottom_threat_value[16]; //沉底炮
@@ -289,7 +288,8 @@ bool BlackHalf(int i)
     return (i & 128) == 0;
 }
 
-int SideValue(int sd, int vl){
+int SideValue(int sd, int vl)
+{
     return (sd == 0 ? vl : -vl);
 }
 
@@ -352,11 +352,11 @@ void PreEvaluate(Situation &situation)
     {
         if (ON_BOARD[i])
         {
-            white_pieces_value[0][i] = black_pieces_value[0][254 - i] = ((KING_PAWN_MIDGAME_ATTACKING_VALUE[i] * midgame_value + KING_PAWN_ENDGAME_ATTACKING_VALUE[i] * (TOTAL_MIDGAME_VALUE - midgame_value)) / TOTAL_MIDGAME_VALUE);
-            white_pieces_value[3][i] = black_pieces_value[3][254 - i] = ((HORSE_MIDGAME_VALUE[i] * midgame_value + HORSE_ENDGAME_VALUE[i] * (TOTAL_MIDGAME_VALUE - midgame_value)) / TOTAL_MIDGAME_VALUE);
-            white_pieces_value[4][i] = black_pieces_value[4][254 - i] = ((ROOK_MIDGAME_VALUE[i] * midgame_value + ROOK_ENDGAME_VALUE[i] * (TOTAL_MIDGAME_VALUE - midgame_value)) / TOTAL_MIDGAME_VALUE);
-            white_pieces_value[5][i] = black_pieces_value[5][254 - i] = ((CANNON_MIDGAME_VALUE[i] * midgame_value + CANNON_ENDGAME_VALUE[i] * (TOTAL_MIDGAME_VALUE - midgame_value)) / TOTAL_MIDGAME_VALUE);
-            attacking_pawn_value[i] = white_pieces_value[0][i];
+            pieces_value[RED][0][i] = pieces_value[BLACK][0][254 - i] = ((KING_PAWN_MIDGAME_ATTACKING_VALUE[i] * midgame_value + KING_PAWN_ENDGAME_ATTACKING_VALUE[i] * (TOTAL_MIDGAME_VALUE - midgame_value)) / TOTAL_MIDGAME_VALUE);
+            pieces_value[RED][3][i] = pieces_value[BLACK][3][254 - i] = ((HORSE_MIDGAME_VALUE[i] * midgame_value + HORSE_ENDGAME_VALUE[i] * (TOTAL_MIDGAME_VALUE - midgame_value)) / TOTAL_MIDGAME_VALUE);
+            pieces_value[RED][4][i] = pieces_value[BLACK][4][254 - i] = ((ROOK_MIDGAME_VALUE[i] * midgame_value + ROOK_ENDGAME_VALUE[i] * (TOTAL_MIDGAME_VALUE - midgame_value)) / TOTAL_MIDGAME_VALUE);
+            pieces_value[RED][5][i] = pieces_value[BLACK][5][254 - i] = ((CANNON_MIDGAME_VALUE[i] * midgame_value + CANNON_ENDGAME_VALUE[i] * (TOTAL_MIDGAME_VALUE - midgame_value)) / TOTAL_MIDGAME_VALUE);
+            attacking_pawn_value[i] = pieces_value[RED][0][i];
             attackless_pawn_value[i] = ((KING_PAWN_MIDGAME_ATTACKLESS_VALUE[i] * midgame_value + KING_PAWN_ENDGAME_ATTACKLESS_VALUE[i] * (TOTAL_MIDGAME_VALUE - midgame_value)) / TOTAL_MIDGAME_VALUE);
         }
     }
@@ -413,18 +413,18 @@ void PreEvaluate(Situation &situation)
     {
         if (ON_BOARD[i])
         {
-            white_pieces_value[1][i] = white_pieces_value[2][i] = ((THREATENED_ADVISOR_BISHOP_VALUE[i] * black_attacks +
-                                                                    THREATLESS_ADVISOR_BISHOP_VALUE[i] * (TOTAL_ATTACK_VALUE - black_attacks)) /
-                                                                   TOTAL_ATTACK_VALUE);
-            black_pieces_value[1][i] = black_pieces_value[2][i] = ((THREATENED_ADVISOR_BISHOP_VALUE[254 - i] * red_attacks +
-                                                                    THREATLESS_ADVISOR_BISHOP_VALUE[254 - i] * (TOTAL_ATTACK_VALUE - red_attacks)) /
-                                                                   TOTAL_ATTACK_VALUE);
-            white_pieces_value[6][i] = ((attacking_pawn_value[i] * red_attacks +
-                                         attackless_pawn_value[i] * (TOTAL_ATTACK_VALUE - red_attacks)) /
-                                        TOTAL_ATTACK_VALUE);
-            black_pieces_value[6][i] = ((attacking_pawn_value[254 - i] * black_attacks +
-                                         attackless_pawn_value[254 - i] * (TOTAL_ATTACK_VALUE - black_attacks)) /
-                                        TOTAL_ATTACK_VALUE);
+            pieces_value[RED][1][i] = pieces_value[RED][2][i] = ((THREATENED_ADVISOR_BISHOP_VALUE[i] * black_attacks +
+                                                                      THREATLESS_ADVISOR_BISHOP_VALUE[i] * (TOTAL_ATTACK_VALUE - black_attacks)) /
+                                                                     TOTAL_ATTACK_VALUE);
+            pieces_value[BLACK][1][i] = pieces_value[BLACK][2][i] = ((THREATENED_ADVISOR_BISHOP_VALUE[254 - i] * red_attacks +
+                                                                      THREATLESS_ADVISOR_BISHOP_VALUE[254 - i] * (TOTAL_ATTACK_VALUE - red_attacks)) /
+                                                                     TOTAL_ATTACK_VALUE);
+            pieces_value[RED][6][i] = ((attacking_pawn_value[i] * red_attacks +
+                                          attackless_pawn_value[i] * (TOTAL_ATTACK_VALUE - red_attacks)) /
+                                         TOTAL_ATTACK_VALUE);
+            pieces_value[BLACK][6][i] = ((attacking_pawn_value[254 - i] * black_attacks +
+                                          attackless_pawn_value[254 - i] * (TOTAL_ATTACK_VALUE - black_attacks)) /
+                                         TOTAL_ATTACK_VALUE);
         }
     }
 
@@ -443,13 +443,13 @@ void PreEvaluate(Situation &situation)
     {
         int pos = situation.current_pieces[i];
         if (pos)
-            red_value += white_pieces_value[PIECE_NUM_TO_TYPE[i]][pos];
+            red_value += pieces_value[RED][PIECE_NUM_TO_TYPE[i]][pos];
     }
     for (int i = 32; i < 48; i++)
     {
         int pos = situation.current_pieces[i];
         if (pos)
-            black_value += black_pieces_value[PIECE_NUM_TO_TYPE[i]][pos];
+            black_value += pieces_value[BLACK][PIECE_NUM_TO_TYPE[i]][pos];
     }
 
     situation.value[RED] = red_value;
@@ -476,7 +476,7 @@ const int SHAPE_CENTER = 1;
 const int SHAPE_LEFT = 2;
 const int SHAPE_RIGHT = 3;
 
-void AdvisorShape(Situation &s)
+int AdvisorShape(Situation &s)
 {
     int pc_cannon, pc_rook, pos, adv1, adv2, x, y, shape;
     int white_penalty_value, black_penalty_value;
@@ -537,7 +537,7 @@ void AdvisorShape(Situation &s)
                             {
                                 // 计算一般中炮的威胁，帅(将)门被对方控制的还有额外罚分
                                 white_penalty_value += ((central_threat_value[15 - y] >> 2) +
-                                                        (IfProtected(1, shape == SHAPE_LEFT ? 0xc8 : 0xc6) ? 20 : 0));
+                                                        (IfProtected(1, shape == SHAPE_LEFT ? 0xc8 : 0xc6, s) ? 20 : 0));
                                 // 如果车在底线保护帅(将)，则给予更大的罚分
                                 for (pc_rook = 16 + 7; pc_rook <= 16 + 8; pc_rook++)
                                 {
@@ -630,7 +630,7 @@ void AdvisorShape(Situation &s)
                             {
                                 // 计算一般中炮的威胁，帅(将)门被对方控制的还有额外罚分
                                 black_penalty_value += ((central_threat_value[15 - y] >> 2) +
-                                                        (IfProtected(0, shape == SHAPE_LEFT ? 0x38 : 0x36) ? 20 : 0));
+                                                        (IfProtected(0, shape == SHAPE_LEFT ? 0x38 : 0x36, s) ? 20 : 0));
                                 // 如果车在底线保护帅(将)，则给予更大的罚分
                                 for (pc_rook = 32 + 7; pc_rook <= 32 + 8; pc_rook++)
                                 {
@@ -668,7 +668,7 @@ void AdvisorShape(Situation &s)
             black_penalty_value += black_advisor_leakage_value;
     }
 
-    s.value += SideValue(s.current_player, black_penalty_value - white_penalty_value);
+    return SideValue(s.current_player, black_penalty_value - white_penalty_value);
 }
 
 /* 以下是第二部分，牵制的评价 */
@@ -717,7 +717,7 @@ const char STRING_VALUE_TAB[512] = {
     0, 0, 0, 0, 0, 0, 0};
 
 // 车或炮牵制帅(将)或车的棋型的评价
-void StringHold(Situation &s)
+int StringHold(Situation &s)
 {
     int dir, pos_from, pos_to, pos_str;
     int x, y, side_tag, opp_side_tag;
@@ -744,13 +744,13 @@ void StringHold(Situation &s)
                     {
                         dir = (pos_from < pos_to ? 0 : 1);
                         // 如果车用炮的吃法(炮用超级炮的着法)能吃到目标子"sqDst"，牵制就成立了，下同
-                        int capture_row = ROOK_CANNON_CAN_GET_COL[y - 3][s.bit_col[x]].connon_capture[dir];
+                        int capture_row = ROOK_CANNON_CAN_GET_COL[y - 3][s.bit_col[x]].cannon_capture[dir];
                         if (capture_row == GetRow(pos_to))
                         {
                             pos_str = x + (ROOK_CANNON_CAN_GET_COL[y - 3][s.bit_col[x]].rook_capture[dir] << 4); //计算被牵制的子位置，是车(炮)本身能吃到的棋子
                             if (s.current_board[pos_str] & opp_side_tag)                                         //被牵制子必须是对方的子
                             {
-                                if (VALUABLE_STRING_PIECES[s.current_board[pos_str]] > 0 && !IfProtected(1 - r, pos_str, pos_to)) // 如果被牵制子是有价值的，而且被牵制子没有保护(被目标子保护不算)，那么牵制是有价值的
+                                if (VALUABLE_STRING_PIECES[s.current_board[pos_str]] > 0 && !IfProtected(1 - r, pos_str, s, pos_to)) // 如果被牵制子是有价值的，而且被牵制子没有保护(被目标子保护不算)，那么牵制是有价值的
                                 {
                                     string_value[r] += STRING_VALUE_TAB[pos_to - pos_str + 256];
                                 }
@@ -760,13 +760,13 @@ void StringHold(Situation &s)
                     else if (y == GetRow(pos_to)) //横向牵制
                     {
                         dir = (pos_from < pos_to ? 0 : 1);
-                        int capture_col = ROOK_CANNON_CAN_GET_ROW[x - 3][s.bit_col[y]].connon_capture[dir];
+                        int capture_col = ROOK_CANNON_CAN_GET_ROW[x - 3][s.bit_col[y]].cannon_capture[dir];
                         if (capture_col == GetCol(pos_to))
                         {
                             pos_str = (y << 4) + ROOK_CANNON_CAN_GET_ROW[x - 3][s.bit_col[y]].rook_capture[dir];
                             if (s.current_board[pos_str] & opp_side_tag)
                             {
-                                if (VALUABLE_STRING_PIECES[s.current_board[pos_str]] > 0 && !IfProtected(1 - r, pos_str, pos_to))
+                                if (VALUABLE_STRING_PIECES[s.current_board[pos_str]] > 0 && !IfProtected(1 - r, pos_str, s, pos_to))
                                 {
                                     string_value[r] += STRING_VALUE_TAB[pos_to - pos_str + 256];
                                 }
@@ -786,13 +786,13 @@ void StringHold(Situation &s)
                         if (x == GetCol(pos_to))
                         {
                             dir = (pos_from < pos_to ? 0 : 1);
-                            int capture_row = ROOK_CANNON_CAN_GET_COL[y - 3][s.bit_col[x]].connon_capture[dir];
+                            int capture_row = ROOK_CANNON_CAN_GET_COL[y - 3][s.bit_col[x]].cannon_capture[dir];
                             if (capture_row == GetRow(pos_to))
                             {
                                 pos_str = x + (ROOK_CANNON_CAN_GET_COL[y - 3][s.bit_col[x]].rook_capture[dir] << 4);
                                 if (s.current_board[pos_str] & opp_side_tag)
                                 {
-                                    if (VALUABLE_STRING_PIECES[s.current_board[pos_str]] > 0 && IfProtected(1 - r, pos_to) && !IfProtected(1 - r, pos_str, pos_to))
+                                    if (VALUABLE_STRING_PIECES[s.current_board[pos_str]] > 0 && IfProtected(1 - r, pos_to, s) && !IfProtected(1 - r, pos_str, s, pos_to))
                                     {
                                         string_value[r] += STRING_VALUE_TAB[pos_to - pos_str + 256];
                                     }
@@ -802,13 +802,13 @@ void StringHold(Situation &s)
                         else if (y == GetRow(pos_to))
                         {
                             dir = (pos_from < pos_to ? 0 : 1);
-                            int capture_col = ROOK_CANNON_CAN_GET_ROW[x - 3][s.bit_col[y]].connon_capture[dir];
+                            int capture_col = ROOK_CANNON_CAN_GET_ROW[x - 3][s.bit_col[y]].cannon_capture[dir];
                             if (capture_col == GetCol(pos_to))
                             {
                                 pos_str = (y << 4) + ROOK_CANNON_CAN_GET_ROW[x - 3][s.bit_col[y]].rook_capture[dir];
                                 if (s.current_board[pos_str] & opp_side_tag)
                                 {
-                                    if (VALUABLE_STRING_PIECES[s.current_board[pos_str]] > 0 && IfProtected(1 - r, pos_to) && !IfProtected(1 - r, pos_str, pos_to))
+                                    if (VALUABLE_STRING_PIECES[s.current_board[pos_str]] > 0 && IfProtected(1 - r, pos_to, s) && !IfProtected(1 - r, pos_str, s, pos_to))
                                     {
                                         string_value[r] += STRING_VALUE_TAB[pos_to - pos_str + 256];
                                     }
@@ -835,13 +835,13 @@ void StringHold(Situation &s)
                     if (x == GetCol(pos_to))
                     {
                         dir = (pos_from < pos_to ? 0 : 1);
-                        int capture_row = ROOK_CANNON_CAN_GET_COL[y - 3][s.bit_col[x]].superconnon_capture[dir];
+                        int capture_row = ROOK_CANNON_CAN_GET_COL[y - 3][s.bit_col[x]].supercannon_capture[dir];
                         if (capture_row == GetRow(pos_to))
                         {
-                            pos_str = x + (ROOK_CANNON_CAN_GET_COL[y - 3][s.bit_col[x]].connon_capture[dir] << 4);
+                            pos_str = x + (ROOK_CANNON_CAN_GET_COL[y - 3][s.bit_col[x]].cannon_capture[dir] << 4);
                             if (s.current_board[pos_str] & opp_side_tag)
                             {
-                                if (VALUABLE_STRING_PIECES[s.current_board[pos_str]] > 0 && !IfProtected(1 - r, pos_str, pos_to))
+                                if (VALUABLE_STRING_PIECES[s.current_board[pos_str]] > 0 && !IfProtected(1 - r, pos_str, s, pos_to))
                                 {
                                     string_value[r] += STRING_VALUE_TAB[pos_to - pos_str + 256];
                                 }
@@ -851,13 +851,13 @@ void StringHold(Situation &s)
                     else if (y == GetRow(pos_to))
                     {
                         dir = (pos_from < pos_to ? 0 : 1);
-                        int capture_col = ROOK_CANNON_CAN_GET_ROW[x - 3][s.bit_col[y]].superconnon_capture[dir];
+                        int capture_col = ROOK_CANNON_CAN_GET_ROW[x - 3][s.bit_col[y]].supercannon_capture[dir];
                         if (capture_col == GetCol(pos_to))
                         {
-                            pos_str = (y << 4) + ROOK_CANNON_CAN_GET_ROW[x - 3][s.bit_col[y]].connon_capture[dir];
+                            pos_str = (y << 4) + ROOK_CANNON_CAN_GET_ROW[x - 3][s.bit_col[y]].cannon_capture[dir];
                             if (s.current_board[pos_str] & opp_side_tag)
                             {
-                                if (VALUABLE_STRING_PIECES[s.current_board[pos_str]] > 0 && !IfProtected(1 - r, pos_str, pos_to))
+                                if (VALUABLE_STRING_PIECES[s.current_board[pos_str]] > 0 && !IfProtected(1 - r, pos_str, s, pos_to))
                                 {
                                     string_value[r] += STRING_VALUE_TAB[pos_to - pos_str + 256];
                                 }
@@ -877,13 +877,13 @@ void StringHold(Situation &s)
                         if (x == GetCol(pos_to))
                         {
                             dir = (pos_from < pos_to ? 0 : 1);
-                            int capture_row = ROOK_CANNON_CAN_GET_COL[y - 3][s.bit_col[x]].superconnon_capture[dir];
+                            int capture_row = ROOK_CANNON_CAN_GET_COL[y - 3][s.bit_col[x]].supercannon_capture[dir];
                             if (capture_row == GetRow(pos_to))
                             {
-                                pos_str = x + (ROOK_CANNON_CAN_GET_COL[y - 3][s.bit_col[x]].connon_capture[dir] << 4);
+                                pos_str = x + (ROOK_CANNON_CAN_GET_COL[y - 3][s.bit_col[x]].cannon_capture[dir] << 4);
                                 if (s.current_board[pos_str] & opp_side_tag)
                                 {
-                                    if (VALUABLE_STRING_PIECES[s.current_board[pos_str]] > 0 && IfProtected(1 - r, pos_to) && !IfProtected(1 - r, pos_str, pos_to))
+                                    if (VALUABLE_STRING_PIECES[s.current_board[pos_str]] > 0 && !IfProtected(1 - r, pos_str, s, pos_to))
                                     {
                                         string_value[r] += STRING_VALUE_TAB[pos_to - pos_str + 256];
                                     }
@@ -893,13 +893,13 @@ void StringHold(Situation &s)
                         else if (y == GetRow(pos_to))
                         {
                             dir = (pos_from < pos_to ? 0 : 1);
-                            int capture_col = ROOK_CANNON_CAN_GET_ROW[x - 3][s.bit_col[y]].superconnon_capture[dir];
+                            int capture_col = ROOK_CANNON_CAN_GET_ROW[x - 3][s.bit_col[y]].supercannon_capture[dir];
                             if (capture_col == GetCol(pos_to))
                             {
-                                pos_str = (y << 4) + ROOK_CANNON_CAN_GET_ROW[x - 3][s.bit_col[y]].connon_capture[dir];
+                                pos_str = (y << 4) + ROOK_CANNON_CAN_GET_ROW[x - 3][s.bit_col[y]].cannon_capture[dir];
                                 if (s.current_board[pos_str] & opp_side_tag)
                                 {
-                                    if (VALUABLE_STRING_PIECES[s.current_board[pos_str]] > 0 && IfProtected(1 - r, pos_to) && !IfProtected(1 - r, pos_str, pos_to))
+                                    if (VALUABLE_STRING_PIECES[s.current_board[pos_str]] > 0 && !IfProtected(1 - r, pos_str, s, pos_to))
                                     {
                                         string_value[r] += STRING_VALUE_TAB[pos_to - pos_str + 256];
                                     }
@@ -912,12 +912,12 @@ void StringHold(Situation &s)
         }
     }
 
-    s.value += SideValue(s.current_player, string_value[0] - string_value[1]);
+    return SideValue(s.current_player, string_value[0] - string_value[1]);
 }
 
 /* 以下是第三部分，车的灵活性的评价 */
 
-void RookMobility(Situation &s)
+int RookMobility(Situation &s)
 {
     int SideTag;
     int rook_mobility[2] = {0};
@@ -942,7 +942,7 @@ void RookMobility(Situation &s)
         }
     }
 
-    s.value += SideValue(s.current_player, rook_mobility[0] - rook_mobility[1]);
+    return SideValue(s.current_player, rook_mobility[0] - rook_mobility[1]);
 }
 
 /* 以下是第四部分，马受到阻碍的评价 */
@@ -966,7 +966,7 @@ const bool EDGE_SQUARES[256] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-void HorseTrap(Situation &s)
+int HorseTrap(Situation &s)
 {
     int side_tag;
     int moveble;
@@ -989,7 +989,7 @@ void HorseTrap(Situation &s)
                 dst = *horse_dst;
                 while (dst)
                 {
-                    if (!EDGE_SQUARES[dst] && !s.current_pieces[dst] && !s.current_pieces[*horse_leg] && !IfProtected(1 - r, dst))
+                    if (!EDGE_SQUARES[dst] && !s.current_pieces[dst] && !s.current_pieces[*horse_leg] && !IfProtected(1 - r, dst, s))
                     {
                         moveble++;
                         if (moveble > 1)
@@ -1007,27 +1007,26 @@ void HorseTrap(Situation &s)
             }
         }
     }
-    s.value += SideValue(s.current_player, horse_traps_value[1] - horse_traps_value[0]);
+    return SideValue(s.current_player, horse_traps_value[1] - horse_traps_value[0]);
 }
 
 // 局面评价过程
-int Evaluate(Situation &situation)
+int Evaluate(Situation &s)
 {
-    s.value = 0;
+    int value = 0;
     // 偷懒的局面评价函数分以下几个层次：
 
-    // 1. 四级偷懒评价(彻底偷懒评价)，只包括子力平衡；
-    PreEvaluate(s);
+    // 1. 三级偷懒评价，包括特殊棋型；
+    value += AdvisorShape(s);
 
-    // 2. 三级偷懒评价，包括特殊棋型；
-    AdvisorShape(s);
+    // 2. 二级偷懒评价，包括牵制；
+    value += StringHold(s);
 
-    // 3. 二级偷懒评价，包括牵制；
-    StringHold(s);
+    // 3. 一级偷懒评价，包括车的灵活性；
+    value += RookMobility(s);
 
-    // 4. 一级偷懒评价，包括车的灵活性；
-    RookMobility(s);
+    // 4. 零级偷懒评价(完全评价)，包括马的阻碍。
+    value += HorseTrap(s);
 
-    // 5. 零级偷懒评价(完全评价)，包括马的阻碍。
-    HorseTrap(s);
+    return value;
 }
