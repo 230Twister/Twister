@@ -233,7 +233,8 @@ void InitPresetArray(){
             ROOK_CANNON_CAN_GET_ROW[i][j].cannon_capture[0] = ROOK_CANNON_CAN_GET_ROW[i][j].cannon_capture[1] = i + 3;
             ROOK_CANNON_CAN_GET_ROW[i][j].no_capture[0] = ROOK_CANNON_CAN_GET_ROW[i][j].no_capture[1] = i + 3;
             ROOK_CANNON_CAN_GET_ROW[i][j].rook_capture[0] = ROOK_CANNON_CAN_GET_ROW[i][j].rook_capture[1] = i + 3;
-            ROOK_CANNON_CAN_GET_ROW_MASK[i][j].cannon_capture = ROOK_CANNON_CAN_GET_ROW_MASK[i][j].no_capture = ROOK_CANNON_CAN_GET_ROW_MASK[i][j].rook_capture = 0;
+            ROOK_CANNON_CAN_GET_ROW[i][j].supercannon_capture[0] = ROOK_CANNON_CAN_GET_ROW[i][j].supercannon_capture[1] = i + 3;
+            ROOK_CANNON_CAN_GET_ROW_MASK[i][j].cannon_capture = ROOK_CANNON_CAN_GET_ROW_MASK[i][j].supercannon_capture = ROOK_CANNON_CAN_GET_ROW_MASK[i][j].no_capture = ROOK_CANNON_CAN_GET_ROW_MASK[i][j].rook_capture = 0;
             int col;
             // 3.1.2 生成车炮右边的着法
             for(col = i + 1; col < 9; col ++){
@@ -249,11 +250,19 @@ void InitPresetArray(){
                     break;
                 }
             }
-            for(col++; col < 9; col ++){
+            for(col ++; col < 9; col ++){
                 // 已经隔了一子，判断炮是否有吃子着法
                 if((j & (1 << RowBitOpration(col))) != 0){
                     ROOK_CANNON_CAN_GET_ROW[i][j].cannon_capture[0] = col + 3;
                     ROOK_CANNON_CAN_GET_ROW_MASK[i][j].cannon_capture |= (1 << RowBitOpration(col));
+                    break;
+                }
+            }
+            for(col ++; col < 9; col ++){
+                // 已经隔了两子，判断超级炮是否有吃子着法
+                if((j & (1 << RowBitOpration(col))) != 0){
+                    ROOK_CANNON_CAN_GET_ROW[i][j].supercannon_capture[0] = col + 3;
+                    ROOK_CANNON_CAN_GET_ROW_MASK[i][j].supercannon_capture |= (1 << RowBitOpration(col));
                     break;
                 }
             }
@@ -271,11 +280,19 @@ void InitPresetArray(){
                     break;
                 }
             }
-            for(col --; col >=0; col --){
+            for(col --; col >= 0; col --){
                 // 已经隔了一子，判断炮是否有吃子着法
                 if((j & (1 << RowBitOpration(col))) != 0){
                     ROOK_CANNON_CAN_GET_ROW[i][j].cannon_capture[1] = col + 3;
                     ROOK_CANNON_CAN_GET_ROW_MASK[i][j].cannon_capture |= (1 << RowBitOpration(col));
+                    break;
+                }
+            }
+            for(col --; col >= 0; col --){
+                // 已经隔了两子，判断超级炮是否有吃子着法
+                if((j & (1 << RowBitOpration(col))) != 0){
+                    ROOK_CANNON_CAN_GET_ROW[i][j].supercannon_capture[1] = col + 3;
+                    ROOK_CANNON_CAN_GET_ROW_MASK[i][j].supercannon_capture |= (1 << RowBitOpration(col));
                     break;
                 }
             }
@@ -289,7 +306,8 @@ void InitPresetArray(){
             ROOK_CANNON_CAN_GET_COL[i][j].cannon_capture[0] = ROOK_CANNON_CAN_GET_COL[i][j].cannon_capture[1] = i + 3;
             ROOK_CANNON_CAN_GET_COL[i][j].no_capture[0] = ROOK_CANNON_CAN_GET_COL[i][j].no_capture[1] = i + 3;
             ROOK_CANNON_CAN_GET_COL[i][j].rook_capture[0] = ROOK_CANNON_CAN_GET_COL[i][j].rook_capture[1] = i + 3;
-            ROOK_CANNON_CAN_GET_COL_MASK[i][j].cannon_capture = ROOK_CANNON_CAN_GET_COL_MASK[i][j].no_capture = ROOK_CANNON_CAN_GET_COL_MASK[i][j].rook_capture = 0;
+            ROOK_CANNON_CAN_GET_COL[i][j].supercannon_capture[0] = ROOK_CANNON_CAN_GET_COL[i][j].supercannon_capture[1] = i + 3;
+            ROOK_CANNON_CAN_GET_COL_MASK[i][j].cannon_capture = ROOK_CANNON_CAN_GET_ROW_MASK[i][j].supercannon_capture = ROOK_CANNON_CAN_GET_COL_MASK[i][j].no_capture = ROOK_CANNON_CAN_GET_COL_MASK[i][j].rook_capture = 0;
             // 3.2.2 生成车炮向下的着法
             int row;
             for(row = i + 1; row < 10; row ++){
@@ -313,6 +331,14 @@ void InitPresetArray(){
                     break;
                 }
             }
+            for(row ++; row < 10; row ++){
+                // 隔了两子，生成超级炮吃法
+                if((j & (1 << ColBitOpration(row))) != 0){
+                    ROOK_CANNON_CAN_GET_COL[i][j].supercannon_capture[0] = row + 3;
+                    ROOK_CANNON_CAN_GET_COL_MASK[i][j].supercannon_capture |= (1 << ColBitOpration(row));
+                    break;
+                }
+            }
             // 3.2.3 生成车炮向上的着法
             for(row = i - 1; row >= 0; row --){
                 // 当前状态下该行无棋子
@@ -332,6 +358,14 @@ void InitPresetArray(){
                 if((j & (1 << ColBitOpration(row))) != 0){
                     ROOK_CANNON_CAN_GET_COL[i][j].cannon_capture[1] = row + 3;
                     ROOK_CANNON_CAN_GET_COL_MASK[i][j].cannon_capture |= (1 << ColBitOpration(row));
+                    break;
+                }
+            }
+            for(row --; row >= 0; row --){
+                // 隔了两子，生成超级炮吃法
+                if((j & (1 << ColBitOpration(row))) != 0){
+                    ROOK_CANNON_CAN_GET_COL[i][j].supercannon_capture[1] = row + 3;
+                    ROOK_CANNON_CAN_GET_COL_MASK[i][j].supercannon_capture |= (1 << ColBitOpration(row));
                     break;
                 }
             }
