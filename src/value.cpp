@@ -513,9 +513,9 @@ int AdvisorShape(Situation &s)
                         if (x == FILE_CENTER)
                         {
                             y = GetRow(pos);
-                            if (ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].rook_capture & 512 != 0) // 计算空头炮的威胁
+                            if ((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].rook_capture & 512) != 0) // 计算空头炮的威胁
                                 white_penalty_value += HollowThreat[15 - y];
-                            else if ((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].supercannon_capture & 512 != 0) && (s.current_board[0xb7] == 21 || s.current_board[0xb7] == 22)) // 计算炮镇窝心马的威胁
+                            else if (((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].supercannon_capture & 512) != 0) && (s.current_board[0xb7] == 21 || s.current_board[0xb7] == 22)) // 计算炮镇窝心马的威胁
                                 white_penalty_value += CentralThreat[15 - y];
                         }
                     }
@@ -531,7 +531,7 @@ int AdvisorShape(Situation &s)
                         y = GetRow(pos);
                         if (x == FILE_CENTER)
                         {
-                            if (ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].supercannon_capture & 512 != 0)
+                            if ((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].supercannon_capture & 512) != 0)
                             {
                                 // 计算一般中炮的威胁，帅(将)门被对方控制的还有额外罚分
                                 white_penalty_value += ((CentralThreat[15 - y] >> 2) +
@@ -545,7 +545,7 @@ int AdvisorShape(Situation &s)
                                         y = GetRow(pos);
                                         if (y == RANK_BOTTOM)
                                         {
-                                            if (ROOK_CANNON_CAN_GET_ROW_MASK[x - 3][s.bit_row[y]].rook_capture & 16 != 0)
+                                            if ((ROOK_CANNON_CAN_GET_ROW_MASK[x - 3][s.bit_row[y]].rook_capture & 16) != 0)
                                                 white_penalty_value += 80;
                                         }
                                     }
@@ -554,7 +554,7 @@ int AdvisorShape(Situation &s)
                         }
                         else if (y == RANK_BOTTOM) // 计算沉底炮的威胁
                         {
-                            if (ROOK_CANNON_CAN_GET_ROW_MASK[x - 3][s.bit_row[y]].rook_capture & 16 != 0)
+                            if ((ROOK_CANNON_CAN_GET_ROW_MASK[x - 3][s.bit_row[y]].rook_capture & 16) != 0)
                                 white_penalty_value += WhiteBottomThreat[x];
                         }
                     }
@@ -603,9 +603,9 @@ int AdvisorShape(Situation &s)
                         if (x == FILE_CENTER)
                         {
                             y = GetRow(pos);
-                            if (ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].rook_capture & 1 != 0) // 计算空头炮的威胁
+                            if ((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].rook_capture & 1) != 0) // 计算空头炮的威胁
                                 black_penalty_value += HollowThreat[y];
-                            else if ((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].supercannon_capture & 1 != 0) && (s.current_board[0x47] == 37 || s.current_board[0x47] == 38)) // 计算炮镇窝心马的威胁
+                            else if (((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].supercannon_capture & 1) != 0) && (s.current_board[0x47] == 37 || s.current_board[0x47] == 38)) // 计算炮镇窝心马的威胁
                                 black_penalty_value += CentralThreat[y];
                         }
                     }
@@ -621,7 +621,7 @@ int AdvisorShape(Situation &s)
                         y = GetRow(pos);
                         if (x == FILE_CENTER)
                         {
-                            if (ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].supercannon_capture & 1 != 0)
+                            if ((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].supercannon_capture & 1) != 0)
                             {
                                 // 计算一般中炮的威胁，帅(将)门被对方控制的还有额外罚分
                                 black_penalty_value += ((CentralThreat[y] >> 2) +
@@ -635,7 +635,7 @@ int AdvisorShape(Situation &s)
                                         y = GetRow(pos);
                                         if (y == RANK_TOP)
                                         {
-                                            if (ROOK_CANNON_CAN_GET_ROW_MASK[x - 3][s.bit_row[y]].rook_capture & 16 != 0)
+                                            if ((ROOK_CANNON_CAN_GET_ROW_MASK[x - 3][s.bit_row[y]].rook_capture & 16) != 0)
                                                 black_penalty_value += 80;
                                         }
                                     }
@@ -644,7 +644,7 @@ int AdvisorShape(Situation &s)
                         }
                         else if (y == RANK_TOP) // 计算沉底炮的威胁
                         {
-                            if (ROOK_CANNON_CAN_GET_ROW_MASK[x - 3][s.bit_row[y]].rook_capture & 16 != 0)
+                            if ((ROOK_CANNON_CAN_GET_ROW_MASK[x - 3][s.bit_row[y]].rook_capture & 16) != 0)
                                 black_penalty_value += BlackBottomThreat[x];
                         }
                     }
