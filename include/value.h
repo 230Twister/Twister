@@ -15,6 +15,6 @@ void PreEvaluate(Situation &s);
 int AdvisorShape(Situation& s);
 int StringHold(Situation& s);
 int RookMobility(Situation &s);
-int Evaluate(Situation &s);
+int Evaluate(Situation &s, int alpha, int beta);
 
 #endif
