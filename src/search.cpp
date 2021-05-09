@@ -15,6 +15,7 @@ bool isTimeLimit = 0;                                   // 时间是否超限
 bool UseBook = true;
 int NowMaxDepth;
 const int NULL_REDUCTION = 2;                           // 空着裁剪度
+const int DRAW_VALUE = -10;                             // 和棋分数
 const UINT16 MAX_DEPTH = 24;                            // 最大搜索深度
 const time_t MAX_TIME = 40000;                          // 最大消耗时间(ms)
 extern const int MAX_VALUE = 10000;                     // 最大价值，胜利局面绝对分数
@@ -42,7 +43,7 @@ int SearchCut(Situation& situation, int depth, int beta, bool allowNullMove = fa
 
     // 重复裁剪
     if(CheckRepeat(situation, step)) 
-        return 0;
+        return DRAW_VALUE;
 
     // 置换表裁剪
     value = ReadHashTable(depth, beta - 1, beta, move);
@@ -52,15 +53,21 @@ int SearchCut(Situation& situation, int depth, int beta, bool allowNullMove = fa
     }
 
     // 空着裁剪(带检验)
-    if(!situation.banNullMove && allowNullMove && !BeChecked(situation)){
+    if(!banNullMove(situation) && allowNullMove && !BeChecked(situation)){
         MakeNullMove(situation);
         value = -SearchCut(situation, depth - 1 - NULL_REDUCTION, 1 - beta);
         UnMakeNullMove(situation);
 
-        // 检验
-        if(value >= beta && SearchCut(situation, depth - NULL_REDUCTION, beta) >= beta){
-            SaveHashTable(max(depth, NULL_REDUCTION), beta, hashBETA, NONE_MOVE);
-            return beta;
+        if(value >= beta){
+            // 无需检验
+            if(!verifyNullMove(situation)){
+                SaveHashTable(max(depth, NULL_REDUCTION + 1), beta, hashBETA, NONE_MOVE);
+                return beta;
+            }
+            else if(SearchCut(situation, depth - NULL_REDUCTION, beta) >= beta){
+                SaveHashTable(max(depth, NULL_REDUCTION), beta, hashBETA, NONE_MOVE);
+                return beta;
+            }
         }
     }
 
@@ -132,14 +139,19 @@ int PVSearch(Situation& situation, int depth, int alpha, int beta){
 
     // 重复裁剪
     if(CheckRepeat(situation, step)) 
-        return 0;
+        return DRAW_VALUE;
 
     // 置换表裁剪
     value = ReadHashTable(depth, alpha, beta, move);
-    if(value != NONE_VALUE){
+    if(value != NONE_VALUE && value > -MAX_VALUE){
         debug_hash++;
         return value;
     }
+
+    // // 内部迭代加深启发(在置换表未能给出启发走法时使用)
+    // if(depth > 2 && move.from == 0){
+
+    // }
 
     // 时间检测，避免超限
     if(isTimeLimit || clock() - StartTime > MAX_TIME){
@@ -227,12 +239,12 @@ int QuiescentSearch(Situation& situation, int alpha, int beta){
 
     best = step - MAX_VALUE;
     // 必输局面直接返回
-    if(best > beta){
+    if(best >= beta){
         return beta;
     }
     
     // 调用评估函数进行评估
-    value = Evaluate(situation);
+    value = Evaluate(situation, alpha, beta);
     if(value > beta)
         return beta;
     if(value > alpha)

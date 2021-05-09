@@ -274,10 +274,10 @@ const int EVAL_MARGIN3 = 40;
 const int EVAL_MARGIN4 = 20;
 
 int PiecesValue[2][7][256];
-int BlackAdvisorLeakage, WhiteAdvisorLeakage;           //缺士
-int HollowThreat[16], CentralThreat[16];                //空头炮、中炮
-int WhiteBottomThreat[16], BlackBottomThreat[16];       //沉底炮
-int AdvancedValue;                                     //预估值
+int BlackAdvisorLeakage, RedAdvisorLeakage;         //缺士
+int HollowThreat[16], CentralThreat[16];            //空头炮、中炮
+int WhiteBottomThreat[16], BlackBottomThreat[16];   //沉底炮
+int AdvancedValue;                                  //预估值
 
 bool WhiteHalf(int i)
 {
@@ -296,10 +296,10 @@ int SideValue(int sd, int vl)
 
 void PreEvaluate(Situation &situation)
 {
-    int side_tag;                               //用于标志行走方
-    int black_value = 0, red_value = 0;         //记录价值
-    int red_attacks = 0, black_attacks = 0;     //双方威胁值
-    int red_simple_value, black_simple_value;   //双方轻子价值
+    int side_tag;                             //用于标志行走方
+    int black_value = 0, red_value = 0;       //记录价值
+    int red_attacks = 0, black_attacks = 0;   //双方威胁值
+    int red_simple_value, black_simple_value; //双方轻子价值
     int midgame_value = 0;
     int attacking_pawn_value[256], attackless_pawn_value[256];
 
@@ -346,7 +346,6 @@ void PreEvaluate(Situation &situation)
     midgame_value += others_nums * OTHER_VALUE;
     //使用二次函数，子力很少时才认为接近残局
     midgame_value = (2 * TOTAL_MIDGAME_VALUE - midgame_value) * midgame_value / TOTAL_MIDGAME_VALUE;
-    situation.banNullMove = midgame_value < 40;
     AdvancedValue = (TOTAL_AdvancedValue * midgame_value + TOTAL_AdvancedValue / 2) / TOTAL_MIDGAME_VALUE;
     //计算将车马炮的价值
     for (int i = 0; i < 256; i++)
@@ -407,7 +406,7 @@ void PreEvaluate(Situation &situation)
 
     //计算士的缺值
     BlackAdvisorLeakage = TOTAL_ADVISOR_LEAKAGE * red_attacks / TOTAL_ATTACK_VALUE;
-    WhiteAdvisorLeakage = TOTAL_ADVISOR_LEAKAGE * black_attacks / TOTAL_ATTACK_VALUE;
+    RedAdvisorLeakage = TOTAL_ADVISOR_LEAKAGE * black_attacks / TOTAL_ATTACK_VALUE;
 
     //计算士象兵价值
     for (int i = 0; i < 256; i++)
@@ -415,17 +414,17 @@ void PreEvaluate(Situation &situation)
         if (ON_BOARD[i])
         {
             PiecesValue[RED][1][i] = PiecesValue[RED][2][i] = ((THREATENED_ADVISOR_BISHOP_VALUE[i] * black_attacks +
-                                                                      THREATLESS_ADVISOR_BISHOP_VALUE[i] * (TOTAL_ATTACK_VALUE - black_attacks)) /
-                                                                     TOTAL_ATTACK_VALUE);
+                                                                THREATLESS_ADVISOR_BISHOP_VALUE[i] * (TOTAL_ATTACK_VALUE - black_attacks)) /
+                                                               TOTAL_ATTACK_VALUE);
             PiecesValue[BLACK][1][i] = PiecesValue[BLACK][2][i] = ((THREATENED_ADVISOR_BISHOP_VALUE[254 - i] * red_attacks +
-                                                                      THREATLESS_ADVISOR_BISHOP_VALUE[254 - i] * (TOTAL_ATTACK_VALUE - red_attacks)) /
-                                                                     TOTAL_ATTACK_VALUE);
+                                                                    THREATLESS_ADVISOR_BISHOP_VALUE[254 - i] * (TOTAL_ATTACK_VALUE - red_attacks)) /
+                                                                   TOTAL_ATTACK_VALUE);
             PiecesValue[RED][6][i] = ((attacking_pawn_value[i] * red_attacks +
-                                          attackless_pawn_value[i] * (TOTAL_ATTACK_VALUE - red_attacks)) /
-                                         TOTAL_ATTACK_VALUE);
+                                       attackless_pawn_value[i] * (TOTAL_ATTACK_VALUE - red_attacks)) /
+                                      TOTAL_ATTACK_VALUE);
             PiecesValue[BLACK][6][i] = ((attacking_pawn_value[254 - i] * black_attacks +
-                                          attackless_pawn_value[254 - i] * (TOTAL_ATTACK_VALUE - black_attacks)) /
-                                         TOTAL_ATTACK_VALUE);
+                                         attackless_pawn_value[254 - i] * (TOTAL_ATTACK_VALUE - black_attacks)) /
+                                        TOTAL_ATTACK_VALUE);
         }
     }
 
@@ -480,8 +479,8 @@ const int SHAPE_RIGHT = 3;
 int AdvisorShape(Situation &s)
 {
     int pc_cannon, pc_rook, pos, adv1, adv2, x, y, shape;
-    int white_penalty_value, black_penalty_value;
-    white_penalty_value = black_penalty_value = 0;
+    int red_penalty_value, black_penalty_value;
+    red_penalty_value = black_penalty_value = 0;
 
     //红方
     if (s.current_pieces[16 + 1] && s.current_pieces[16 + 2]) //双士健在
@@ -513,12 +512,10 @@ int AdvisorShape(Situation &s)
                         if (x == FILE_CENTER)
                         {
                             y = GetRow(pos);
-                            int capture_row = ROOK_CANNON_CAN_GET_COL[y - 3][s.bit_col[x]].rook_capture[0];
-                            int super_row;         //超级炮吃子位置
-                            if (capture_row == 12) // 计算空头炮的威胁
-                                white_penalty_value += HollowThreat[15 - y];
-                            else if (super_row == 12 && (s.current_board[0xb7] == 21 || s.current_board[0xb7] == 22)) // 计算炮镇窝心马的威胁
-                                white_penalty_value += CentralThreat[15 - y];
+                            if ((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].rook_capture & 512) != 0) // 计算空头炮的威胁
+                                red_penalty_value += HollowThreat[15 - y];
+                            else if (((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].supercannon_capture & 512) != 0) && (s.current_board[0xb7] == 21 || s.current_board[0xb7] == 22)) // 计算炮镇窝心马的威胁
+                                red_penalty_value += CentralThreat[15 - y];
                         }
                     }
                 }
@@ -533,11 +530,10 @@ int AdvisorShape(Situation &s)
                         y = GetRow(pos);
                         if (x == FILE_CENTER)
                         {
-                            int super_row;
-                            if (super_row == 12)
+                            if ((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].supercannon_capture & 512) != 0)
                             {
                                 // 计算一般中炮的威胁，帅(将)门被对方控制的还有额外罚分
-                                white_penalty_value += ((CentralThreat[15 - y] >> 2) +
+                                red_penalty_value += ((CentralThreat[15 - y] >> 2) +
                                                         (IfProtected(1, shape == SHAPE_LEFT ? 0xc8 : 0xc6, s) ? 20 : 0));
                                 // 如果车在底线保护帅(将)，则给予更大的罚分
                                 for (pc_rook = 16 + 7; pc_rook <= 16 + 8; pc_rook++)
@@ -548,8 +544,8 @@ int AdvisorShape(Situation &s)
                                         y = GetRow(pos);
                                         if (y == RANK_BOTTOM)
                                         {
-                                            if (ROOK_CANNON_CAN_GET_ROW[x - 3][s.bit_row[y]].rook_capture[0] <= 7 <= ROOK_CANNON_CAN_GET_ROW[x - 3][s.bit_row[y]].rook_capture[1])
-                                                white_penalty_value += 80;
+                                            if ((ROOK_CANNON_CAN_GET_ROW_MASK[x - 3][s.bit_row[y]].rook_capture & 16) != 0)
+                                                red_penalty_value += 80;
                                         }
                                     }
                                 }
@@ -557,8 +553,8 @@ int AdvisorShape(Situation &s)
                         }
                         else if (y == RANK_BOTTOM) // 计算沉底炮的威胁
                         {
-                            if (ROOK_CANNON_CAN_GET_ROW[x - 3][s.bit_row[y]].rook_capture[0] <= 7 <= ROOK_CANNON_CAN_GET_ROW[x - 3][s.bit_row[y]].rook_capture[1])
-                                white_penalty_value += WhiteBottomThreat[x];
+                            if ((ROOK_CANNON_CAN_GET_ROW_MASK[x - 3][s.bit_row[y]].rook_capture & 16) != 0)
+                                red_penalty_value += WhiteBottomThreat[x];
                         }
                     }
                 }
@@ -568,12 +564,12 @@ int AdvisorShape(Situation &s)
             }
         }
         else if (s.current_pieces[16] == 0xb7) // 有双仕(士)但花心被帅(将)占领，要罚分
-            white_penalty_value += 20;
+            red_penalty_value += 20;
     }
     else
     {
         if (s.current_pieces[32 + 7] && s.current_pieces[32 + 8]) // 缺仕(士)怕双车，有罚分
-            white_penalty_value += WhiteAdvisorLeakage;
+            red_penalty_value += RedAdvisorLeakage;
     }
 
     //黑方
@@ -606,12 +602,10 @@ int AdvisorShape(Situation &s)
                         if (x == FILE_CENTER)
                         {
                             y = GetRow(pos);
-                            int capture_row = ROOK_CANNON_CAN_GET_COL[y - 3][s.bit_col[x]].rook_capture[0];
-                            int super_row;        //超级炮吃子位置
-                            if (capture_row == 3) // 计算空头炮的威胁
-                                black_penalty_value += HollowThreat[15 - y];
-                            else if (super_row == 3 && (s.current_board[0xb7] == 37 || s.current_board[0xb7] == 38)) // 计算炮镇窝心马的威胁
-                                black_penalty_value += CentralThreat[15 - y];
+                            if ((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].rook_capture & 1) != 0) // 计算空头炮的威胁
+                                black_penalty_value += HollowThreat[y];
+                            else if (((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].supercannon_capture & 1) != 0) && (s.current_board[0x47] == 37 || s.current_board[0x47] == 38)) // 计算炮镇窝心马的威胁
+                                black_penalty_value += CentralThreat[y];
                         }
                     }
                 }
@@ -626,11 +620,10 @@ int AdvisorShape(Situation &s)
                         y = GetRow(pos);
                         if (x == FILE_CENTER)
                         {
-                            int super_row;
-                            if (super_row == 3)
+                            if ((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].supercannon_capture & 1) != 0)
                             {
                                 // 计算一般中炮的威胁，帅(将)门被对方控制的还有额外罚分
-                                black_penalty_value += ((CentralThreat[15 - y] >> 2) +
+                                black_penalty_value += ((CentralThreat[y] >> 2) +
                                                         (IfProtected(0, shape == SHAPE_LEFT ? 0x38 : 0x36, s) ? 20 : 0));
                                 // 如果车在底线保护帅(将)，则给予更大的罚分
                                 for (pc_rook = 32 + 7; pc_rook <= 32 + 8; pc_rook++)
@@ -641,7 +634,7 @@ int AdvisorShape(Situation &s)
                                         y = GetRow(pos);
                                         if (y == RANK_TOP)
                                         {
-                                            if (ROOK_CANNON_CAN_GET_ROW[x - 3][s.bit_row[y]].rook_capture[0] <= 7 <= ROOK_CANNON_CAN_GET_ROW[x - 3][s.bit_row[y]].rook_capture[1])
+                                            if ((ROOK_CANNON_CAN_GET_ROW_MASK[x - 3][s.bit_row[y]].rook_capture & 16) != 0)
                                                 black_penalty_value += 80;
                                         }
                                     }
@@ -650,7 +643,7 @@ int AdvisorShape(Situation &s)
                         }
                         else if (y == RANK_TOP) // 计算沉底炮的威胁
                         {
-                            if (ROOK_CANNON_CAN_GET_ROW[x - 3][s.bit_row[y]].rook_capture[0] <= 7 <= ROOK_CANNON_CAN_GET_ROW[x - 3][s.bit_row[y]].rook_capture[1])
+                            if ((ROOK_CANNON_CAN_GET_ROW_MASK[x - 3][s.bit_row[y]].rook_capture & 16) != 0)
                                 black_penalty_value += BlackBottomThreat[x];
                         }
                     }
@@ -669,7 +662,7 @@ int AdvisorShape(Situation &s)
             black_penalty_value += BlackAdvisorLeakage;
     }
 
-    return SideValue(s.current_player, black_penalty_value - white_penalty_value);
+    return SideValue(s.current_player, black_penalty_value - red_penalty_value);
 }
 
 /* 以下是第二部分，牵制的评价 */
@@ -913,7 +906,7 @@ int StringHold(Situation &s)
         }
     }
 
-    return SideValue(s.current_player, string_value[0] - string_value[1]);
+    return SideValue(s.current_player, string_value[RED] - string_value[BLACK]);
 }
 
 /* 以下是第三部分，车的灵活性的评价 */
@@ -943,7 +936,7 @@ int RookMobility(Situation &s)
         }
     }
 
-    return SideValue(s.current_player, rook_mobility[0] - rook_mobility[1]);
+    return SideValue(s.current_player, rook_mobility[RED] - rook_mobility[BLACK]);
 }
 
 /* 以下是第四部分，马受到阻碍的评价 */
@@ -1012,23 +1005,38 @@ int HorseTrap(Situation &s)
 }
 
 // 局面评价过程
-int Evaluate(Situation &situation)
+int Evaluate(Situation &situation, int alpha, int beta)
 {
     int value = 0;
     // 偷懒的局面评价函数分以下几个层次：
     value += SideValue(situation.current_player, situation.value[RED] - situation.value[BLACK]) + AdvancedValue;
+    if(value + EVAL_MARGIN1 <= alpha)
+        return value + EVAL_MARGIN1;
+    else if(value - EVAL_MARGIN1 >= beta)
+        return value - EVAL_MARGIN1;
 
     // 1. 三级偷懒评价，包括特殊棋型；
     value += AdvisorShape(situation);
+    if(value + EVAL_MARGIN2 <= alpha)
+        return value + EVAL_MARGIN2;
+    else if(value - EVAL_MARGIN2 >= beta)
+        return value - EVAL_MARGIN2;
 
     // 2. 二级偷懒评价，包括牵制；
     value += StringHold(situation);
+    if(value + EVAL_MARGIN3 <= alpha)
+        return value + EVAL_MARGIN3;
+    else if(value - EVAL_MARGIN3 >= beta)
+        return value - EVAL_MARGIN3;
 
     // 3. 一级偷懒评价，包括车的灵活性；
     value += RookMobility(situation);
+    if(value + EVAL_MARGIN4 <= alpha)
+        return value + EVAL_MARGIN4;
+    else if(value - EVAL_MARGIN4 >= beta)
+        return value - EVAL_MARGIN4;
 
     // 4. 零级偷懒评价(完全评价)，包括马的阻碍。
     value += HorseTrap(situation);
-
     return value;
 }

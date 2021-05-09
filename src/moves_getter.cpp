@@ -168,7 +168,7 @@ void GetAllCaptureMovements(const Situation & situation, int & num_of_all_moveme
 
             // 右 左 方向的吃子
             for(int j = 0; j < 2; j ++){
-                int capture_col = ROOK_CANNON_CAN_GET_ROW[col - 3][situation.bit_row[row]].connon_capture[j];
+                int capture_col = ROOK_CANNON_CAN_GET_ROW[col - 3][situation.bit_row[row]].cannon_capture[j];
                 if(capture_col != col){
                     piece_to = GetPosition(capture_col, row);
                     piece_to_id = situation.current_board[piece_to];
@@ -182,7 +182,7 @@ void GetAllCaptureMovements(const Situation & situation, int & num_of_all_moveme
             }
             // 下 上 方向的吃子
             for(int j = 0; j < 2; j ++){
-                int capture_row = ROOK_CANNON_CAN_GET_COL[row - 3][situation.bit_col[col]].connon_capture[j];
+                int capture_row = ROOK_CANNON_CAN_GET_COL[row - 3][situation.bit_col[col]].cannon_capture[j];
                 if(capture_row != row){
                     piece_to = GetPosition(col, capture_row);
                     piece_to_id = situation.current_board[piece_to];
