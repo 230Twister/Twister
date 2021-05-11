@@ -307,8 +307,8 @@ void InitPresetArray(){
             ROOK_CANNON_CAN_GET_COL[i][j].no_capture[0] = ROOK_CANNON_CAN_GET_COL[i][j].no_capture[1] = i + 3;
             ROOK_CANNON_CAN_GET_COL[i][j].rook_capture[0] = ROOK_CANNON_CAN_GET_COL[i][j].rook_capture[1] = i + 3;
             ROOK_CANNON_CAN_GET_COL[i][j].supercannon_capture[0] = ROOK_CANNON_CAN_GET_COL[i][j].supercannon_capture[1] = i + 3;
-            ROOK_CANNON_CAN_GET_COL_MASK[i][j].cannon_capture = ROOK_CANNON_CAN_GET_ROW_MASK[i][j].supercannon_capture = ROOK_CANNON_CAN_GET_COL_MASK[i][j].no_capture = ROOK_CANNON_CAN_GET_COL_MASK[i][j].rook_capture = 0;
-            // 3.2.2 生成车炮向下的着法
+            ROOK_CANNON_CAN_GET_COL_MASK[i][j].cannon_capture = ROOK_CANNON_CAN_GET_COL_MASK[i][j].supercannon_capture = ROOK_CANNON_CAN_GET_COL_MASK[i][j].no_capture = ROOK_CANNON_CAN_GET_COL_MASK[i][j].rook_capture = 0;
+            // 3.2.2 生成车炮向下的着法 
             int row;
             for(row = i + 1; row < 10; row ++){
                 // 当前状态下该行无棋子

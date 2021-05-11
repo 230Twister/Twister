@@ -105,6 +105,8 @@ struct Situation{
 	int value[2];
 	char current_fen[120];				// 当前局面的FEN格式串
 	std::vector<Movement> moves_stack;	// 着法栈
+
+	bool banNullMove;
 };
 // 行列 <-> 位置转换
 inline int GetRow(const int position){
@@ -145,12 +147,6 @@ inline bool InHomeHalf(int pos, int player){
 }
 inline int SquareBack(int pos, int player){
 	return pos + 16 - (player << 5);
-}
-inline bool verifyNullMove(Situation& situation){
-	return situation.value[situation.current_player] <= 400;
-}
-inline bool banNullMove(Situation& situation){
-	return situation.value[situation.current_player] <= 200;
 }
 
 // 局面操作

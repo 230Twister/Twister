@@ -53,21 +53,14 @@ int SearchCut(Situation& situation, int depth, int beta, bool allowNullMove = fa
     }
 
     // 空着裁剪(带检验)
-    if(!banNullMove(situation) && allowNullMove && !BeChecked(situation)){
+    if(!situation.banNullMove && allowNullMove && !BeChecked(situation)){
         MakeNullMove(situation);
         value = -SearchCut(situation, depth - 1 - NULL_REDUCTION, 1 - beta);
         UnMakeNullMove(situation);
 
-        if(value >= beta){
-            // 无需检验
-            if(!verifyNullMove(situation)){
-                SaveHashTable(max(depth, NULL_REDUCTION + 1), beta, hashBETA, NONE_MOVE);
-                return beta;
-            }
-            else if(SearchCut(situation, depth - NULL_REDUCTION, beta) >= beta){
-                SaveHashTable(max(depth, NULL_REDUCTION), beta, hashBETA, NONE_MOVE);
-                return beta;
-            }
+        if(value >= beta && SearchCut(situation, depth - NULL_REDUCTION, beta) >= beta){
+            SaveHashTable(max(depth, NULL_REDUCTION), beta, hashBETA, NONE_MOVE);
+            return beta;
         }
     }
 
@@ -123,13 +116,14 @@ int SearchCut(Situation& situation, int depth, int beta, bool allowNullMove = fa
  * - int 最佳分值
  * 最后更新时间: 21.04.05
  */
-int PVSearch(Situation& situation, int depth, int alpha, int beta){
+int PVSearch(Situation& situation, int depth, int alpha, int beta, Movement& inspire){
     int value;                      // 下一着法的分值
     int best;                       // 所有着法中的最佳分值
     Movement move_list[128];        // 当前所有着法
     Movement move;                  // 当前着法
     Movement good_move;             // 当前局面最佳着法
-    move = good_move = NONE_MOVE;
+    Movement inspire_move;          // 内部迭代启发着法
+    move = good_move = inspire_move = NONE_MOVE;
 
     // 到达搜索深度
     if(depth <= 0){
@@ -148,10 +142,14 @@ int PVSearch(Situation& situation, int depth, int alpha, int beta){
         return value;
     }
 
-    // // 内部迭代加深启发(在置换表未能给出启发走法时使用)
-    // if(depth > 2 && move.from == 0){
-
-    // }
+    // 内部迭代加深启发(在置换表未能给出启发走法时使用)
+    if(depth > 2 && move.from == 0){
+        value = PVSearch(situation, depth / 2, alpha, beta, inspire_move);
+        if(value <= alpha){
+            value = PVSearch(situation, depth / 2, -NONE_VALUE, beta, inspire_move);
+        }
+        move = inspire_move;
+    }
 
     // 时间检测，避免超限
     if(isTimeLimit || clock() - StartTime > MAX_TIME){
@@ -178,10 +176,10 @@ int PVSearch(Situation& situation, int depth, int alpha, int beta){
             if(PVflag){
                 value = -SearchCut(situation, depth - 1, -alpha);
                 if(value > alpha && value < beta)
-                    value = -PVSearch(situation, depth - 1, -beta, -alpha);
+                    value = -PVSearch(situation, depth - 1, -beta, -alpha, inspire);
             }
             else
-                value = -PVSearch(situation, depth - 1, -beta, -alpha);
+                value = -PVSearch(situation, depth - 1, -beta, -alpha, inspire);
         }
         // 回溯
         UnMakeAMove(situation);
@@ -189,6 +187,7 @@ int PVSearch(Situation& situation, int depth, int alpha, int beta){
         // 当前为beta结点，执行剪枝
         if(value >= beta){
             debug_beta++;
+            inspire = move;
             // 此着法是好着法，记录进历史表
             SaveHistoryTable(move, depth);
             // 好着法，存入杀手表
@@ -199,6 +198,7 @@ int PVSearch(Situation& situation, int depth, int alpha, int beta){
         if(value > best){
             best = value;           // 更新最佳分数
             good_move = move;       // 更新最佳着法
+            inspire = good_move;
             if(value > alpha){
                 isAlpha = false;
                 PVflag = true;
@@ -283,7 +283,8 @@ int SearchRoot(Situation& situation, int depth){
     Movement move_list[128];        // 当前所有着法
     Movement move;                  // 当前着法
     Movement good_move;             // 当前局面最佳着法
-    move = good_move = NONE_MOVE;
+    Movement inspire;
+    move = good_move = inspire = NONE_MOVE;
     best = -NONE_VALUE;
 
     int move_num = 0;               // 着法数量
@@ -301,10 +302,10 @@ int SearchRoot(Situation& situation, int depth){
             if(best != -NONE_VALUE){
                 value = -SearchCut(situation, depth - 1, -best);
                 if(value > best)
-                    value = -PVSearch(situation, depth - 1, -NONE_VALUE, -best);
+                    value = -PVSearch(situation, depth - 1, -NONE_VALUE, -best, inspire);
             }
             else
-                value = -PVSearch(situation, depth - 1, -NONE_VALUE, NONE_VALUE);
+                value = -PVSearch(situation, depth - 1, -NONE_VALUE, NONE_VALUE, inspire);
         }
         // 回溯
         UnMakeAMove(situation);
@@ -337,6 +338,11 @@ void ComputerThink(Situation& situation){
     ResetHashTable();   // 清空置换表
     ResetHistory();     // 清空历史表和杀手表
     StartTime = clock();
+
+    // if(1){
+    //     cout << Evaluate(situation, -NONE_VALUE, NONE_VALUE);
+    //     return;
+    // }
 
     // 读取开局库
     if(UseBook){
@@ -372,7 +378,7 @@ void ComputerThink(Situation& situation){
 
     // 必败 认输
     if(best_move_save.from == best_move_save.to){
-        printf ( "bestmove a0a1 resign\n" ); // 认输
+        printf ( "nobestmove\n" ); // 认输
 		fflush (stdout);
     }
     // 输出最优着法

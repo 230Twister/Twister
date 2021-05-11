@@ -64,7 +64,7 @@ void CaptureValue(const Situation & situation, int & num_of_all_movements, Movem
    for(i = 0; i < num_of_all_movements; i ++){
       all_movements[i].value = 
          MVV_VALUES[situation.current_board[all_movements[i].to]] - 
-         IfProtected(1 - situation.current_player, all_movements[i].to, situation) ? situation.current_board[all_movements[i].from] : 0;
+         IfProtected(1 - situation.current_player, all_movements[i].to, situation) ? MVV_VALUES[situation.current_board[all_movements[i].from]] : 0;
    }
 }
 

@@ -881,6 +881,8 @@ int IfProtected(int player, const int to, const Situation & situation, int exp){
 
     // 对手的棋子所在的位置，即判断保护的from
     int from;
+    if(situation.current_board[to] != 0 && ColorOfPiece(situation.current_board[to]) != player) 
+        return false;
 
     // 被将(帅)保护
     for(int i = player_flag + 0; i <= player_flag + 0; i ++){

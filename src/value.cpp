@@ -276,7 +276,7 @@ const int EVAL_MARGIN4 = 20;
 int PiecesValue[2][7][256];
 int BlackAdvisorLeakage, RedAdvisorLeakage;         //缺士
 int HollowThreat[16], CentralThreat[16];            //空头炮、中炮
-int WhiteBottomThreat[16], BlackBottomThreat[16];   //沉底炮
+int RedBottomThreat[16], BlackBottomThreat[16];   //沉底炮
 int AdvancedValue;                                  //预估值
 
 bool WhiteHalf(int i)
@@ -347,6 +347,7 @@ void PreEvaluate(Situation &situation)
     //使用二次函数，子力很少时才认为接近残局
     midgame_value = (2 * TOTAL_MIDGAME_VALUE - midgame_value) * midgame_value / TOTAL_MIDGAME_VALUE;
     AdvancedValue = (TOTAL_AdvancedValue * midgame_value + TOTAL_AdvancedValue / 2) / TOTAL_MIDGAME_VALUE;
+    situation.banNullMove = midgame_value < 40;
     //计算将车马炮的价值
     for (int i = 0; i < 256; i++)
     {
@@ -431,7 +432,7 @@ void PreEvaluate(Situation &situation)
     //计算沉底炮威胁值
     for (int i = 0; i < 16; i++)
     {
-        WhiteBottomThreat[i] = BOTTOM_THREAT[i] * black_attacks / TOTAL_ATTACK_VALUE;
+        RedBottomThreat[i] = BOTTOM_THREAT[i] * black_attacks / TOTAL_ATTACK_VALUE;
         BlackBottomThreat[i] = BOTTOM_THREAT[i] * red_attacks / TOTAL_ATTACK_VALUE;
     }
 
@@ -512,13 +513,14 @@ int AdvisorShape(Situation &s)
                         if (x == FILE_CENTER)
                         {
                             y = GetRow(pos);
-                            if ((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].rook_capture & 512) != 0) // 计算空头炮的威胁
+                            if ((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].rook_capture & 1) != 0) // 计算空头炮的威胁
                                 red_penalty_value += HollowThreat[15 - y];
-                            else if (((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].supercannon_capture & 512) != 0) && (s.current_board[0xb7] == 21 || s.current_board[0xb7] == 22)) // 计算炮镇窝心马的威胁
+                            else if (((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].supercannon_capture & 1) != 0) && (s.current_board[0xb7] == 21 || s.current_board[0xb7] == 22)) // 计算炮镇窝心马的威胁
                                 red_penalty_value += CentralThreat[15 - y];
                         }
                     }
                 }
+                break;
             case SHAPE_LEFT:
             case SHAPE_RIGHT:
                 for (pc_cannon = 32 + 9; pc_cannon <= 32 + 10; pc_cannon++)
@@ -530,7 +532,7 @@ int AdvisorShape(Situation &s)
                         y = GetRow(pos);
                         if (x == FILE_CENTER)
                         {
-                            if ((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].supercannon_capture & 512) != 0)
+                            if ((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].supercannon_capture & 1) != 0)
                             {
                                 // 计算一般中炮的威胁，帅(将)门被对方控制的还有额外罚分
                                 red_penalty_value += ((CentralThreat[15 - y] >> 2) +
@@ -541,6 +543,7 @@ int AdvisorShape(Situation &s)
                                     pos = s.current_pieces[pc_rook];
                                     if (pos)
                                     {
+                                        x = GetCol(pos);
                                         y = GetRow(pos);
                                         if (y == RANK_BOTTOM)
                                         {
@@ -554,7 +557,7 @@ int AdvisorShape(Situation &s)
                         else if (y == RANK_BOTTOM) // 计算沉底炮的威胁
                         {
                             if ((ROOK_CANNON_CAN_GET_ROW_MASK[x - 3][s.bit_row[y]].rook_capture & 16) != 0)
-                                red_penalty_value += WhiteBottomThreat[x];
+                                red_penalty_value += RedBottomThreat[x];
                         }
                     }
                 }
@@ -575,15 +578,15 @@ int AdvisorShape(Situation &s)
     //黑方
     if (s.current_pieces[32 + 1] && s.current_pieces[32 + 2]) //双士健在
     {
-        if (s.current_pieces[32] == 0xc7)
+        if (s.current_pieces[32] == 0x37)
         {
             adv1 = s.current_pieces[32 + 1];
             adv2 = s.current_pieces[32 + 2];
-            if (adv1 == 0x36) // 红方一个仕在左侧底线
+            if (adv1 == 0x36) // 黑方一个仕在左侧底线
                 shape = ((adv2 == 0x38) ? SHAPE_CENTER : ((adv2 == 0x47) ? SHAPE_LEFT : SHAPE_NONE));
-            else if (adv1 == 0x38) // 红方一个仕在右侧底线
+            else if (adv1 == 0x38) // 黑方一个仕在右侧底线
                 shape = ((adv2 == 0x36) ? SHAPE_CENTER : ((adv2 == 0x47) ? SHAPE_RIGHT : SHAPE_NONE));
-            else if (adv1 == 0x47) // 红方一个仕在花心
+            else if (adv1 == 0x47) // 黑方一个仕在花心
                 shape = ((adv2 == 0x36) ? SHAPE_LEFT : ((adv2 == 0x38) ? SHAPE_RIGHT : SHAPE_NONE));
             else
                 shape = SHAPE_NONE;
@@ -602,13 +605,14 @@ int AdvisorShape(Situation &s)
                         if (x == FILE_CENTER)
                         {
                             y = GetRow(pos);
-                            if ((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].rook_capture & 1) != 0) // 计算空头炮的威胁
+                            if ((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].rook_capture & 512) != 0) // 计算空头炮的威胁
                                 black_penalty_value += HollowThreat[y];
-                            else if (((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].supercannon_capture & 1) != 0) && (s.current_board[0x47] == 37 || s.current_board[0x47] == 38)) // 计算炮镇窝心马的威胁
+                            else if (((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].supercannon_capture & 512) != 0) && (s.current_board[0x47] == 37 || s.current_board[0x47] == 38)) // 计算炮镇窝心马的威胁
                                 black_penalty_value += CentralThreat[y];
                         }
                     }
                 }
+                break;
             case SHAPE_LEFT:
             case SHAPE_RIGHT:
                 for (pc_cannon = 16 + 9; pc_cannon <= 16 + 10; pc_cannon++)
@@ -620,7 +624,7 @@ int AdvisorShape(Situation &s)
                         y = GetRow(pos);
                         if (x == FILE_CENTER)
                         {
-                            if ((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].supercannon_capture & 1) != 0)
+                            if ((ROOK_CANNON_CAN_GET_COL_MASK[y - 3][s.bit_col[x]].supercannon_capture & 512) != 0)
                             {
                                 // 计算一般中炮的威胁，帅(将)门被对方控制的还有额外罚分
                                 black_penalty_value += ((CentralThreat[y] >> 2) +
@@ -631,6 +635,7 @@ int AdvisorShape(Situation &s)
                                     pos = s.current_pieces[pc_rook];
                                     if (pos)
                                     {
+                                        x = GetCol(pos);
                                         y = GetRow(pos);
                                         if (y == RANK_TOP)
                                         {
@@ -658,7 +663,7 @@ int AdvisorShape(Situation &s)
     }
     else
     {
-        if (s.current_pieces[32 + 7] && s.current_pieces[32 + 8]) // 缺仕(士)怕双车，有罚分
+        if (s.current_pieces[16 + 7] && s.current_pieces[16 + 8]) // 缺仕(士)怕双车，有罚分
             black_penalty_value += BlackAdvisorLeakage;
     }
 
@@ -786,7 +791,7 @@ int StringHold(Situation &s)
                                 pos_str = x + (ROOK_CANNON_CAN_GET_COL[y - 3][s.bit_col[x]].rook_capture[dir] << 4);
                                 if (s.current_board[pos_str] & opp_side_tag)
                                 {
-                                    if (VALUABLE_STRING_PIECES[s.current_board[pos_str]] > 0 && IfProtected(1 - r, pos_to, s) && !IfProtected(1 - r, pos_str, s, pos_to))
+                                    if (VALUABLE_STRING_PIECES[s.current_board[pos_str]] > 0 && !IfProtected(1 - r, pos_to, s) && !IfProtected(1 - r, pos_str, s, pos_to))
                                     {
                                         string_value[r] += STRING_VALUE_TAB[pos_to - pos_str + 256];
                                     }
@@ -802,7 +807,7 @@ int StringHold(Situation &s)
                                 pos_str = (y << 4) + ROOK_CANNON_CAN_GET_ROW[x - 3][s.bit_col[y]].rook_capture[dir];
                                 if (s.current_board[pos_str] & opp_side_tag)
                                 {
-                                    if (VALUABLE_STRING_PIECES[s.current_board[pos_str]] > 0 && IfProtected(1 - r, pos_to, s) && !IfProtected(1 - r, pos_str, s, pos_to))
+                                    if (VALUABLE_STRING_PIECES[s.current_board[pos_str]] > 0 && !IfProtected(1 - r, pos_to, s) && !IfProtected(1 - r, pos_str, s, pos_to))
                                     {
                                         string_value[r] += STRING_VALUE_TAB[pos_to - pos_str + 256];
                                     }
@@ -983,7 +988,7 @@ int HorseTrap(Situation &s)
                 dst = *horse_dst;
                 while (dst)
                 {
-                    if (!EDGE_SQUARES[dst] && !s.current_pieces[dst] && !s.current_pieces[*horse_leg] && !IfProtected(1 - r, dst, s))
+                    if (!EDGE_SQUARES[dst] && !s.current_board[dst] && !s.current_board[*horse_leg] && !IfProtected(1 - r, dst, s))
                     {
                         moveble++;
                         if (moveble > 1)
