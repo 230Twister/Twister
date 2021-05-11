@@ -301,7 +301,7 @@ void PreEvaluate(Situation &situation)
     int red_attacks = 0, black_attacks = 0;   //双方威胁值
     int red_simple_value, black_simple_value; //双方轻子价值
     int midgame_value = 0;
-    int attacking_pawn_value[256], attackless_pawn_value[256];
+    int attacking_pawn_value[256] = {0}, attackless_pawn_value[256] = {0};
 
     //首先判断局势处于开中局还是残局阶段，方法是计算各种棋子的数量，按照车=6、马炮=3、其它=1相加。
     //统计三类棋子数量
