@@ -760,6 +760,8 @@ bool KingFacing(const Situation & situation){
     }
     // 2.2 在同一列，判断中间是否有棋子阻挡(使用车的着法生成，如果将对将，那么中间的车可以吃到的子就是这两个将)
     int resume_rook_row = 7, resume_rook_col = GetCol(red_king_pos);        // 假想的车的位置
+    if(situation.current_board[GetPosition(resume_rook_col, resume_rook_row)])
+        return false;
     int resume_capture_down = ROOK_CANNON_CAN_GET_COL[resume_rook_row - 3][situation.bit_col[resume_rook_col]].rook_capture[0];
     int resume_capture_up = ROOK_CANNON_CAN_GET_COL[resume_rook_row - 3][situation.bit_col[resume_rook_col]].rook_capture[1];
     int down_pos = GetPosition(resume_rook_col, resume_capture_down), up_pos = GetPosition(resume_rook_col, resume_capture_up); // 假想的车能吃到的地方

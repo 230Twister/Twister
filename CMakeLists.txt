@@ -12,7 +12,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")    #使用c++11
 set(CMAKE_CXX_FLAGS_DEBUG   "-O0" )                     #调试不优化
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG " )           #release优化
 
-set(CMAKE_BUILD_TYPE "Debug")   #当前为debug模式
-# set(CMAKE_BUILD_TYPE "Release")
+# set(CMAKE_BUILD_TYPE "Debug")   #当前为debug模式
+set(CMAKE_BUILD_TYPE "Release")
 
 add_executable(${PROJECT_NAME} ${DIR_TOOT_SRCS})

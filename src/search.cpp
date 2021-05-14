@@ -339,11 +339,6 @@ void ComputerThink(Situation& situation){
     ResetHistory();     // 清空历史表和杀手表
     StartTime = clock();
 
-    // if(1){
-    //     cout << Evaluate(situation, -NONE_VALUE, NONE_VALUE);
-    //     return;
-    // }
-
     // 读取开局库
     if(UseBook){
         Movement book_move = ReadBookTable(situation);
