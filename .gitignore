@@ -9,7 +9,7 @@ build
 !UPDATE.md
 
 # 调试文件
-debug.cpp
+debug.*
 
 # 输出调试测试文件
 debug/

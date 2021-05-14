@@ -87,7 +87,7 @@ void NoCaptureValue(const Situation & situation, int & num_of_all_movements, Mov
    }
 }
 
-bool cmp(Movement a, Movement b){
+bool cmp(Movement& a, Movement& b){
    return a.value > b.value;
 }
 
