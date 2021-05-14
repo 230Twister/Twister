@@ -57,8 +57,6 @@ void AddPiece(int piece_position, int piece_id, Situation & situation){
     // 3. 更新置换表
     ZobristKey ^= ZobristTable[piece_id][piece_position];
     ZobristKeyCheck ^= ZobristTableCheck[piece_id][piece_position];
-
-    // 4. 更新xxx
 }
 
 /* 
@@ -81,10 +79,6 @@ void DeletePiece(int piece_position, int piece_id, Situation & situation){
     int row = GetRow(piece_position), col = GetCol(piece_position);
     situation.bit_row[row] ^= BIT_ROW_MASK[piece_position];
     situation.bit_col[col] ^= BIT_COL_MASK[piece_position];
-
-    // 3. 更新xxx
-
-    // 4. 更新xxx
 }
 
 /* 
@@ -444,110 +438,71 @@ bool CheckOpponent(const Situation & situation){
 bool BeChecked(const Situation & situation){
     // 1. 获得玩家特征值 (注意走棋方假想为对手)
     int player_flag = GetPlayerFlag(OpponentPlayer(situation.current_player)), player = OpponentPlayer(situation.current_player);
-    int opponent_king_id = GetPlayerFlag(situation.current_player) + 0;
-    int piece_from, piece_to, can_move_counter, piece_to_id;
+    int from, to, from_row, from_col, to_row, to_col;
+
+    // 1. 判断自己将(帅)是否在棋盘上，并记录其位置
+    to = situation.current_pieces[GetPlayerFlag(situation.current_player) + 0];
+    if(to == 0) return false;
+    to_row = GetRow(to);
+    to_col = GetCol(to);
 
     // 2. 检测马的将军
     for(int i = player_flag + 5; i <= player_flag + 6; i ++){
-        if(situation.current_pieces[i] != 0){
-            int horse_leg;                  // 马腿位置
-            piece_from = situation.current_pieces[i];
-            can_move_counter = 0;
-            piece_to = HORSE_CAN_GET[piece_from][can_move_counter];
-            while(piece_to != 0){
-                horse_leg = HORSE_LEG[piece_from][can_move_counter];
-                piece_to_id = situation.current_board[piece_to];
-                if(piece_to_id == opponent_king_id && situation.current_board[horse_leg] == 0){
-                    return true;
-                }
-                can_move_counter ++;
-                piece_to = HORSE_CAN_GET[piece_from][can_move_counter];
-            }
+        from = situation.current_pieces[i];
+        if(from != 0){
+            int horse_leg = HORSE_LEGAL_MOVE[to - from + 256] + from;
+            if(horse_leg != from && situation.current_board[horse_leg] == 0) return true;
         }
     }
 
-    // 3. 车的吃子着法
+    // 3. 检测车的将军
     for(int i = player_flag + 7; i <= player_flag + 8; i ++){
-        if(situation.current_pieces[i] != 0){
-            piece_from = situation.current_pieces[i];
-            int col = GetCol(piece_from), row = GetRow(piece_from);
-
-            // 右 左 方向的吃子
-            for(int j = 0; j < 2; j ++){
-                int capture_col = ROOK_CANNON_CAN_GET_ROW[col - 3][situation.bit_row[row]].rook_capture[j];
-                if(capture_col != col){
-                    piece_to = GetPosition(capture_col, row);
-                    piece_to_id = situation.current_board[piece_to];
-                    if(piece_to_id == opponent_king_id){
-                       return true;
-                    }
-                }
+        from = situation.current_pieces[i];
+        if(from != 0){
+            from_row = GetRow(from);
+            from_col = GetCol(from);
+            if(from_col == to_col){
+                if((ROOK_CANNON_CAN_GET_COL_MASK[from_row - 3][situation.bit_col[from_col]].rook_capture & BIT_COL_MASK[to]) != 0) 
+                    return true;
             }
-            // 下 上 方向的吃子
-            for(int j = 0; j < 2; j ++){
-                int capture_row = ROOK_CANNON_CAN_GET_COL[row - 3][situation.bit_col[col]].rook_capture[j];
-                if(capture_row != row){
-                    piece_to = GetPosition(col, capture_row);
-                    piece_to_id = situation.current_board[piece_to];
-                    if(piece_to_id == opponent_king_id){
-                       return true;
-                    }
-                }
+            else if(from_row == from_col){
+                if((ROOK_CANNON_CAN_GET_ROW_MASK[from_col - 3][situation.bit_row[from_row]].rook_capture & BIT_ROW_MASK[to]) != 0) 
+                    return true;
             }
-        
         }
     }
     
-    // 4. 炮的吃子着法
+    // 4. 检测炮的将军
     for(int i = player_flag + 9; i <= player_flag + 10; i ++){
-        if(situation.current_pieces[i] != 0){
-            piece_from = situation.current_pieces[i];
-            int col = GetCol(piece_from), row = GetRow(piece_from);
-
-            // 右 左 方向的吃子
-            for(int j = 0; j < 2; j ++){
-                int capture_col = ROOK_CANNON_CAN_GET_ROW[col - 3][situation.bit_row[row]].cannon_capture[j];
-                if(capture_col != col){
-                    piece_to = GetPosition(capture_col, row);
-                    piece_to_id = situation.current_board[piece_to];
-                    if(piece_to_id == opponent_king_id){
-                       return true;
-                    }
-                }
-            }
-            // 下 上 方向的吃子
-            for(int j = 0; j < 2; j ++){
-                int capture_row = ROOK_CANNON_CAN_GET_COL[row - 3][situation.bit_col[col]].cannon_capture[j];
-                if(capture_row != row){
-                    piece_to = GetPosition(col, capture_row);
-                    piece_to_id = situation.current_board[piece_to];
-                    if(piece_to_id == opponent_king_id){
-                       return true;
-                    }
-                }
-            }
-        
-        }
-    }
-
-    // 5. 兵(卒)的吃子着法
-    for(int i = player_flag + 11; i <= player_flag + 15; i ++){
-        if(situation.current_pieces[i] != 0){
-            piece_from = situation.current_pieces[i];
-            can_move_counter = 0;
-            piece_to = PAWN_CAN_GET[piece_from][player][can_move_counter];
-            while(piece_to != 0){
-                piece_to_id = situation.current_board[piece_to];
-                if(piece_to_id == opponent_king_id){
+        from = situation.current_pieces[i];
+        if(from != 0){
+            from_row = GetRow(from);
+            from_col = GetCol(from);
+            if(from_col == to_col){
+                if((ROOK_CANNON_CAN_GET_COL_MASK[from_row - 3][situation.bit_col[from_col]].cannon_capture & BIT_COL_MASK[to]) != 0) 
                     return true;
-                }
-                can_move_counter ++;
-                piece_to = PAWN_CAN_GET[piece_from][player][can_move_counter];
+            }
+            else if(from_row == from_col){
+                if((ROOK_CANNON_CAN_GET_ROW_MASK[from_col - 3][situation.bit_row[from_row]].cannon_capture & BIT_ROW_MASK[to]) != 0) 
+                    return true;
             }
         }
     }
 
-    // 6. 没有被将军
+    // 5. 检测兵(卒)的将军(纵向)
+    from = SquareBack(to, player);
+    int from_id = situation.current_board[from];
+    if(((from_id & player_flag) != 0) && ((from_id & 15) >= 11))
+        return true;
+
+    // 6. 检测兵(卒)的将军(横向)
+    for(from = to - 1; from <= to + 1; from += 2){
+        int from_id = situation.current_board[from];
+        if(((from_id & player_flag) != 0) && ((from_id & 15) >= 11))
+            return true;
+    }
+
+    // 7. 没有被将军
     return false;
 }
 
@@ -752,22 +707,12 @@ bool KingFacing(const Situation & situation){
     if(red_king_pos == 0 || black_king_pos == 0){
         return false;
     }
-
     // 2. 先判断两个将是否在同一列
-    // 2.1 不在同一列
     if(GetCol(red_king_pos) != GetCol(black_king_pos)){
         return false;
     }
-    // 2.2 在同一列，判断中间是否有棋子阻挡(使用车的着法生成，如果将对将，那么中间的车可以吃到的子就是这两个将)
-    int resume_rook_row = 7, resume_rook_col = GetCol(red_king_pos);        // 假想的车的位置
-    if(situation.current_board[GetPosition(resume_rook_col, resume_rook_row)])
-        return false;
-    int resume_capture_down = ROOK_CANNON_CAN_GET_COL[resume_rook_row - 3][situation.bit_col[resume_rook_col]].rook_capture[0];
-    int resume_capture_up = ROOK_CANNON_CAN_GET_COL[resume_rook_row - 3][situation.bit_col[resume_rook_col]].rook_capture[1];
-    int down_pos = GetPosition(resume_rook_col, resume_capture_down), up_pos = GetPosition(resume_rook_col, resume_capture_up); // 假想的车能吃到的地方
-    
-    // 3. 返回假想的车吃到的是否为上下两个将
-    return (down_pos == red_king_pos && up_pos == black_king_pos) || (down_pos == black_king_pos && up_pos == red_king_pos); 
+    // 3. 判断是否对将
+    return (ROOK_CANNON_CAN_GET_COL_MASK[GetRow(red_king_pos) - 3][situation.bit_col[GetCol(red_king_pos)]].rook_capture & BIT_COL_MASK[black_king_pos]) != 0;
 }
 
 /* 
@@ -877,7 +822,19 @@ bool MovementsLegal(const Movement move, const Situation & situation){
     }
 }
 
-int IfProtected(int player, const int to, const Situation & situation, int exp){
+/* 
+ * 函数名：IfProtected
+ * 描述：判断该位置是否被保护
+ * 入参：
+ * - int player 玩家
+ * - const int to 判断的位置
+ * - const Situation & situation 当前局面 
+ * - int exp 排除的位置
+ * 返回值：
+ * - bool 该走法在当前局面是否合法
+ * 最后更新时间: 21.05.14
+ */
+bool IfProtected(int player, const int to, const Situation & situation, int exp){
     // 对手的player_flag
     int player_flag = GetPlayerFlag(player);
 

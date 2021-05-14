@@ -105,7 +105,6 @@ struct Situation{
 	int value[2];
 	char current_fen[120];				// 当前局面的FEN格式串
 	std::vector<Movement> moves_stack;	// 着法栈
-
 	bool banNullMove;
 };
 // 行列 <-> 位置转换
@@ -164,7 +163,7 @@ std::string MovementToStr (const Movement move);
 Movement StrToMovement ( const std::string move );
 
 // ==========================================================================================
-// 着法表示
+// 着法相关数据类型与函数
 struct Movement{
 	UINT8 from;				// 着法的起点
 	UINT8 to;				// 着法的终点
@@ -174,23 +173,19 @@ struct Movement{
 inline bool isMoveEqual(Movement& move1, Movement& move2){
 	return move1.from == move2.from && move1.to == move2.to && move1.capture == move2.capture;
 }
-// 着法清空
 inline void ClearAllMovements(int & num_of_movements){
 	num_of_movements = 0;
 }
-// 生成着法
 void GetAllMovements(const Situation & situation, int & num_of_all_movements, Movement* all_movements);
 void GetAllCaptureMovements(const Situation & situation, int & num_of_all_movements, Movement* all_movements);
 void GetAllNotCaptureMovements(const Situation & situation, int & num_of_all_movements, Movement* all_movements);
-// 着法检测
 bool MovementsLegal(const Movement move, const Situation & situation);
 // ============================================================================================
 // 局面状态检测相关函数
-int IfProtected(int player, const int to, const Situation & situation, int exp = 0);
+bool IfProtected(int player, const int to, const Situation & situation, int exp = 0);
 bool CheckOpponent(const Situation & situation);
 bool BeChecked(const Situation & situation);
 bool KingFacing(const Situation & situation);
-
 // ============================================================================================
 
 #endif
