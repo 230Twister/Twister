@@ -465,7 +465,7 @@ bool BeChecked(const Situation & situation){
                 if((ROOK_CANNON_CAN_GET_COL_MASK[from_row - 3][situation.bit_col[from_col]].rook_capture & BIT_COL_MASK[to]) != 0) 
                     return true;
             }
-            else if(from_row == from_col){
+            else if(from_row == to_row){
                 if((ROOK_CANNON_CAN_GET_ROW_MASK[from_col - 3][situation.bit_row[from_row]].rook_capture & BIT_ROW_MASK[to]) != 0) 
                     return true;
             }
@@ -482,7 +482,7 @@ bool BeChecked(const Situation & situation){
                 if((ROOK_CANNON_CAN_GET_COL_MASK[from_row - 3][situation.bit_col[from_col]].cannon_capture & BIT_COL_MASK[to]) != 0) 
                     return true;
             }
-            else if(from_row == from_col){
+            else if(from_row == to_row){
                 if((ROOK_CANNON_CAN_GET_ROW_MASK[from_col - 3][situation.bit_row[from_row]].cannon_capture & BIT_ROW_MASK[to]) != 0) 
                     return true;
             }
