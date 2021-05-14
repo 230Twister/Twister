@@ -65,7 +65,8 @@ int main(int argc, char *argv[]) {
 				PreEvaluate(situation);
 			}
 			else if (Order == e_CommGo || Order == e_CommGoPonder) { // go ...
-				ComputerThink(situation);
+				BeChecked(situation);
+				// ComputerThink(situation);
 			}
 		}
 	}

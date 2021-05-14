@@ -842,26 +842,37 @@ bool IfProtected(int player, const int to, const Situation & situation, int exp)
     int from;
     if(situation.current_board[to] != 0 && ColorOfPiece(situation.current_board[to]) != player) 
         return false;
+    
+    // 是否过河
+    if(InHomeHalf(to, player)){
+        // 被将(帅)保护
+        for(int i = player_flag + 0; i <= player_flag + 0; i ++){
+            from = situation.current_pieces[i];
+            if (from && (LEGAL_POSITION[player][to] & POSITION_MASK[0]) && (LEGAL_MOVE[to - from + 256] == 1) && from != exp)
+                return true;
+        }
 
-    // 被将(帅)保护
-    for(int i = player_flag + 0; i <= player_flag + 0; i ++){
-        from = situation.current_pieces[i];
-        if (from && (LEGAL_POSITION[player][to] & POSITION_MASK[0]) && (LEGAL_MOVE[to - from + 256] == 1) && from != exp)
-            return true;
+        // 被士(仕)保护
+        for(int i = player_flag + 1; i <= player_flag + 2; i ++){
+            from = situation.current_pieces[i];
+            if (from && (LEGAL_POSITION[player][to] & POSITION_MASK[1]) && (LEGAL_MOVE[to - from + 256] == 2) && from != exp)
+                return true;
+        }
+
+        // 被象(相)保护
+        for(int i = player_flag + 3; i <= player_flag + 4; i ++){
+            from = situation.current_pieces[i];
+            if(from && (LEGAL_POSITION[player][to] & POSITION_MASK[2]) && (LEGAL_MOVE[to - from + 256] == 3) && (situation.current_board[(to + from) >> 1] == 0) && from != exp)
+                return true;
+        }
     }
-
-    // 被士(仕)保护
-    for(int i = player_flag + 1; i <= player_flag + 2; i ++){
-        from = situation.current_pieces[i];
-        if (from && (LEGAL_POSITION[player][to] & POSITION_MASK[1]) && (LEGAL_MOVE[to - from + 256] == 2) && from != exp)
-            return true;
-    }
-
-    // 被象(相)保护
-    for(int i = player_flag + 3; i <= player_flag + 4; i ++){
-        from = situation.current_pieces[i];
-        if(from && (LEGAL_POSITION[player][to] & POSITION_MASK[2]) && (LEGAL_MOVE[to - from + 256] == 3) && (situation.current_board[(to + from) >> 1] == 0) && from != exp)
-            return true;
+    else{
+        // 被兵保护(横向)
+        for(from = to - 1; from <= to + 1; from += 2){
+            int from_id = situation.current_board[from];
+            if(((from_id & player_flag) != 0) && ((from_id & 15) >= 11) && from != exp)
+                return true;
+        }
     }
 
     // 被马保护
@@ -913,15 +924,6 @@ bool IfProtected(int player, const int to, const Situation & situation, int exp)
     int from_id = situation.current_board[from];
     if(((from_id & player_flag) != 0) && ((from_id & 15) >= 11) && from != exp)
         return true;
-    
 
-    // 被兵保护(横向)
-    if(!InHomeHalf(to, player)){
-        for(from = to - 1; from <= to + 1; from += 2){
-            int from_id = situation.current_board[from];
-            if(((from_id & player_flag) != 0) && ((from_id & 15) >= 11) && from != exp)
-                return true;
-        }
-    }
     return false;
 }
