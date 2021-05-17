@@ -31,6 +31,7 @@ void InitSituation(Situation & situation){
     situation.value[BLACK] = 0;
     // 清空着法栈
     situation.moves_stack.clear();
+    situation.moves_stack.reserve(100);
 }
 
 /* 
@@ -136,6 +137,7 @@ int PieceOfFen(const char fen_char){
         piece_index = 13;
         break;
     default:
+        piece_index = 0;
         break;
     }
     return piece_index;
@@ -599,7 +601,6 @@ void UnMakeAMove (Situation & situation){
     Movement move = situation.moves_stack.back();
     situation.moves_stack.pop_back();
     step--;
-    UnsignSituation(step);
 
     int piece_id_from = situation.current_board[move.to];
     int piece_id_to = move.capture;
@@ -618,6 +619,8 @@ void UnMakeAMove (Situation & situation){
     if(piece_id_to != 0)
         ZobristKeyCheck ^= ZobristTableCheck[piece_id_to][move.to];
     ZobristKeyCheck ^= ZobristTableCheck[situation.current_board[move.to]][move.from];
+
+    UnsignSituation(step);
 
     // 3. 更新子力价值
     situation.value[ColorOfPiece(piece_id_from)] -= PiecesValue[ColorOfPiece(piece_id_from)][PIECE_NUM_TO_TYPE[piece_id_from]][move.to];
@@ -670,7 +673,11 @@ void MakeNullMove(Situation & situation){
     situation.moves_stack.push_back(Movement{0, 0, 0, 0});
     step++;
 
-    // 2. 交换走棋方
+    // 2. 更新局面哈希
+    ZobristKey ^= ZobristPlayer;
+    ZobristKeyCheck ^= ZobristPlayerCheck;
+
+    // 3. 交换走棋方
     ChangePlayer(situation.current_player);
 }
 
@@ -688,7 +695,11 @@ void UnMakeNullMove(Situation & situation){
     situation.moves_stack.pop_back();
     step--;
 
-    // 2. 交换走棋方
+    // 2. 更新局面哈希
+    ZobristKey ^= ZobristPlayer;
+    ZobristKeyCheck ^= ZobristPlayerCheck;
+
+    // 3. 交换走棋方
     ChangePlayer(situation.current_player);
 }
 

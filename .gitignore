@@ -10,6 +10,7 @@ build
 
 # 调试文件
 debug.*
+*.out
 
 # 输出调试测试文件
 debug/

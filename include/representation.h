@@ -83,9 +83,9 @@ const int BISHOP_EYE_DIRECTION[4] = {-0xf, -0x11, +0xf, +0x11};							// 象可�
 const int ADVISOR_DIRECTION[4] = {-0x11, -0xf, +0x11, +0xf};							// 士可走的方向
 const int PAWN_DIRECTION[2][3] = {{-0x10, +0x1, -0x1}, {+0x10, +0x1, -0x1}};			// 双方的兵可走的方向
 const int MVV_VALUES[48] = {
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	8, 2, 2, 2, 2, 4, 4 ,6 ,6, 4, 4, 2, 2, 2, 2, 2,
-	8, 2, 2, 2, 2, 4, 4, 6, 6, 4, 4, 2, 2, 2, 2, 2,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    5, 1, 1, 1, 1, 3, 3, 4, 4, 3, 3, 2, 2, 2, 2, 2,
+    5, 1, 1, 1, 1, 3, 3, 4, 4, 3, 3, 2, 2, 2, 2, 2,
 };																						// 被吃子的价值
 const char FEN_OF_PIECE[2][16] = {
 	{'K', 'A', 'A', 'B', 'B', 'N', 'N', 'R', 'R', 'C', 'C', 'P', 'P', 'P', 'P', 'P'}, 
@@ -170,7 +170,7 @@ struct Movement{
 	UINT8 capture;			// 着法是否吃子 0代表不吃子 其余代表吃的子的类型
 	UINT8 value;			// 着法的价值
 };
-inline bool isMoveEqual(Movement& move1, Movement& move2){
+inline bool isMoveEqual(const Movement& move1, const Movement& move2){
 	return move1.from == move2.from && move1.to == move2.to && move1.capture == move2.capture;
 }
 inline void ClearAllMovements(int & num_of_movements){

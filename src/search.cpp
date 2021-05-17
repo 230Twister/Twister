@@ -21,10 +21,8 @@ const time_t MAX_TIME = 40000;                          // 最大消耗时间(ms
 extern const int MAX_VALUE = 10000;                     // 最大价值，胜利局面绝对分数
 extern const int WIN_VALUE = MAX_VALUE - MAX_DEPTH;     // 胜利局面的相对分数
 
-int debug_beta;
-int debug_node;
-int debug_hash;
 int debug_value;
+int all = 0;
 
 int SearchCut(Situation& situation, int depth, int beta, bool allowNullMove = false){
     int value;                      // 下一着法的分值
@@ -41,6 +39,9 @@ int SearchCut(Situation& situation, int depth, int beta, bool allowNullMove = fa
         return QuiescentSearch(situation, beta - 1, beta);
     }
 
+    if(step - MAX_VALUE >= beta)
+        return beta;
+
     // 重复裁剪
     if(CheckRepeat(situation, step)) 
         return DRAW_VALUE;
@@ -48,7 +49,6 @@ int SearchCut(Situation& situation, int depth, int beta, bool allowNullMove = fa
     // 置换表裁剪
     value = ReadHashTable(depth, beta - 1, beta, move);
     if(value != NONE_VALUE){
-        debug_hash++;
         return value;
     }
 
@@ -64,6 +64,8 @@ int SearchCut(Situation& situation, int depth, int beta, bool allowNullMove = fa
         }
     }
 
+    all++;
+
     // 时间检测，避免超限
     if(isTimeLimit || clock() - StartTime > MAX_TIME){
         isTimeLimit = 1;
@@ -73,7 +75,6 @@ int SearchCut(Situation& situation, int depth, int beta, bool allowNullMove = fa
     int move_num = 0;       // 着法数量
     // 生成着法
     MoveSort(situation, move_num, move_list, move, step);
-    debug_node += move_num;
     for(int i = 0; i < move_num; i++){
         move = move_list[i];
         if(move.from == 0 && move.to == 0) continue;
@@ -91,10 +92,8 @@ int SearchCut(Situation& situation, int depth, int beta, bool allowNullMove = fa
             best = value;           // 更新最佳分数
             good_move = move;       // 更新最佳着法
             if(value >= beta){
-                // 此着法是好着法，记录进历史表
-                SaveHistoryTable(move, depth);
-                // 好着法，存入杀手表
-                SaveKiller(move, step);
+                // 此着法是好着法，记录进历史表和杀手表
+                SetBestMove(move, step, depth);
                 SaveHashTable(depth, beta, hashBETA, move);
                 return beta;
             }
@@ -131,6 +130,9 @@ int PVSearch(Situation& situation, int depth, int alpha, int beta, Movement& ins
         return QuiescentSearch(situation, alpha, beta);
     }
 
+    if(step - MAX_VALUE >= beta)
+        return beta;
+
     // 重复裁剪
     if(CheckRepeat(situation, step)) 
         return DRAW_VALUE;
@@ -138,7 +140,6 @@ int PVSearch(Situation& situation, int depth, int alpha, int beta, Movement& ins
     // 置换表裁剪
     value = ReadHashTable(depth, alpha, beta, move);
     if(value != NONE_VALUE && value > -MAX_VALUE){
-        debug_hash++;
         return value;
     }
 
@@ -150,6 +151,8 @@ int PVSearch(Situation& situation, int depth, int alpha, int beta, Movement& ins
         }
         move = inspire_move;
     }
+
+    all++;
 
     // 时间检测，避免超限
     if(isTimeLimit || clock() - StartTime > MAX_TIME){
@@ -164,7 +167,6 @@ int PVSearch(Situation& situation, int depth, int alpha, int beta, Movement& ins
     int move_num = 0;       // 着法数量
     // 生成着法
     MoveSort(situation, move_num, move_list, move, step);
-    debug_node += move_num;
     for(int i = 0; i < move_num; i++){
         move = move_list[i];
         if(move.from == 0 && move.to == 0) continue;
@@ -186,12 +188,9 @@ int PVSearch(Situation& situation, int depth, int alpha, int beta, Movement& ins
 
         // 当前为beta结点，执行剪枝
         if(value >= beta){
-            debug_beta++;
             inspire = move;
-            // 此着法是好着法，记录进历史表
-            SaveHistoryTable(move, depth);
-            // 好着法，存入杀手表
-            SaveKiller(move, step);
+            // 此着法是好着法，记录进历史表和杀手表
+            SetBestMove(move, step, depth);
             SaveHashTable(depth, beta, hashBETA, move);
             return beta;
         }
@@ -213,8 +212,8 @@ int PVSearch(Situation& situation, int depth, int alpha, int beta, Movement& ins
     }
     // 当前结点为PV结点
     else{
-        // 将PV结点中的最好着法，记录进历史表
-        SaveHistoryTable(good_move, depth);
+        // 将PV结点中的最好着法，记录进历史表和杀手表
+        SetBestMove(good_move, step, depth);
         SaveHashTable(depth, best, hashEXACT, good_move);
     }
     return alpha;
@@ -290,7 +289,6 @@ int SearchRoot(Situation& situation, int depth){
     int move_num = 0;               // 着法数量
     // 生成着法
     MoveSort(situation, move_num, move_list, move, step);
-    debug_node += move_num;
     for(int i = 0; i < move_num; i++){
         move = move_list[i];
         if(move.from == 0 && move.to == 0) continue;
@@ -334,7 +332,6 @@ void ComputerThink(Situation& situation){
     Movement best_move_save;
     isTimeLimit = false;
     step = 0;
-    debug_beta = debug_node = debug_hash = 0;
     ResetHashTable();   // 清空置换表
     ResetHistory();     // 清空历史表和杀手表
     StartTime = clock();
@@ -386,10 +383,8 @@ void ComputerThink(Situation& situation){
     std::ofstream f;
     f.open("debug.log", std::ios::app | std::ios::out);
     f << "Bestmove's value: " << debug_value << '\n';
-    f << "Total node: " << debug_node << '\n';
-    f << "Beta node: " << debug_beta << '\n';
-    f << "Hash hit: " << debug_hash << '\n';
     f << "=========================================\n";
     f.close();
+    cout << all << endl;
     return ;
 }

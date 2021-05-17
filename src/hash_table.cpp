@@ -13,8 +13,8 @@ const UINT8 hashALPHA = 1;                  // ALPHA结点类型
 const UINT8 hashBETA = 2;                   // BETA结点类型
 const UINT32 HASHTABLE_SIZE = 1 << 24;      // 置换表大小 16MB
 const UINT32 HASHTABLE_MASK = (1 << 24) - 1;
-const UINT32 REPEATTABLE_SIZE = 1000;       // 微型置换表大小
-const UINT32 REPEATTABLE_MASK = 999;
+const UINT32 REPEATTABLE_SIZE = 1 << 15;    // 微型置换表大小
+const UINT32 REPEATTABLE_MASK = (1 << 15) - 1;
 
 const int NONE_VALUE = 1 << 20;             // 空价值
 const Movement NONE_MOVE = {0, 0, 0};       // 空着
@@ -213,7 +213,7 @@ void SignSituation(int step){
     int index = ZobristKey & REPEATTABLE_MASK;
     RepeatNode new_node = RepeatNode{ZobristKeyCheck, step};
 
-    if(RepeatTable[index].check != 0)
+    if(RepeatTable[index].check == 0)
         RepeatTable[index] = new_node;
 }
 
@@ -245,7 +245,7 @@ bool CheckRepeat(Situation& situation, int step){
     int index = ZobristKey & REPEATTABLE_MASK;
     RepeatNode node = RepeatTable[index];
 
-    if(node.check != ZobristKeyCheck)
+    if(node.check != ZobristKeyCheck || node.step == step)
         return false;
     
     int move_nums = node.step;
