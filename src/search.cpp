@@ -254,6 +254,7 @@ int QuiescentSearch(Situation& situation, int alpha, int beta){
     CaptureMoveSort(situation, move_num, move_list);
     for(int i = 0; i < move_num; i++){
         move = move_list[i];
+        if(move.value == 0) break;
         // 下子
         if(MakeAMove(situation, move)){
             value = -MAX_VALUE + step;

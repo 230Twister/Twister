@@ -156,9 +156,9 @@ int ReadHashTable(int depth, int alpha, int beta, Movement& move){
             else if(hash_node.type == hashBETA && hash_node.value >= beta){
                 return beta;
             }
-            // 读取失败就获得该局面的最佳走法
-            move = hash_node.good_move;
         }
+        // 读取失败就获得该局面的最佳走法
+        move = hash_node.good_move;
     }
     return NONE_VALUE;
 }
