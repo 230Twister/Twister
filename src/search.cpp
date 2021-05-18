@@ -39,6 +39,8 @@ int SearchCut(Situation& situation, int depth, int beta, bool allowNullMove = fa
         return QuiescentSearch(situation, beta - 1, beta);
     }
 
+    all++;
+
     if(step - MAX_VALUE >= beta)
         return beta;
 
@@ -63,8 +65,6 @@ int SearchCut(Situation& situation, int depth, int beta, bool allowNullMove = fa
             return beta;
         }
     }
-
-    all++;
 
     // 时间检测，避免超限
     if(isTimeLimit || clock() - StartTime > MAX_TIME){
@@ -130,6 +130,8 @@ int PVSearch(Situation& situation, int depth, int alpha, int beta, Movement& ins
         return QuiescentSearch(situation, alpha, beta);
     }
 
+    all++;
+
     if(step - MAX_VALUE >= beta)
         return beta;
 
@@ -151,8 +153,6 @@ int PVSearch(Situation& situation, int depth, int alpha, int beta, Movement& ins
         }
         move = inspire_move;
     }
-
-    all++;
 
     // 时间检测，避免超限
     if(isTimeLimit || clock() - StartTime > MAX_TIME){
@@ -236,6 +236,8 @@ int QuiescentSearch(Situation& situation, int alpha, int beta){
     Movement move;              // 当前着法
     Movement move_list[64];     // 当前所有着法
 
+    all++;
+
     best = step - MAX_VALUE;
     // 必输局面直接返回
     if(best >= beta){
@@ -277,19 +279,18 @@ int QuiescentSearch(Situation& situation, int alpha, int beta){
     return alpha;
 }
 
-int SearchRoot(Situation& situation, int depth){
+int SearchRoot(Situation& situation, int depth, Movement* move_list, int move_num){
     int value;                      // 下一着法的分值
     int best;                       // 所有着法中的最佳分值
-    Movement move_list[128];        // 当前所有着法
     Movement move;                  // 当前着法
     Movement good_move;             // 当前局面最佳着法
     Movement inspire;
     move = good_move = inspire = NONE_MOVE;
     best = -NONE_VALUE;
 
-    int move_num = 0;               // 着法数量
     // 生成着法
-    MoveSort(situation, move_num, move_list, move, step);
+    // MoveSort(situation, move_num, move_list, move, step);
+    SortRootMove(move_num, move_list);
     for(int i = 0; i < move_num; i++){
         move = move_list[i];
         if(move.from == 0 && move.to == 0) continue;
@@ -312,6 +313,7 @@ int SearchRoot(Situation& situation, int depth){
         if(value > best){
             best = value;           // 更新最佳分数
             good_move = move;       // 更新最佳着法
+            UpdateRootMove(move_num, move_list, move);
         }
     }
 
@@ -347,13 +349,17 @@ void ComputerThink(Situation& situation){
         }
         else{
             UseBook = false;
+            delete[] BookHashTable;
         }
     }
 
+    Movement move_list[128];            // 当前所有着法
+    int move_num = 0;
+    InitRootMove(situation, move_num, move_list);
     // 迭代加深搜索
     for(max_depth = 1; max_depth <= MAX_DEPTH; max_depth++){
         NowMaxDepth = max_depth;
-        value = SearchRoot(situation, max_depth);
+        value = SearchRoot(situation, max_depth, move_list, move_num);
         if(isTimeLimit){
             break;
         }
@@ -386,6 +392,6 @@ void ComputerThink(Situation& situation){
     f << "Bestmove's value: " << debug_value << '\n';
     f << "=========================================\n";
     f.close();
-    cout << all << endl;
+    std::cout << all << endl;
     return ;
 }

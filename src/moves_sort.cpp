@@ -8,7 +8,7 @@
 #include "moves_sort.h"
 #include "representation.h"
 
-int HistoryTable[256][256];      // 历史表
+UINT32 HistoryTable[256][256];      // 历史表
 Movement KillerTable[256][2];    // 杀手表 
 
 const int HASH_GET = 1;
@@ -18,6 +18,7 @@ const int KILL1_GET = 4;
 const int KILL2_GET = 5;
 const int NOCAP_GEN = 6;
 const int NOCAP_GET = 7;
+const UINT32 MAX_MOVE_VALUE = 1 << 31;
 
 void ResetHistory(){
     memset(HistoryTable, 256 * 256, sizeof(int));
@@ -80,8 +81,7 @@ void CaptureValue(const Situation & situation, int & num_of_all_movements, Movem
  * 最后更新时间: 03.26.20
  */
 void NoCaptureValue(const Situation & situation, int & num_of_all_movements, Movement* all_movements, int flag){
-    int i;
-    for(i = flag; i < num_of_all_movements; i ++){
+    for(int i = flag; i < num_of_all_movements; i ++){
         all_movements[i].value = HistoryTable[all_movements[i].from][all_movements[i].to];
     }
 }
@@ -218,4 +218,34 @@ void CaptureMoveSort(const Situation& situation, int& num_of_all_movements, Move
     GetAllCaptureMovements(situation, num_of_all_movements, all_movements);
     CaptureValue(situation, num_of_all_movements, all_movements);
     std::sort(all_movements, all_movements + num_of_all_movements, cmp);
+}
+
+void InitRootMove(const Situation& situation, int& num_of_all_movements, Movement* all_movements){
+    // 吃子着法
+    GetAllCaptureMovements(situation, num_of_all_movements, all_movements);
+    CaptureValue(situation, num_of_all_movements, all_movements);
+    std::sort(all_movements, all_movements + num_of_all_movements, cmp);
+    // 不吃子着法
+    GetAllNotCaptureMovements(situation, num_of_all_movements, all_movements);
+}
+
+void SortRootMove(int num_of_all_movements, Movement* all_movements){
+    // 对着法做历史表启发
+    for(int i = 0; i < num_of_all_movements; i++){
+        if(all_movements[i].value < MAX_MOVE_VALUE - 24){
+            all_movements[i].value = HistoryTable[all_movements[i].from][all_movements[i].to];
+        }
+    }
+    std::sort(all_movements, all_movements + num_of_all_movements, cmp);
+}
+
+void UpdateRootMove(int num_of_all_movements, Movement* all_movements, Movement& move){
+    for(int i = 0; i < num_of_all_movements; i++){
+        if(isMoveEqual(move, all_movements[i])){
+            move.value = MAX_MOVE_VALUE;
+        }
+        else if(move.value){
+            move.value--;
+        }
+    }
 }

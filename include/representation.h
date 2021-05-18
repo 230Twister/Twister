@@ -168,7 +168,7 @@ struct Movement{
 	UINT8 from;				// 着法的起点
 	UINT8 to;				// 着法的终点
 	UINT8 capture;			// 着法是否吃子 0代表不吃子 其余代表吃的子的类型
-	UINT8 value;			// 着法的价值
+	UINT32 value;			// 着法的价值
 };
 inline bool isMoveEqual(const Movement& move1, const Movement& move2){
 	return move1.from == move2.from && move1.to == move2.to && move1.capture == move2.capture;

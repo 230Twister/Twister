@@ -13,7 +13,7 @@ struct Movement;
 int SearchCut(Situation& situation, int depth, int beta, bool allowNullMove);
 int PVSearch(Situation& situation, int depth, int alpha, int beta, Movement& inspire);
 int QuiescentSearch(Situation& situation, int alpha, int beta);
-int SearchRoot(Situation& situation, int depth);
+int SearchRoot(Situation& situation, int depth, Movement* move_list, int move_num);
 void ComputerThink(Situation& situation);
 
 #endif

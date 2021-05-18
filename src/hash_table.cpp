@@ -126,39 +126,42 @@ void ResetZobristKey(){
  * - Movement& move 当前局面最佳走法
  * 返回值：
  * - int 获取到的值
- * 最后更新时间: 21.03.25
+ * 最后更新时间: 21.05.19
  */
 int ReadHashTable(int depth, int alpha, int beta, Movement& move){
     int index = ZobristKey & HASHTABLE_MASK;
-    HashNode hash_node = HashTable[index];
 
-    // 判断校验值是否正确
-    if(ZobristKeyCheck == hash_node.check){
-        // 获取到的置换表结点的搜索深度应该较大才能认为是有效的
-        if(hash_node.depth > depth){
-            // 调整至相对值
-            if(hash_node.value > WIN_VALUE){
-                hash_node.value -= step;
-            }
-            if(hash_node.value < -WIN_VALUE){
-                hash_node.value += step;
-            }
+    for(int i = 0; i < 2; i++){
+        HashNode hash_node = HashTable[index + i];
+        // 判断校验值是否正确
+        if(ZobristKeyCheck == hash_node.check){
+            // 获取到的置换表结点的搜索深度应该较大才能认为是有效的
+            if(hash_node.depth > depth){
+                // 调整至相对值
+                if(hash_node.value > WIN_VALUE){
+                    hash_node.value -= step;
+                }
+                if(hash_node.value < -WIN_VALUE){
+                    hash_node.value += step;
+                }
 
-            // PV结点 直接返回置换表中的值
-            if(hash_node.type == hashEXACT){
-                return hash_node.value;
+                // PV结点 直接返回置换表中的值
+                if(hash_node.type == hashEXACT){
+                    return hash_node.value;
+                }
+                // alpha结点
+                else if(hash_node.type == hashALPHA && hash_node.value <= alpha){
+                    return alpha;
+                }
+                // beta结点
+                else if(hash_node.type == hashBETA && hash_node.value >= beta){
+                    return beta;
+                }
             }
-            // alpha结点
-            else if(hash_node.type == hashALPHA && hash_node.value <= alpha){
-                return alpha;
-            }
-            // beta结点
-            else if(hash_node.type == hashBETA && hash_node.value >= beta){
-                return beta;
-            }
+            // 读取失败就获得该局面的最佳走法
+            move = hash_node.good_move;
+            break;
         }
-        // 读取失败就获得该局面的最佳走法
-        move = hash_node.good_move;
     }
     return NONE_VALUE;
 }
@@ -173,11 +176,10 @@ int ReadHashTable(int depth, int alpha, int beta, Movement& move){
  * - Movement move      当前最佳着法
  * 返回值：
  * - void
- * 最后更新时间: 21.03.25
+ * 最后更新时间: 21.05.19
  */
 void SaveHashTable(int depth, int value, UINT8 node_type, Movement move){
     int index = ZobristKey & HASHTABLE_MASK;
-    HashNode hash_node = HashTable[index];
     HashNode new_hash_node = HashNode{ZobristKeyCheck, depth, value, node_type, move};
     
     // 存入置换表前，将估值调整到绝对值
@@ -187,17 +189,32 @@ void SaveHashTable(int depth, int value, UINT8 node_type, Movement move){
     if(new_hash_node.value < -WIN_VALUE){
         new_hash_node.value -= step;
     }
-    // 出现相同局面冲突
-    if(hash_node.check == ZobristKeyCheck){
-        // 深度优先覆盖
-        if(hash_node.depth < depth){
-            HashTable[index] = new_hash_node;
+
+    int min_depth = 512; 
+    int min_layer = 0;
+    for(int i = 0; i < 2; i++){
+        HashNode hash_node = HashTable[index + i];
+        // 出现相同局面
+        if(hash_node.check == ZobristKeyCheck){
+            // 深度优先覆盖
+            if(node_type == hashBETA && hash_node.depth < depth && (move.from || hash_node.good_move.from == 0)){
+                HashTable[index] = new_hash_node;
+            }
+            else if(hash_node.depth < depth){
+                HashTable[index] = new_hash_node;
+            }
+            if(move.from){
+                HashTable[index].good_move = move;
+            }
+            return;
+        }
+        if(hash_node.depth < min_depth){
+            min_layer = i;
+            min_depth = hash_node.depth;
         }
     }
-    // 不同局面，直接覆盖
-    else{
-        HashTable[index] = new_hash_node;
-    }
+    // 不同局面，直接覆盖最小深度的
+    HashTable[index + min_layer] = new_hash_node;
 }
 
 /* 
