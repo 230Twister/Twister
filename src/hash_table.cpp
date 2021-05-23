@@ -86,7 +86,7 @@ void InitHashTable(){
  */
 void ResetHashTable(){
     memset(HashTable, 0, HASHTABLE_SIZE * sizeof(HashNode));
-    memset(RepeatTable, 0, sizeof(RepeatTable));
+    memset(RepeatTable, 0, REPEATTABLE_SIZE * sizeof(RepeatNode));
 }
 
 /* 
@@ -200,7 +200,7 @@ void SaveHashTable(int depth, int value, UINT8 node_type, Movement move){
             if(node_type == hashBETA && hash_node.depth < depth && (move.from || hash_node.good_move.from == 0)){
                 HashTable[index] = new_hash_node;
             }
-            else if(hash_node.depth < depth){
+            else if(node_type != hashBETA && hash_node.depth < depth){
                 HashTable[index] = new_hash_node;
             }
             if(move.from){

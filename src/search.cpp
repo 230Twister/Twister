@@ -146,7 +146,7 @@ int PVSearch(Situation& situation, int depth, int alpha, int beta, Movement& ins
     }
 
     // 内部迭代加深启发(在置换表未能给出启发走法时使用)
-    if(depth > 2 && move.from == 0){
+    if(depth > 2 && !MovementsLegal(move, situation)){
         value = PVSearch(situation, depth / 2, alpha, beta, inspire_move);
         if(value <= alpha){
             value = PVSearch(situation, depth / 2, -NONE_VALUE, beta, inspire_move);
@@ -178,10 +178,10 @@ int PVSearch(Situation& situation, int depth, int alpha, int beta, Movement& ins
             if(PVflag){
                 value = -SearchCut(situation, depth - 1, -alpha);
                 if(value > alpha && value < beta)
-                    value = -PVSearch(situation, depth - 1, -beta, -alpha, inspire);
+                    value = -PVSearch(situation, depth - 1, -beta, -alpha, inspire_move);
             }
             else
-                value = -PVSearch(situation, depth - 1, -beta, -alpha, inspire);
+                value = -PVSearch(situation, depth - 1, -beta, -alpha, inspire_move);
         }
         // 回溯
         UnMakeAMove(situation);
@@ -290,7 +290,8 @@ int SearchRoot(Situation& situation, int depth, Movement* move_list, int move_nu
 
     // 生成着法
     // MoveSort(situation, move_num, move_list, move, step);
-    SortRootMove(move_num, move_list);
+    if(depth > 1)
+        SortRootMove(move_num, move_list);
     for(int i = 0; i < move_num; i++){
         move = move_list[i];
         if(move.from == 0 && move.to == 0) continue;
