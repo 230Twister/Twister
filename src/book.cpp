@@ -30,6 +30,102 @@ void InitBookZobrist(){
     BookZobristKeyCheck = ZobristKeyCheck;
 }
 
+#include "buffer.h"
+//获取一个四字节的字符串
+#define LOAD_4CHAR(p) (*((unsigned int*) (&buffer_in[p])))
+
+//从源复制一 四字节字符串 到目标位置
+#define COPY(d, s) (*((unsigned int*) (&buffer_out[d])) = LOAD_4CHAR(s))
+
+//复制字符串，每次复制四个字符
+inline void copyToDestination(char* buffer_out, int& des, unsigned char* buffer_in, int& source, int& length) {
+	COPY(des, source);
+
+	for (int i = 4; i < length; i += 4) {
+		COPY(des + i, source + i);
+	}
+}
+
+//解压
+void decompress(char* buffer_out) {
+	int blockLength = 0;
+    int p = 0;                                  //指向当前输出缓冲区的位置
+	for(int i = 0; i < 2; i++) {
+        int und_p = 4 * (i + 1) + blockLength;  //指向当前待解压区的位置
+        blockLength = *((unsigned int*) (&data[4 * i + blockLength]));
+		int und_end = und_p + blockLength;	    //待解压区的结束位置
+
+		while (1) {
+			int token = data[und_p++];
+
+			//如果token中字面值长度是有的
+			if (token >= 16) {
+				int literalLength = token >> 4;    //字面值长度
+
+				if (literalLength == 15) {
+					//字面值长度大于等于15就接着去扩展区获取
+					while (1) {
+						int c = data[und_p++];
+						literalLength += c;
+
+						if (c != 255)
+							break;
+					}
+				}
+
+				//复制字面的字符
+				copyToDestination(buffer_out, p, data, und_p, literalLength);
+
+				//挪动当前位置指向和待压缩区位置指向
+				p += literalLength;
+				und_p += literalLength;
+
+				//如果复制完字面字符已经到底了就退出
+				if (und_p >= und_end)
+					break;
+			}
+
+			//获取匹配字符串在的位置
+			int ago_p = p - (*((unsigned short*)(&data[und_p])));
+			und_p += 2;
+
+			//获取token里的匹配长度
+			int matchLength = (token & 15) + 4;
+
+			if (matchLength == 15 + 4) {
+				//如果有扩展长度就获取扩展的匹配长度
+				while (1) {
+					int c = data[und_p++];
+					matchLength += c;
+
+					if (c != 255)
+						break;
+				}
+			}
+
+			//偏移大于等于4可以大胆整块复制
+			if (p - ago_p >= 4) {
+				copyToDestination(buffer_out, p, (unsigned char*) buffer_out, ago_p, matchLength);
+				p += matchLength;
+			}
+			else {
+				//否则一个个字符复制
+				while (matchLength-- != 0)
+					buffer_out[p++] = buffer_out[ago_p++];
+			}
+		}
+	}
+}
+
+bool getLine(char* buff, int& buff_p, string& line){
+    line = "";
+    if(buff[buff_p] == 0) return false;
+    while(buff[buff_p] != '\n'){
+        line += buff[buff_p++];
+    }
+    buff_p++;
+    return true;
+}
 
 /* 
  * 函数名：LoadBookHashTable
@@ -44,11 +140,13 @@ void LoadBookHashTable(){
     BookHashTable = new BookHashNode[BOOK_HASHTABLE_SIZE];
     memset(BookHashTable, 0, BOOK_HASHTABLE_SIZE * sizeof(BookHashNode));
 
-    ifstream f("../resources/book.txt");
-    if(!f.is_open())
-        cout << "can not open book.txt" << endl;
+    char* buff = new char[1<<24];
+    memset(buff, 0, (1<<24) * sizeof(char));
+    int buff_p = 0;
+    decompress(buff);
+
     string line;
-    while(getline(f, line)){
+    while(getLine(buff, buff_p, line)){
         InitBookZobrist();
         char* temp = new char[strlen(line.c_str()) + 1];
 		strcpy(temp, line.c_str());
@@ -123,7 +221,7 @@ void FENToHash(const char* fen, string move_s){
         node->move = StrToMovement(each_move_s.substr(0, 4));
         node->move.value = atoi(each_move_s.substr(5, each_move_s.length()-6).c_str());
         
-        while(num + 1 < move_s.length() && (move_s.find('/', num + 1) + 1) != move_s.length()){
+        while(num + 1 < int(move_s.length()) && (move_s.find('/', num + 1) + 1) != move_s.length()){
             each_move_s = strtok(NULL, "/");
             num = move_s.find('/', num + 1);
 
@@ -134,7 +232,7 @@ void FENToHash(const char* fen, string move_s){
             node->move.value = atoi(each_move_s.substr(5, each_move_s.length()-6).c_str());
         }
 
-        if(num + 1 < move_s.length()){
+        if(num + 1 < int(move_s.length())){
             each_move_s = strtok(NULL, "/");
             node->next = new BookBoardNode;
             node = node->next;

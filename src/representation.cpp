@@ -31,7 +31,7 @@ void InitSituation(Situation & situation){
     situation.value[BLACK] = 0;
     // 清空着法栈
     situation.moves_stack.clear();
-    situation.moves_stack.reserve(100);
+    situation.moves_stack.reserve(300);
 }
 
 /* 
@@ -442,7 +442,7 @@ bool BeChecked(const Situation & situation){
 
     // 1. 判断自己将(帅)是否在棋盘上，并记录其位置
     to = situation.current_pieces[GetPlayerFlag(situation.current_player) + 0];
-    if(to == 0) return false;
+    if(to == 0) return true;
     to_row = GetRow(to);
     to_col = GetCol(to);
 

@@ -131,6 +131,7 @@ void MoveSort(const Situation & situation, int & num_of_all_movements, Movement*
     std::sort(all_movements + 3 - no_movement, all_movements + num_of_all_movements, cmp);
     // 不吃子着法排序
     flag = num_of_all_movements;
+    // while(all_movements[flag - 1].value <= 1 && flag > (3 - no_movement)) flag--;
     GetAllNotCaptureMovements(situation, num_of_all_movements, all_movements);
     NoCaptureValue(situation, num_of_all_movements, all_movements, flag);
     std::sort(all_movements + flag, all_movements + num_of_all_movements, cmp);
