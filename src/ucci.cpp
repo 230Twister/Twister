@@ -95,7 +95,7 @@ inline void Idle(void) {
  * 还有一个静态变量是"s_BytesLeft"，其实只用在Windows中，作用原理参阅"CheckInput()"函数
  */
 char *ReadInput(void){
-    const int c_MaxInputBuff = 1024;
+    const int c_MaxInputBuff = 2048;
     static char s_LineStr[c_MaxInputBuff];
     static int s_BytesLeft = 0;
     char *RetVal;

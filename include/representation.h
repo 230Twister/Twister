@@ -155,7 +155,7 @@ void AddPiece(int piece_position, int piece_id, Situation & situation);
 void DeletePiece(int piece_position, int piece_id, Situation & situation);
 void FenToSituation(Situation & situation, const char* fen, const int num_of_movements, const char *movements);
 void SituationToFen(Situation & situation, char* fen);
-bool MakeAMove (Situation & situation, const Movement move);
+bool MakeAMove (Situation & situation, Movement & move, bool isbegin = 0);
 void UnMakeAMove (Situation & situation);
 void MakeNullMove(Situation & situation);
 void UnMakeNullMove(Situation & situation);
@@ -169,6 +169,7 @@ struct Movement{
 	UINT8 to;				// 着法的终点
 	UINT8 capture;			// 着法是否吃子 0代表不吃子 其余代表吃的子的类型
 	UINT32 value;			// 着法的价值
+	UINT8 catc;				// 抓子
 };
 inline bool isMoveEqual(const Movement& move1, const Movement& move2){
 	return move1.from == move2.from && move1.to == move2.to && move1.capture == move2.capture;
@@ -180,6 +181,7 @@ void GetAllMovements(const Situation & situation, int & num_of_all_movements, Mo
 void GetAllCaptureMovements(const Situation & situation, int & num_of_all_movements, Movement* all_movements);
 void GetAllNotCaptureMovements(const Situation & situation, int & num_of_all_movements, Movement* all_movements);
 bool MovementsLegal(const Movement move, const Situation & situation);
+int Catch(const Situation & situation, const Movement & move);
 // ============================================================================================
 // 局面状态检测相关函数
 bool IfProtected(int player, const int to, const Situation & situation, int exp = 0);

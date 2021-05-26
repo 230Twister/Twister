@@ -191,9 +191,6 @@ void FenToSituation(Situation & situation, const char* fen, const int num_of_mov
     }
 
     // 4. 将后续着法转入局面
-    // std::ofstream f;
-    // f.open("debug.log", std::ios::app | std::ios::out);
-    // f << "后续着法:\n";
     int j = 0;
     for ( int n = 0; n < num_of_movements; n ++ ) {
     	std::string s = "";
@@ -201,13 +198,14 @@ void FenToSituation(Situation & situation, const char* fen, const int num_of_mov
     		s += movements[k];
     	}
     	Movement move = StrToMovement(s);
-        // f << "From:" << (int)move.from << " To:" << (int)move.to << std::endl;
         MakeAMove(situation, move);
     	j += 5;
     }
-    // f.close();
 
-    // 5. 清空栈中的后续着法
+    // 7. 获取长打禁止着法
+    
+
+    // 6.清空着法栈
     situation.moves_stack.clear();
 }
 
@@ -518,36 +516,33 @@ bool BeChecked(const Situation & situation){
  * - bool 
  * 最后更新时间: 21.04.05
  */
-bool MakeAMove(Situation & situation, const Movement move){
+bool MakeAMove(Situation & situation,Movement & move, bool isbegin){
 
     int piece_id_from = situation.current_board[move.from];
     int piece_id_to = situation.current_board[move.to];
 
-    // 1. 放入走法栈
-    situation.moves_stack.push_back(move);
-    SignSituation(step);
-    step++;
+    
 
-    // 2. 置换表更新
-    // 2.1 当前局面哈希值
+    // 1. 置换表更新
+    // 1.1 当前局面哈希值
     ZobristKey ^= ZobristPlayer;
     ZobristKey ^= ZobristTable[piece_id_from][move.from];
     if(piece_id_to != 0)
         ZobristKey ^= ZobristTable[piece_id_to][move.to];
     ZobristKey ^= ZobristTable[piece_id_from][move.to];
 
-    // 2.2 当前局面哈希校验值
+    //  1.2 当前局面哈希校验值
     ZobristKeyCheck ^= ZobristPlayerCheck;
     ZobristKeyCheck ^= ZobristTableCheck[piece_id_from][move.from];
     if(piece_id_to != 0)
         ZobristKeyCheck ^= ZobristTableCheck[piece_id_to][move.to];
     ZobristKeyCheck ^= ZobristTableCheck[situation.current_board[move.from]][move.to];
 
-    // 3. 更新子力价值
+    // 2. 更新子力价值
     situation.value[situation.current_player] -= PiecesValue[situation.current_player][PIECE_NUM_TO_TYPE[piece_id_from]][move.from];
     situation.value[situation.current_player] += PiecesValue[situation.current_player][PIECE_NUM_TO_TYPE[piece_id_from]][move.to];
 
-    // 4. 移动棋子
+    // 3. 移动棋子
     // 4.1 如果是吃子着法
     if(piece_id_to != 0){
         // 4.1.1 更新子力价值
@@ -577,7 +572,17 @@ bool MakeAMove(Situation & situation, const Movement move){
     
     }
 
-    // 5. 交换走棋方
+    // 4. 如果是开始转换局面，则需要判断该着法是否抓子，抓的是哪个子
+    if(isbegin){
+        move.catc = Catch(situation, move);
+    }
+
+    // 5. 放入走法栈
+    situation.moves_stack.push_back(move);
+    SignSituation(step);
+    step++;
+
+    // 6. 交换走棋方
     if(BeChecked(situation)){
         ChangePlayer(situation.current_player);
         return true;
@@ -937,4 +942,144 @@ bool IfProtected(int player, const int to, const Situation & situation, int exp)
         return true;
 
     return false;
+}
+
+int Catch(const Situation & situation, const Movement & move){
+    int player_flag, opplayer_flag, from, to, from_id, catch_id, counter;
+    player_flag = GetPlayerFlag(situation.current_player);
+    opplayer_flag = GetPlayerFlag(OpponentPlayer(situation.current_player));
+    from = move.to;
+    from_id = situation.current_board[from];
+    switch (from_id - player_flag){
+    // 马抓子
+    case 5:
+    case 6:
+        int horse_leg;
+        counter = 0;
+        to = HORSE_CAN_GET[from][counter];
+        while(to != 0){
+            horse_leg = HORSE_LEG[from][counter];
+            catch_id = situation.current_board[to];
+            if(situation.current_board[horse_leg] == 0 && (catch_id & opplayer_flag) != 0){
+                int catch_id_no = catch_id - opplayer_flag;
+                if(catch_id_no <= 8){
+                    if(catch_id_no >= 7) return catch_id;
+                }
+                else if(catch_id_no <= 10){
+                    if(!IfProtected(OpponentPlayer(situation.current_player), to, situation)) return catch_id;
+                }
+                else{
+                    if(!InHomeHalf(to, OpponentPlayer(situation.current_player)) && !IfProtected(OpponentPlayer(situation.current_player), to, situation)) return catch_id;
+                }
+            }
+            counter ++;
+            to = HORSE_CAN_GET[from][counter];
+        }
+        break;
+    // 车抓子
+    case 7:
+    case 8:
+        int from_col = GetCol(from), from_row = GetRow(from);
+        // 纵向移动
+        if(from_col == GetCol(move.from)){
+            for(int i = 0; i < 2; i ++){
+                int catch_col = ROOK_CANNON_CAN_GET_ROW[from_col - 3][situation.bit_row[from_row]].rook_capture[i];
+                if(catch_col != from_col){
+                    to = GetPosition(catch_col, from_row);
+                    catch_id = situation.current_board[to];
+                    if((catch_id & opplayer_flag) != 0){
+                        int catch_id_no = catch_id - opplayer_flag;
+                        if(catch_id_no <= 7){
+                            if(catch_id_no >= 5 && catch_id_no <= 6){
+                                if(!IfProtected(OpponentPlayer(situation.current_player), to, situation)) return catch_id;
+                            }
+                        }
+                        else if(catch_id_no <= 10){
+                            if(!IfProtected(OpponentPlayer(situation.current_player), to, situation)) return catch_id;
+                        }
+                        else{
+                            if(!InHomeHalf(to, OpponentPlayer(situation.current_player)) && !IfProtected(OpponentPlayer(situation.current_player), to, situation)) return catch_id;
+                        }
+                    }
+                }
+            }
+        }
+        // 横向移动
+        else{
+            for(int i = 0;i < 2; i ++){
+                int catch_row = ROOK_CANNON_CAN_GET_COL[from_row - 3][situation.bit_col[from_col]].rook_capture[i];
+                if(catch_row != from_row){
+                    to = GetPosition(from_col, catch_row);
+                    catch_id = situation.current_board[to];
+                    if((catch_id & opplayer_flag) != 0){
+                        int catch_id_no = catch_id - opplayer_flag;
+                        if(catch_id_no <= 7){
+                            if(catch_id_no >= 5 && catch_id_no <= 6){
+                                if(!IfProtected(OpponentPlayer(situation.current_player), to, situation)) return catch_id;
+                            }
+                        }
+                        else if(catch_id_no <= 10){
+                            if(!IfProtected(OpponentPlayer(situation.current_player), to, situation)) return catch_id;
+                        }
+                        else{
+                            if(!InHomeHalf(to, OpponentPlayer(situation.current_player)) && !IfProtected(OpponentPlayer(situation.current_player), to, situation)) return catch_id;
+                        }
+                    }
+                }
+            }
+        }
+        break;
+    // 炮抓子
+    case 9:
+    case 10:
+        int from_col = GetCol(from), from_row = GetRow(from);
+        // 纵向移动
+        if(from_col == GetCol(move.from)){
+            for(int i = 0; i < 2; i ++){
+                int catch_col = ROOK_CANNON_CAN_GET_ROW[from_col - 3][situation.bit_row[from_row]].cannon_capture[i];
+                if(catch_col != from_col){
+                    to = GetPosition(catch_col, from_row);
+                    catch_id = situation.current_board[to];
+                    if((catch_id & opplayer_flag) != 0){
+                        int catch_id_no = catch_id - opplayer_flag;
+                        if(catch_id_no <= 8){
+                            if(catch_id_no >= 5 && catch_id_no <= 6){
+                                if(!IfProtected(OpponentPlayer(situation.current_player), to, situation)) return catch_id;
+                            }
+                            else return catch_id;
+                        }
+                        else if(catch_id_no >= 11){
+                            if(!InHomeHalf(to, OpponentPlayer(situation.current_player)) && !IfProtected(OpponentPlayer(situation.current_player), to, situation)) return catch_id;
+                        }
+                    }
+                }
+            }
+        }
+        // 横向移动
+        else{
+            for(int i = 0;i < 2; i ++){
+                int catch_row = ROOK_CANNON_CAN_GET_COL[from_row - 3][situation.bit_col[from_col]].cannon_capture[i];
+                if(catch_row != from_row){
+                    to = GetPosition(from_col, catch_row);
+                    catch_id = situation.current_board[to];
+                    if((catch_id & opplayer_flag) != 0){
+                        int catch_id_no = catch_id - opplayer_flag;
+                        if(catch_id_no <= 8){
+                            if(catch_id_no >= 5 && catch_id_no <= 6){
+                                if(!IfProtected(OpponentPlayer(situation.current_player), to, situation)) return catch_id;
+                            }
+                            else return catch_id;
+                        }
+                        else if(catch_id_no >= 11){
+                            if(!InHomeHalf(to, OpponentPlayer(situation.current_player)) && !IfProtected(OpponentPlayer(situation.current_player), to, situation)) return catch_id;
+                        }
+                    }
+                }
+            }
+        }
+        break;
+    default:
+        break;
+    }
+    return 0;
 }
