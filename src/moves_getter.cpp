@@ -51,6 +51,8 @@ void GetAllCaptureMovements(const Situation & situation, int & num_of_all_moveme
                     all_movements[num_of_all_movements].capture = piece_to_id;
                     all_movements[num_of_all_movements].from = piece_from;
                     all_movements[num_of_all_movements].to = piece_to;
+                    all_movements[num_of_all_movements].catc = 0;
+                    all_movements[num_of_all_movements].movec = 0;
                     num_of_all_movements ++;
                 }
                 can_move_counter ++;
@@ -71,6 +73,8 @@ void GetAllCaptureMovements(const Situation & situation, int & num_of_all_moveme
                     all_movements[num_of_all_movements].capture = piece_to_id;
                     all_movements[num_of_all_movements].from = piece_from;
                     all_movements[num_of_all_movements].to = piece_to;
+                    all_movements[num_of_all_movements].catc = 0;
+                    all_movements[num_of_all_movements].movec = 0;
                     num_of_all_movements ++;
                 }
                 can_move_counter ++;
@@ -92,6 +96,8 @@ void GetAllCaptureMovements(const Situation & situation, int & num_of_all_moveme
                     all_movements[num_of_all_movements].capture = piece_to_id;
                     all_movements[num_of_all_movements].from = piece_from;
                     all_movements[num_of_all_movements].to = piece_to;
+                    all_movements[num_of_all_movements].catc = 0;
+                    all_movements[num_of_all_movements].movec = 0;
                     num_of_all_movements ++;
                 }
                 can_move_counter ++;
@@ -114,6 +120,8 @@ void GetAllCaptureMovements(const Situation & situation, int & num_of_all_moveme
                     all_movements[num_of_all_movements].capture = piece_to_id;
                     all_movements[num_of_all_movements].from = piece_from;
                     all_movements[num_of_all_movements].to = piece_to;
+                    all_movements[num_of_all_movements].movec = 0;
+                    all_movements[num_of_all_movements].catc = 0;
                     num_of_all_movements ++;
                 }
                 can_move_counter ++;
@@ -138,6 +146,8 @@ void GetAllCaptureMovements(const Situation & situation, int & num_of_all_moveme
                         all_movements[num_of_all_movements].capture = piece_to_id;
                         all_movements[num_of_all_movements].from = piece_from;
                         all_movements[num_of_all_movements].to = piece_to;
+                        all_movements[num_of_all_movements].catc = 0;
+                        all_movements[num_of_all_movements].movec = 0;
                         num_of_all_movements ++;
                     }
                 }
@@ -151,6 +161,7 @@ void GetAllCaptureMovements(const Situation & situation, int & num_of_all_moveme
                     if(ColorOfPiece(piece_to_id) != player){
                         all_movements[num_of_all_movements].capture = piece_to_id;
                         all_movements[num_of_all_movements].from = piece_from;
+                        all_movements[num_of_all_movements].movec = 0;
                         all_movements[num_of_all_movements].to = piece_to;
                         num_of_all_movements ++;
                     }
@@ -176,6 +187,8 @@ void GetAllCaptureMovements(const Situation & situation, int & num_of_all_moveme
                         all_movements[num_of_all_movements].capture = piece_to_id;
                         all_movements[num_of_all_movements].from = piece_from;
                         all_movements[num_of_all_movements].to = piece_to;
+                        all_movements[num_of_all_movements].catc = 0;
+                        all_movements[num_of_all_movements].movec = 0;
                         num_of_all_movements ++;
                     }
                 }
@@ -190,6 +203,8 @@ void GetAllCaptureMovements(const Situation & situation, int & num_of_all_moveme
                         all_movements[num_of_all_movements].capture = piece_to_id;
                         all_movements[num_of_all_movements].from = piece_from;
                         all_movements[num_of_all_movements].to = piece_to;
+                        all_movements[num_of_all_movements].catc = 0;
+                        all_movements[num_of_all_movements].movec = 0;
                         num_of_all_movements ++;
                     }
                 }
@@ -210,6 +225,8 @@ void GetAllCaptureMovements(const Situation & situation, int & num_of_all_moveme
                     all_movements[num_of_all_movements].capture = piece_to_id;
                     all_movements[num_of_all_movements].from = piece_from;
                     all_movements[num_of_all_movements].to = piece_to;
+                    all_movements[num_of_all_movements].catc = 0;
+                    all_movements[num_of_all_movements].movec = 0;
                     num_of_all_movements ++;
                 }
                 can_move_counter ++;
@@ -248,6 +265,8 @@ void GetAllNotCaptureMovements(const Situation & situation, int & num_of_all_mov
                 all_movements[num_of_all_movements].capture = piece_to_id;
                 all_movements[num_of_all_movements].from = piece_from;
                 all_movements[num_of_all_movements].to = piece_to;
+                all_movements[num_of_all_movements].movec = 0;
+                all_movements[num_of_all_movements].catc = 0;
                 num_of_all_movements ++;
                 get_row --;
             }
@@ -258,6 +277,8 @@ void GetAllNotCaptureMovements(const Situation & situation, int & num_of_all_mov
                 all_movements[num_of_all_movements].capture = piece_to_id;
                 all_movements[num_of_all_movements].from = piece_from;
                 all_movements[num_of_all_movements].to = piece_to;
+                all_movements[num_of_all_movements].catc = 0;
+                all_movements[num_of_all_movements].movec = 0;
                 num_of_all_movements ++;
                 get_row ++;
             }
@@ -270,6 +291,8 @@ void GetAllNotCaptureMovements(const Situation & situation, int & num_of_all_mov
                 all_movements[num_of_all_movements].capture = piece_to_id;
                 all_movements[num_of_all_movements].from = piece_from;
                 all_movements[num_of_all_movements].to = piece_to;
+                all_movements[num_of_all_movements].catc = 0;
+                all_movements[num_of_all_movements].movec = 0;
                 num_of_all_movements ++;
                 get_col --;
             }
@@ -280,6 +303,8 @@ void GetAllNotCaptureMovements(const Situation & situation, int & num_of_all_mov
                 all_movements[num_of_all_movements].capture = piece_to_id;
                 all_movements[num_of_all_movements].from = piece_from;
                 all_movements[num_of_all_movements].to = piece_to;
+                all_movements[num_of_all_movements].catc = 0;
+                all_movements[num_of_all_movements].movec = 0;
                 num_of_all_movements ++;
                 get_col ++;
             }
@@ -301,6 +326,8 @@ void GetAllNotCaptureMovements(const Situation & situation, int & num_of_all_mov
                     all_movements[num_of_all_movements].capture = piece_to_id;
                     all_movements[num_of_all_movements].from = piece_from;
                     all_movements[num_of_all_movements].to = piece_to;
+                    all_movements[num_of_all_movements].catc = 0;
+                    all_movements[num_of_all_movements].movec = 0;
                     num_of_all_movements ++;
                 }
                 can_move_counter ++;
@@ -321,6 +348,8 @@ void GetAllNotCaptureMovements(const Situation & situation, int & num_of_all_mov
                     all_movements[num_of_all_movements].capture = piece_to_id;
                     all_movements[num_of_all_movements].from = piece_from;
                     all_movements[num_of_all_movements].to = piece_to;
+                    all_movements[num_of_all_movements].catc = 0;
+                    all_movements[num_of_all_movements].movec = 0;
                     num_of_all_movements ++;
                 }
                 can_move_counter ++;
@@ -343,6 +372,8 @@ void GetAllNotCaptureMovements(const Situation & situation, int & num_of_all_mov
                     all_movements[num_of_all_movements].capture = piece_to_id;
                     all_movements[num_of_all_movements].from = piece_from;
                     all_movements[num_of_all_movements].to = piece_to;
+                    all_movements[num_of_all_movements].catc = 0;
+                    all_movements[num_of_all_movements].movec = 0;
                     num_of_all_movements ++;
                 }
                 can_move_counter ++;
@@ -363,6 +394,8 @@ void GetAllNotCaptureMovements(const Situation & situation, int & num_of_all_mov
                     all_movements[num_of_all_movements].capture = piece_to_id;
                     all_movements[num_of_all_movements].from = piece_from;
                     all_movements[num_of_all_movements].to = piece_to;
+                    all_movements[num_of_all_movements].catc = 0;
+                    all_movements[num_of_all_movements].movec = 0;
                     num_of_all_movements ++;
                 }
                 can_move_counter ++;
@@ -383,6 +416,8 @@ void GetAllNotCaptureMovements(const Situation & situation, int & num_of_all_mov
                     all_movements[num_of_all_movements].capture = piece_to_id;
                     all_movements[num_of_all_movements].from = piece_from;
                     all_movements[num_of_all_movements].to = piece_to;
+                    all_movements[num_of_all_movements].catc = 0;
+                    all_movements[num_of_all_movements].movec = 0;
                     num_of_all_movements ++;
                 }
                 can_move_counter ++;
