@@ -1,3 +1,9 @@
+/* 
+ * 文件名： search.cpp
+ * 描述	：搜索部分
+ * 作者 : oscar
+ * 最后更新时间: 21.05.27
+ */
 #include "search.h"
 #include "hash_table.h"
 #include "moves_sort.h"
@@ -22,7 +28,6 @@ extern const int MAX_VALUE = 10000;                     // 最大价值，胜利
 extern const int WIN_VALUE = MAX_VALUE - MAX_DEPTH;     // 胜利局面的相对分数
 
 int debug_value;
-int all = 0;
 
 int SearchCut(Situation& situation, int depth, int beta, bool allowNullMove = false){
     int value;                      // 下一着法的分值
@@ -39,14 +44,8 @@ int SearchCut(Situation& situation, int depth, int beta, bool allowNullMove = fa
         return QuiescentSearch(situation, beta - 1, beta);
     }
 
-    all++;
-
     if(step - MAX_VALUE >= beta)
         return beta;
-
-    // 重复裁剪
-    if(CheckRepeat(situation, step)) 
-        return DRAW_VALUE;
 
     // 置换表裁剪
     value = ReadHashTable(depth, beta - 1, beta, move);
@@ -130,14 +129,8 @@ int PVSearch(Situation& situation, int depth, int alpha, int beta, Movement& ins
         return QuiescentSearch(situation, alpha, beta);
     }
 
-    all++;
-
     if(step - MAX_VALUE >= beta)
         return beta;
-
-    // 重复裁剪
-    if(CheckRepeat(situation, step)) 
-        return DRAW_VALUE;
 
     // 置换表裁剪
     value = ReadHashTable(depth, alpha, beta, move);
@@ -188,7 +181,7 @@ int PVSearch(Situation& situation, int depth, int alpha, int beta, Movement& ins
 
         // 当前为beta结点，执行剪枝
         if(value >= beta){
-            inspire = move;
+            // inspire = move;
             // 此着法是好着法，记录进历史表和杀手表
             SetBestMove(move, step, depth);
             SaveHashTable(depth, beta, hashBETA, move);
@@ -235,8 +228,6 @@ int QuiescentSearch(Situation& situation, int alpha, int beta){
     int best;                   // 所有着法中的最佳分值
     Movement move;              // 当前着法
     Movement move_list[64];     // 当前所有着法
-
-    all++;
 
     best = step - MAX_VALUE;
     // 必输局面直接返回
@@ -393,6 +384,5 @@ void ComputerThink(Situation& situation){
     f << "Bestmove's value: " << debug_value << '\n';
     f << "=========================================\n";
     f.close();
-    std::cout << all << endl;
-    return ;
+    return;
 }

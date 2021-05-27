@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
                 f.open("debug.log", std::ios::app | std::ios::out);
                 f << "界面传给引擎的ucci指令: " << Command.Position.FenStr << "||" << Command.Position.MoveNum << " " << Command.Position.MoveStr << std::endl;
                 FenToSituation(situation, Command.Position.FenStr, Command.Position.MoveNum, Command.Position.MoveStr);
-                char fen[5000];
+                char fen[200];
                 SituationToFen(situation, fen);
                 f << "引擎处理完的当前局面的FEN: " << fen << std::endl;
                 f.close();

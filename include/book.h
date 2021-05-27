@@ -15,13 +15,7 @@ using namespace std;
 // 置换表结点
 struct BookHashNode{
     UINT64 check;                               // 校验值
-    struct BookBoardNode* next;                 // 局面结点指针
-};
-
-// 局面结点
-struct BookBoardNode{
-    Movement move;                              // 对应着法
-    struct BookBoardNode* next;                 // 局面结点指针
+    Movement move;                              // 走法
 };
 
 extern BookHashNode* BookHashTable;             // 哈希表

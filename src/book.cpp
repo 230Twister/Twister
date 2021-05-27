@@ -11,7 +11,8 @@
 #include <fstream>
 #include <stdlib.h>
 
-const UINT32 BOOK_HASHTABLE_SIZE = 1 << 20;         // 哈希表大小 1MB
+const UINT32 BOOK_HASHTABLE_SIZE = 1 << 22;         // 哈希表大小 1MB
+const UINT32 BOOK_HASHTABLE_MASK = (1 << 22) - 1;
 BookHashNode* BookHashTable;                        // 哈希表
 UINT64 BookZobristKey;                              // 当前局面键值
 UINT64 BookZobristKeyCheck;                         // 当前局面校验值
@@ -148,7 +149,7 @@ void LoadBookHashTable(){
     string line;
     while(getLine(buff, buff_p, line)){
         InitBookZobrist();
-        char* temp = new char[strlen(line.c_str()) + 1];
+        char* temp = new char[line.size() + 1];
 		strcpy(temp, line.c_str());
         string move_s = strtok(temp, ":");
 
@@ -158,6 +159,7 @@ void LoadBookHashTable(){
         delete temp;
         FENToHash(line.c_str(), move_s);                 // 将对应局面存入哈希表
     }
+    delete[] buff;
 }
 
 
@@ -203,43 +205,13 @@ void FENToHash(const char* fen, string move_s){
     }
 
     UINT32 place;
-    place = BookZobristKey % BOOK_HASHTABLE_SIZE;
+    place = BookZobristKey & BOOK_HASHTABLE_MASK;
     while(BookHashTable[place].check && BookHashTable[place].check != BookZobristKeyCheck)  // 存着不同的局面，遇到冲突，线性探测再散列
         place ++;
 
     if(!BookHashTable[place].check){                            // 位置为空，存入哈希表
         BookHashTable[place].check = BookZobristKeyCheck;
-
-        char* temp = new char[strlen(move_s.c_str()) + 1];
-        strcpy(temp, move_s.c_str());
-        string each_move_s = strtok(temp, "/");
-        int num = move_s.find('/');
-
-        BookBoardNode *node = new BookBoardNode;
-        node->next = NULL;
-        BookHashTable[place].next = node;
-        node->move = StrToMovement(each_move_s.substr(0, 4));
-        node->move.value = atoi(each_move_s.substr(5, each_move_s.length()-6).c_str());
-        
-        while(num + 1 < int(move_s.length()) && (move_s.find('/', num + 1) + 1) != move_s.length()){
-            each_move_s = strtok(NULL, "/");
-            num = move_s.find('/', num + 1);
-
-            node->next = new BookBoardNode;
-            node = node->next;
-            node->next = NULL;
-            node->move = StrToMovement(each_move_s.substr(0, 4));
-            node->move.value = atoi(each_move_s.substr(5, each_move_s.length()-6).c_str());
-        }
-
-        if(num + 1 < int(move_s.length())){
-            each_move_s = strtok(NULL, "/");
-            node->next = new BookBoardNode;
-            node = node->next;
-            node->next = NULL;
-            node->move = StrToMovement(each_move_s.substr(0, 4));
-            node->move.value = atoi(each_move_s.substr(5, each_move_s.length()-6).c_str());
-        }
+        BookHashTable[place].move = StrToMovement(move_s.substr(0, 4));
     }
 }
 
@@ -259,11 +231,11 @@ Movement ReadBookTable(Situation& situation){
     m.to = 0;
     m.capture = 0;
     m.value = 0;
-    UINT32 place = ZobristKey % BOOK_HASHTABLE_SIZE;
+    UINT32 place = ZobristKey & BOOK_HASHTABLE_MASK;
     while(BookHashTable[place].check && BookHashTable[place].check != ZobristKeyCheck)  // 冲突
         place ++;
     if(BookHashTable[place].check){
-        m = BookHashTable[place].next->move;
+        m = BookHashTable[place].move;
         m.capture = situation.current_board[m.to];
     }
     return m;

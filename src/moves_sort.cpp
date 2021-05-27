@@ -108,11 +108,11 @@ void MoveSort(const Situation & situation, int & num_of_all_movements, Movement*
     int no_hash_movement = 0, no_killer_1_movement = 0, no_killer_2_movement = 0, no_movement = 0;
 
     // 判断置换表和杀手着法是否为空
-    if((!hash_move.from && !hash_move.to) || !MovementsLegal(hash_move, situation))
+    if(!MovementsLegal(hash_move, situation))
         no_hash_movement ++;
-    if((!KillerTable[step][0].from && !KillerTable[step][0].to) || !MovementsLegal(KillerTable[step][0], situation))
+    if(!MovementsLegal(KillerTable[step][0], situation))
         no_killer_1_movement ++;
-    if((!KillerTable[step][1].from && !KillerTable[step][1].to) || !MovementsLegal(KillerTable[step][1], situation))
+    if(!MovementsLegal(KillerTable[step][1], situation))
         no_killer_2_movement ++;
     no_movement = no_hash_movement + no_killer_1_movement + no_killer_2_movement;
 
@@ -131,7 +131,7 @@ void MoveSort(const Situation & situation, int & num_of_all_movements, Movement*
     std::sort(all_movements + 3 - no_movement, all_movements + num_of_all_movements, cmp);
     // 不吃子着法排序
     flag = num_of_all_movements;
-    // while(all_movements[flag - 1].value <= 1 && flag > (3 - no_movement)) flag--;
+    // while(all_movements[flag - 1].value < 1 && flag > (3 - no_movement)) flag--;
     GetAllNotCaptureMovements(situation, num_of_all_movements, all_movements);
     NoCaptureValue(situation, num_of_all_movements, all_movements, flag);
     std::sort(all_movements + flag, all_movements + num_of_all_movements, cmp);
