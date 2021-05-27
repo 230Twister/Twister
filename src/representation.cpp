@@ -198,15 +198,9 @@ void FenToSituation(Situation & situation, const char* fen, const int num_of_mov
     		s += movements[k];
     	}
     	Movement move = StrToMovement(s);
-        MakeAMove(situation, move);
+        MakeAMove(situation, move, 1);
     	j += 5;
     }
-
-    // 7. 获取长打禁止着法
-    
-
-    // 6.清空着法栈
-    situation.moves_stack.clear();
 }
 
 /* 
@@ -572,15 +566,42 @@ bool MakeAMove(Situation & situation,Movement & move, bool isbegin){
     
     }
 
-    // 4. 如果是开始转换局面，则需要判断该着法是否抓子，抓的是哪个子
+    // 4. 如果是开始转换局面或者试探局面，则需要判断该着法是否抓子，抓的是哪个子
+    int longcatme = 1, longcatopp = 1;
     if(isbegin){
         move.catc = Catch(situation, move);
+        move.movec = piece_id_from;
+        // 判断自己是否已经走了6步同一子a捉同一子b
+        if(situation.moves_stack.size() >= 12){
+            int last_index = situation.moves_stack.size() - 1;
+            int  movec = situation.moves_stack[last_index - 1].movec, catc = situation.moves_stack[last_index - 1].catc;
+            for(int i = 3; i <= 11; i += 2){
+                if(!(situation.moves_stack[last_index - i].catc == catc && situation.moves_stack[last_index - i].movec == movec)){
+                    longcatme = 0;
+                    break;
+                }
+            }
+            // 如果自己长抓，判断对方是否也长抓
+            if(longcatme){
+                movec = situation.moves_stack[last_index].movec;
+                catc = situation.moves_stack[last_index].catc;
+                for(int i = 2; i <= 10; i += 2){
+                    if(!(situation.moves_stack[last_index - i].catc == catc && situation.moves_stack[last_index - i].movec == movec)){
+                        longcatopp = 0;
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     // 5. 放入走法栈
     situation.moves_stack.push_back(move);
     SignSituation(step);
     step++;
+
+    // 自己长抓，对方没长抓，则返回true
+    if(isbegin && longcatme && !longcatopp) return true;
 
     // 6. 交换走棋方
     if(BeChecked(situation)){
@@ -950,6 +971,7 @@ int Catch(const Situation & situation, const Movement & move){
     opplayer_flag = GetPlayerFlag(OpponentPlayer(situation.current_player));
     from = move.to;
     from_id = situation.current_board[from];
+
     switch (from_id - player_flag){
     // 马抓子
     case 5:

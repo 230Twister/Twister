@@ -221,13 +221,23 @@ void CaptureMoveSort(const Situation& situation, int& num_of_all_movements, Move
     std::sort(all_movements, all_movements + num_of_all_movements, cmp);
 }
 
-void InitRootMove(const Situation& situation, int& num_of_all_movements, Movement* all_movements){
+void InitRootMove(Situation& situation, int& num_of_all_movements, Movement* all_movements){
     // 吃子着法
     GetAllCaptureMovements(situation, num_of_all_movements, all_movements);
     CaptureValue(situation, num_of_all_movements, all_movements);
     std::sort(all_movements, all_movements + num_of_all_movements, cmp);
+    int numofnocap = num_of_all_movements;
     // 不吃子着法
     GetAllNotCaptureMovements(situation, num_of_all_movements, all_movements);
+    for(int i = numofnocap; i < num_of_all_movements; i ++){
+        if(MakeAMove(situation, all_movements[i], 1)){
+            for(int j = i; j < num_of_all_movements - 1; j ++){
+                all_movements[j] = all_movements[j + 1];
+            }
+            num_of_all_movements --;
+        }
+        UnMakeAMove(situation);
+    }
 }
 
 void SortRootMove(int num_of_all_movements, Movement* all_movements){
