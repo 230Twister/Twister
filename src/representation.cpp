@@ -537,21 +537,20 @@ bool MakeAMove(Situation & situation,Movement & move, bool isbegin){
             if(check){
                 move.catc = GetPlayerFlag(OpponentPlayer(situation.current_player)) + 0;
                 move.movec = check;
-            }
+            }else longcatme = 0;
         }
         // 判断自己是否已经走了6步同一子a捉同一子b
         if(situation.moves_stack.size() >= 6 && move.catc){
             int last_index = situation.moves_stack.size() - 1;
-            int  movec = situation.moves_stack[last_index - 1].movec, catc = situation.moves_stack[last_index - 1].catc;
-            for(int i = 3; i <= 5; i += 2){
-                if(!(situation.moves_stack[last_index - i].catc == catc && situation.moves_stack[last_index - i].movec == movec)){
+            for(int i = 1; i <= 5; i += 2){
+                if(!(situation.moves_stack[last_index - i].catc == move.catc && situation.moves_stack[last_index - i].movec == move.movec)){
                     longcatme = 0;
                     break;
                 }
             }
             // 如果自己长抓，判断对方是否也长抓
-            movec = situation.moves_stack[last_index].movec;
-            catc = situation.moves_stack[last_index].catc;
+            int movec = situation.moves_stack[last_index].movec;
+            int catc = situation.moves_stack[last_index].catc;
             if(catc == 0) longcatopp = 0;
             if(longcatme && movec){
                 for(int i = 2; i <= 4; i += 2){

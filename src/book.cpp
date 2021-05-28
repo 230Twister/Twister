@@ -11,8 +11,8 @@
 #include <fstream>
 #include <stdlib.h>
 
-const UINT32 BOOK_HASHTABLE_SIZE = 1 << 22;         // 哈希表大小 1MB
-const UINT32 BOOK_HASHTABLE_MASK = (1 << 22) - 1;
+const UINT32 BOOK_HASHTABLE_SIZE = 1 << 20;         // 哈希表大小 1MB
+const UINT32 BOOK_HASHTABLE_MASK = (1 << 20) - 1;
 BookHashNode* BookHashTable;                        // 哈希表
 UINT64 BookZobristKey;                              // 当前局面键值
 UINT64 BookZobristKeyCheck;                         // 当前局面校验值
@@ -207,7 +207,7 @@ void FENToHash(const char* fen, string move_s){
     UINT32 place;
     place = BookZobristKey & BOOK_HASHTABLE_MASK;
     while(BookHashTable[place].check && BookHashTable[place].check != BookZobristKeyCheck)  // 存着不同的局面，遇到冲突，线性探测再散列
-        place ++;
+        place = (place + 1) & BOOK_HASHTABLE_MASK;
 
     if(!BookHashTable[place].check){                            // 位置为空，存入哈希表
         BookHashTable[place].check = BookZobristKeyCheck;
@@ -233,7 +233,7 @@ Movement ReadBookTable(Situation& situation){
     m.value = 0;
     UINT32 place = ZobristKey & BOOK_HASHTABLE_MASK;
     while(BookHashTable[place].check && BookHashTable[place].check != ZobristKeyCheck)  // 冲突
-        place ++;
+        place = (place + 1) & BOOK_HASHTABLE_MASK;
     if(BookHashTable[place].check){
         m = BookHashTable[place].move;
         m.capture = situation.current_board[m.to];
