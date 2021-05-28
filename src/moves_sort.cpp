@@ -235,9 +235,11 @@ void InitRootMove(Situation& situation, int& num_of_all_movements, Movement* all
                 all_movements[j] = all_movements[j + 1];
             }
             num_of_all_movements --;
+            i--;
         }
         UnMakeAMove(situation);
     }
+    situation.moves_stack.clear();
 }
 
 void SortRootMove(int num_of_all_movements, Movement* all_movements){

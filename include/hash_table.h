@@ -27,10 +27,6 @@ struct HashNode{
     int type;               // 结点类型
     Movement good_move;     // 最佳走法
 };
-struct RepeatNode{
-    UINT64 check;           // 校验值
-    int step;               // 走棋数
-};
 extern HashNode* HashTable;                // 置换表
 extern UINT64 ZobristKey;                  // 当前局面键值
 extern UINT64 ZobristKeyCheck;             // 当前局面校验值
@@ -45,9 +41,5 @@ void DeleteHashTable();
 void ResetZobristKey();
 int ReadHashTable(int depth, int alpha, int beta, Movement& move);
 void SaveHashTable(int depth, int value, UINT8 node_type, Movement move);
-
-void SignSituation(int step);
-void UnsignSituation(int step);
-bool CheckRepeat(Situation& situation, int step);
 
 #endif

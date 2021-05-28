@@ -147,6 +147,10 @@ inline bool InHomeHalf(int pos, int player){
 inline int SquareBack(int pos, int player){
 	return pos + 16 - (player << 5);
 }
+// 禁用空着裁剪的条件
+inline bool BanNullMove(Situation& situation){
+    return situation.value[situation.current_player] <= 250;
+}
 
 // 局面操作
 void InitSituation(Situation & situation);

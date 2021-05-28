@@ -54,7 +54,7 @@ int SearchCut(Situation& situation, int depth, int beta, bool allowNullMove = fa
     }
 
     // 空着裁剪(带检验)
-    if(!situation.banNullMove && allowNullMove && !BeChecked(situation)){
+    if(!BanNullMove(situation) && allowNullMove && !BeChecked(situation)){
         MakeNullMove(situation);
         value = -SearchCut(situation, depth - 1 - NULL_REDUCTION, 1 - beta);
         UnMakeNullMove(situation);
@@ -348,24 +348,31 @@ void ComputerThink(Situation& situation){
     Movement move_list[128];            // 当前所有着法
     int move_num = 0;
     InitRootMove(situation, move_num, move_list);
-    // 迭代加深搜索
-    for(max_depth = 1; max_depth <= MAX_DEPTH; max_depth++){
-        NowMaxDepth = max_depth;
-        value = SearchRoot(situation, max_depth, move_list, move_num);
-        if(isTimeLimit){
-            break;
-        }
-        else{
-            best_move_save = BestMove;
-            debug_value = value;
-            // 输出日志文件(每层搜索结果)
-            std::ofstream f;
-            f.open("debug.log", std::ios::app | std::ios::out);
-            f << "Depth: " << max_depth << " Time: " << clock() - StartTime << "ms \n";
-            f.close();
-        }
-        if(value > WIN_VALUE) break;
+    // 唯一着法，不必搜索直接返回
+    if(move_num == 1){
+        best_move_save = move_list[0];
     }
+    else{
+        // 迭代加深搜索
+        for(max_depth = 1; max_depth <= MAX_DEPTH; max_depth++){
+            NowMaxDepth = max_depth;
+            value = SearchRoot(situation, max_depth, move_list, move_num);
+            if(isTimeLimit){
+                break;
+            }
+            else{
+                best_move_save = BestMove;
+                debug_value = value;
+                // 输出日志文件(每层搜索结果)
+                std::ofstream f;
+                f.open("debug.log", std::ios::app | std::ios::out);
+                f << "Depth: " << max_depth << " Time: " << clock() - StartTime << "ms \n";
+                f.close();
+            }
+            if(value > WIN_VALUE) break;
+        }
+    }
+
 
     // 必败 认输
     if(best_move_save.from == best_move_save.to){

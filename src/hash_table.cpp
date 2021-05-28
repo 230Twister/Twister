@@ -13,8 +13,6 @@ const UINT8 hashALPHA = 1;                  // ALPHA结点类型
 const UINT8 hashBETA = 2;                   // BETA结点类型
 const UINT32 HASHTABLE_SIZE = 1 << 24;      // 置换表大小 16MB
 const UINT32 HASHTABLE_MASK = (1 << 24) - 1;
-const UINT32 REPEATTABLE_SIZE = 1 << 15;    // 微型置换表大小
-const UINT32 REPEATTABLE_MASK = (1 << 15) - 1;
 
 const int NONE_VALUE = 1 << 20;             // 空价值
 const Movement NONE_MOVE = {0, 0, 0};       // 空着
@@ -29,8 +27,6 @@ UINT64 ZobristTableCheck[48][256];          // 棋子在棋盘各个位置的校
 struct KeySave{
     UINT64 ZobristKey, ZobristKeyCheck;
 }Save;
-
-RepeatNode RepeatTable[REPEATTABLE_SIZE];   // 检测重复局面的小置换表
 
 extern int step;
 extern const int MAX_VALUE;
@@ -86,7 +82,6 @@ void InitHashTable(){
  */
 void ResetHashTable(){
     memset(HashTable, 0, HASHTABLE_SIZE * sizeof(HashNode));
-    memset(RepeatTable, 0, REPEATTABLE_SIZE * sizeof(RepeatNode));
 }
 
 /* 
@@ -215,60 +210,4 @@ void SaveHashTable(int depth, int value, UINT8 node_type, Movement move){
     }
     // 不同局面，直接覆盖最小深度的
     HashTable[index + min_layer] = new_hash_node;
-}
-
-/* 
- * 函数名：SignSituation
- * 描述：局面标记
- * 入参: 
- * - void
- * 返回值：
- * - void
- * 最后更新时间: 21.04.28
- */
-void SignSituation(int step){
-    int index = ZobristKey & REPEATTABLE_MASK;
-    RepeatNode new_node = RepeatNode{ZobristKeyCheck, step};
-
-    if(RepeatTable[index].check == 0)
-        RepeatTable[index] = new_node;
-}
-
-/* 
- * 函数名：UnsignSituation
- * 描述：去除局面标记
- * 入参: 
- * - void
- * 返回值：
- * - void
- * 最后更新时间: 21.04.28
- */
-void UnsignSituation(int step){
-    int index = ZobristKey & REPEATTABLE_MASK;
-    if(RepeatTable[index].check == ZobristKeyCheck && step == RepeatTable[index].step)
-        RepeatTable[index] = RepeatNode{0, 0};
-}
-
-/* 
- * 函数名：CheckRepeat
- * 描述：检查局面是否重复
- * 入参: 
- * - void
- * 返回值：
- * - bool 是否重复
- * 最后更新时间: 21.04.28
- */
-bool CheckRepeat(Situation& situation, int step){
-    int index = ZobristKey & REPEATTABLE_MASK;
-    RepeatNode node = RepeatTable[index];
-
-    if(node.check != ZobristKeyCheck || node.step == step)
-        return false;
-    
-    int move_nums = node.step;
-    std::vector<Movement>& move_list = situation.moves_stack;
-    while(move_nums < step && move_list[move_nums].from != 0 && move_list[move_nums].capture == 0){
-        move_nums++;
-    }
-    return move_nums == step;
 }

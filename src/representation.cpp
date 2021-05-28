@@ -572,7 +572,7 @@ bool MakeAMove(Situation & situation,Movement & move, bool isbegin){
         move.catc = Catch(situation, move);
         move.movec = piece_id_from;
         // 判断自己是否已经走了6步同一子a捉同一子b
-        if(situation.moves_stack.size() >= 12){
+        if(situation.moves_stack.size() >= 12 && move.catc){
             int last_index = situation.moves_stack.size() - 1;
             int  movec = situation.moves_stack[last_index - 1].movec, catc = situation.moves_stack[last_index - 1].catc;
             for(int i = 3; i <= 11; i += 2){
@@ -597,11 +597,13 @@ bool MakeAMove(Situation & situation,Movement & move, bool isbegin){
 
     // 5. 放入走法栈
     situation.moves_stack.push_back(move);
-    SignSituation(step);
     step++;
 
     // 自己长抓，对方没长抓，则返回true
-    if(isbegin && longcatme && !longcatopp) return true;
+    if(isbegin && longcatme && !longcatopp){
+        ChangePlayer(situation.current_player);
+        return true;
+    }
 
     // 6. 交换走棋方
     if(BeChecked(situation)){
@@ -645,8 +647,6 @@ void UnMakeAMove (Situation & situation){
     if(piece_id_to != 0)
         ZobristKeyCheck ^= ZobristTableCheck[piece_id_to][move.to];
     ZobristKeyCheck ^= ZobristTableCheck[situation.current_board[move.to]][move.from];
-
-    UnsignSituation(step);
 
     // 3. 更新子力价值
     situation.value[ColorOfPiece(piece_id_from)] -= PiecesValue[ColorOfPiece(piece_id_from)][PIECE_NUM_TO_TYPE[piece_id_from]][move.to];
@@ -971,12 +971,13 @@ int Catch(const Situation & situation, const Movement & move){
     opplayer_flag = GetPlayerFlag(OpponentPlayer(situation.current_player));
     from = move.to;
     from_id = situation.current_board[from];
+    int horse_leg;
+    int from_col = GetCol(from), from_row = GetRow(from);
 
     switch (from_id - player_flag){
     // 马抓子
     case 5:
     case 6:
-        int horse_leg;
         counter = 0;
         to = HORSE_CAN_GET[from][counter];
         while(to != 0){
@@ -1001,7 +1002,6 @@ int Catch(const Situation & situation, const Movement & move){
     // 车抓子
     case 7:
     case 8:
-        int from_col = GetCol(from), from_row = GetRow(from);
         // 纵向移动
         if(from_col == GetCol(move.from)){
             for(int i = 0; i < 2; i ++){
@@ -1054,7 +1054,6 @@ int Catch(const Situation & situation, const Movement & move){
     // 炮抓子
     case 9:
     case 10:
-        int from_col = GetCol(from), from_row = GetRow(from);
         // 纵向移动
         if(from_col == GetCol(move.from)){
             for(int i = 0; i < 2; i ++){
