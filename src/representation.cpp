@@ -984,6 +984,7 @@ int Catch(const Situation & situation, const Movement & move){
             catch_id = situation.current_board[to];
             if(situation.current_board[horse_leg] == 0 && (catch_id & opplayer_flag) != 0){
                 int catch_id_no = catch_id - opplayer_flag;
+                if(catch_id_no == 1) return catch_id;
                 if(catch_id_no <= 8){
                     if(catch_id_no >= 7) return catch_id;
                 }
@@ -1011,6 +1012,7 @@ int Catch(const Situation & situation, const Movement & move){
                     catch_id = situation.current_board[to];
                     if((catch_id & opplayer_flag) != 0){
                         int catch_id_no = catch_id - opplayer_flag;
+                        if(catch_id_no == 1) return catch_id;
                         if(catch_id_no <= 7){
                             if(catch_id_no >= 5 && catch_id_no <= 6){
                                 if(!IfProtected(OpponentPlayer(situation.current_player), to, situation)) return catch_id;
@@ -1035,6 +1037,7 @@ int Catch(const Situation & situation, const Movement & move){
                     catch_id = situation.current_board[to];
                     if((catch_id & opplayer_flag) != 0){
                         int catch_id_no = catch_id - opplayer_flag;
+                        if(catch_id_no == 1) return catch_id;
                         if(catch_id_no <= 7){
                             if(catch_id_no >= 5 && catch_id_no <= 6){
                                 if(!IfProtected(OpponentPlayer(situation.current_player), to, situation)) return catch_id;
@@ -1064,6 +1067,7 @@ int Catch(const Situation & situation, const Movement & move){
                     catch_id = situation.current_board[to];
                     if((catch_id & opplayer_flag) != 0){
                         int catch_id_no = catch_id - opplayer_flag;
+                        if(catch_id_no == 1) return catch_id;
                         if(catch_id_no <= 8){
                             if(catch_id_no >= 5 && catch_id_no <= 6){
                                 if(!IfProtected(OpponentPlayer(situation.current_player), to, situation)) return catch_id;
@@ -1086,6 +1090,7 @@ int Catch(const Situation & situation, const Movement & move){
                     catch_id = situation.current_board[to];
                     if((catch_id & opplayer_flag) != 0){
                         int catch_id_no = catch_id - opplayer_flag;
+                        if(catch_id_no == 1) return catch_id;
                         if(catch_id_no <= 8){
                             if(catch_id_no >= 5 && catch_id_no <= 6){
                                 if(!IfProtected(OpponentPlayer(situation.current_player), to, situation)) return catch_id;
