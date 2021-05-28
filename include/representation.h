@@ -190,7 +190,7 @@ int Catch(const Situation & situation, const Movement & move);
 // ============================================================================================
 // 局面状态检测相关函数
 bool IfProtected(int player, const int to, const Situation & situation, int exp = 0);
-bool CheckOpponent(const Situation & situation);
+int CheckOpponent(const Situation & situation);
 bool BeChecked(const Situation & situation);
 bool KingFacing(const Situation & situation);
 // ============================================================================================

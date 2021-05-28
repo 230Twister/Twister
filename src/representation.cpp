@@ -310,114 +310,75 @@ Movement  StrToMovement(const std::string move) {
  * - bool 判断执棋方是否将军
  * 最后更新时间: 21.03.29
  */
-bool CheckOpponent(const Situation & situation){
-    // 1. 获得玩家特征值 
+int CheckOpponent(const Situation & situation){
+    // 1. 获得玩家特征值
     int player_flag = GetPlayerFlag(situation.current_player), player = situation.current_player;
-    int opponent_king_id = GetPlayerFlag(OpponentPlayer(situation.current_player)) + 0;
-    int piece_from, piece_to, can_move_counter, piece_to_id;
+    int from, to, from_row, from_col, to_row, to_col;
+
+    // 1. 判断对方将(帅)是否在棋盘上，并记录其位置
+    to = situation.current_pieces[GetPlayerFlag(OpponentPlayer(situation.current_player)) + 0];
+    // if(to == 0) return 1;
+    to_row = GetRow(to);
+    to_col = GetCol(to);
 
     // 2. 检测马的将军
     for(int i = player_flag + 5; i <= player_flag + 6; i ++){
-        if(situation.current_pieces[i] != 0){
-            int horse_leg;                  // 马腿位置
-            piece_from = situation.current_pieces[i];
-            can_move_counter = 0;
-            piece_to = HORSE_CAN_GET[piece_from][can_move_counter];
-            while(piece_to != 0){
-                horse_leg = HORSE_LEG[piece_from][can_move_counter];
-                piece_to_id = situation.current_board[piece_to];
-                if(piece_to_id == opponent_king_id && situation.current_board[horse_leg] == 0){
-                    return true;
-                }
-                can_move_counter ++;
-                piece_to = HORSE_CAN_GET[piece_from][can_move_counter];
-            }
+        from = situation.current_pieces[i];
+        if(from != 0){
+            int horse_leg = HORSE_LEGAL_MOVE[to - from + 256] + from;
+            if(horse_leg != from && situation.current_board[horse_leg] == 0) return i;
         }
     }
 
-    // 3. 车的吃子着法
+    // 3. 检测车的将军
     for(int i = player_flag + 7; i <= player_flag + 8; i ++){
-        if(situation.current_pieces[i] != 0){
-            piece_from = situation.current_pieces[i];
-            int col = GetCol(piece_from), row = GetRow(piece_from);
-
-            // 右 左 方向的吃子
-            for(int j = 0; j < 2; j ++){
-                int capture_col = ROOK_CANNON_CAN_GET_ROW[col - 3][situation.bit_row[row]].rook_capture[j];
-                if(capture_col != col){
-                    piece_to = GetPosition(capture_col, row);
-                    piece_to_id = situation.current_board[piece_to];
-                    if(piece_to_id == opponent_king_id){
-                       return true;
-                    }
-                }
+        from = situation.current_pieces[i];
+        if(from != 0){
+            from_row = GetRow(from);
+            from_col = GetCol(from);
+            if(from_col == to_col){
+                if((ROOK_CANNON_CAN_GET_COL_MASK[from_row - 3][situation.bit_col[from_col]].rook_capture & BIT_COL_MASK[to]) != 0) 
+                    return i;
             }
-            // 下 上 方向的吃子
-            for(int j = 0; j < 2; j ++){
-                int capture_row = ROOK_CANNON_CAN_GET_COL[row - 3][situation.bit_col[col]].rook_capture[j];
-                if(capture_row != row){
-                    piece_to = GetPosition(col, capture_row);
-                    piece_to_id = situation.current_board[piece_to];
-                    if(piece_to_id == opponent_king_id){
-                       return true;
-                    }
-                }
+            else if(from_row == to_row){
+                if((ROOK_CANNON_CAN_GET_ROW_MASK[from_col - 3][situation.bit_row[from_row]].rook_capture & BIT_ROW_MASK[to]) != 0) 
+                    return i;
             }
-        
         }
     }
     
-    // 4. 炮的吃子着法
+    // 4. 检测炮的将军
     for(int i = player_flag + 9; i <= player_flag + 10; i ++){
-        if(situation.current_pieces[i] != 0){
-            piece_from = situation.current_pieces[i];
-            int col = GetCol(piece_from), row = GetRow(piece_from);
-
-            // 右 左 方向的吃子
-            for(int j = 0; j < 2; j ++){
-                int capture_col = ROOK_CANNON_CAN_GET_ROW[col - 3][situation.bit_row[row]].cannon_capture[j];
-                if(capture_col != col){
-                    piece_to = GetPosition(capture_col, row);
-                    piece_to_id = situation.current_board[piece_to];
-                    if(piece_to_id == opponent_king_id){
-                       return true;
-                    }
-                }
+        from = situation.current_pieces[i];
+        if(from != 0){
+            from_row = GetRow(from);
+            from_col = GetCol(from);
+            if(from_col == to_col){
+                if((ROOK_CANNON_CAN_GET_COL_MASK[from_row - 3][situation.bit_col[from_col]].cannon_capture & BIT_COL_MASK[to]) != 0) 
+                    return i;
             }
-            // 下 上 方向的吃子
-            for(int j = 0; j < 2; j ++){
-                int capture_row = ROOK_CANNON_CAN_GET_COL[row - 3][situation.bit_col[col]].cannon_capture[j];
-                if(capture_row != row){
-                    piece_to = GetPosition(col, capture_row);
-                    piece_to_id = situation.current_board[piece_to];
-                    if(piece_to_id == opponent_king_id){
-                       return true;
-                    }
-                }
-            }
-        
-        }
-    }
-
-    // 5. 兵(卒)的吃子着法
-    for(int i = player_flag + 11; i <= player_flag + 15; i ++){
-        if(situation.current_pieces[i] != 0){
-            piece_from = situation.current_pieces[i];
-            can_move_counter = 0;
-            piece_to = PAWN_CAN_GET[piece_from][player][can_move_counter];
-            while(piece_to != 0){
-                piece_to_id = situation.current_board[piece_to];
-                if(piece_to_id == opponent_king_id){
-                    return true;
-                }
-                can_move_counter ++;
-                piece_to = PAWN_CAN_GET[piece_from][player][can_move_counter];
+            else if(from_row == to_row){
+                if((ROOK_CANNON_CAN_GET_ROW_MASK[from_col - 3][situation.bit_row[from_row]].cannon_capture & BIT_ROW_MASK[to]) != 0) 
+                    return i;
             }
         }
     }
 
-    // 6. 没有将军
-    return false;
+    // 5. 检测兵(卒)的将军(纵向)
+    from = SquareBack(to, player);
+    int from_id = situation.current_board[from];
+    if(((from_id & player_flag) != 0) && ((from_id & 15) >= 11))
+        return from_id;
+
+    // 6. 检测兵(卒)的将军(横向)
+    for(from = to - 1; from <= to + 1; from += 2){
+        int from_id = situation.current_board[from];
+        if(((from_id & player_flag) != 0) && ((from_id & 15) >= 11))
+            return from_id;
+    }
+
+    // 7. 没有被将军
+    return 0;
 }
 
 /* 
@@ -571,21 +532,29 @@ bool MakeAMove(Situation & situation,Movement & move, bool isbegin){
     if(isbegin){
         move.catc = Catch(situation, move);
         move.movec = piece_id_from;
+        if(move.catc == 0){
+            int check = CheckOpponent(situation);
+            if(check){
+                move.catc = GetPlayerFlag(OpponentPlayer(situation.current_player)) + 0;
+                move.movec = check;
+            }
+        }
         // 判断自己是否已经走了6步同一子a捉同一子b
-        if(situation.moves_stack.size() >= 12 && move.catc){
+        if(situation.moves_stack.size() >= 6 && move.catc){
             int last_index = situation.moves_stack.size() - 1;
             int  movec = situation.moves_stack[last_index - 1].movec, catc = situation.moves_stack[last_index - 1].catc;
-            for(int i = 3; i <= 11; i += 2){
+            for(int i = 3; i <= 5; i += 2){
                 if(!(situation.moves_stack[last_index - i].catc == catc && situation.moves_stack[last_index - i].movec == movec)){
                     longcatme = 0;
                     break;
                 }
             }
             // 如果自己长抓，判断对方是否也长抓
-            if(longcatme){
-                movec = situation.moves_stack[last_index].movec;
-                catc = situation.moves_stack[last_index].catc;
-                for(int i = 2; i <= 10; i += 2){
+            movec = situation.moves_stack[last_index].movec;
+            catc = situation.moves_stack[last_index].catc;
+            if(catc == 0) longcatopp = 0;
+            if(longcatme && movec){
+                for(int i = 2; i <= 4; i += 2){
                     if(!(situation.moves_stack[last_index - i].catc == catc && situation.moves_stack[last_index - i].movec == movec)){
                         longcatopp = 0;
                         break;
@@ -985,7 +954,7 @@ int Catch(const Situation & situation, const Movement & move){
             catch_id = situation.current_board[to];
             if(situation.current_board[horse_leg] == 0 && (catch_id & opplayer_flag) != 0){
                 int catch_id_no = catch_id - opplayer_flag;
-                if(catch_id_no == 1) return catch_id;
+                if(catch_id_no == 0) return catch_id;
                 if(catch_id_no <= 8){
                     if(catch_id_no >= 7) return catch_id;
                 }
@@ -1012,7 +981,7 @@ int Catch(const Situation & situation, const Movement & move){
                     catch_id = situation.current_board[to];
                     if((catch_id & opplayer_flag) != 0){
                         int catch_id_no = catch_id - opplayer_flag;
-                        if(catch_id_no == 1) return catch_id;
+                        if(catch_id_no == 0) return catch_id;
                         if(catch_id_no <= 7){
                             if(catch_id_no >= 5 && catch_id_no <= 6){
                                 if(!IfProtected(OpponentPlayer(situation.current_player), to, situation)) return catch_id;
@@ -1037,7 +1006,7 @@ int Catch(const Situation & situation, const Movement & move){
                     catch_id = situation.current_board[to];
                     if((catch_id & opplayer_flag) != 0){
                         int catch_id_no = catch_id - opplayer_flag;
-                        if(catch_id_no == 1) return catch_id;
+                        if(catch_id_no == 0) return catch_id;
                         if(catch_id_no <= 7){
                             if(catch_id_no >= 5 && catch_id_no <= 6){
                                 if(!IfProtected(OpponentPlayer(situation.current_player), to, situation)) return catch_id;
@@ -1066,7 +1035,7 @@ int Catch(const Situation & situation, const Movement & move){
                     catch_id = situation.current_board[to];
                     if((catch_id & opplayer_flag) != 0){
                         int catch_id_no = catch_id - opplayer_flag;
-                        if(catch_id_no == 1) return catch_id;
+                        if(catch_id_no == 0) return catch_id;
                         if(catch_id_no <= 8){
                             if(catch_id_no >= 5 && catch_id_no <= 6){
                                 if(!IfProtected(OpponentPlayer(situation.current_player), to, situation)) return catch_id;
@@ -1089,7 +1058,7 @@ int Catch(const Situation & situation, const Movement & move){
                     catch_id = situation.current_board[to];
                     if((catch_id & opplayer_flag) != 0){
                         int catch_id_no = catch_id - opplayer_flag;
-                        if(catch_id_no == 1) return catch_id;
+                        if(catch_id_no == 0) return catch_id;
                         if(catch_id_no <= 8){
                             if(catch_id_no >= 5 && catch_id_no <= 6){
                                 if(!IfProtected(OpponentPlayer(situation.current_player), to, situation)) return catch_id;
