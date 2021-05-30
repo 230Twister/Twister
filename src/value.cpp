@@ -347,7 +347,7 @@ void PreEvaluate(Situation &situation)
     //使用二次函数，子力很少时才认为接近残局
     midgame_value = (2 * TOTAL_MIDGAME_VALUE - midgame_value) * midgame_value / TOTAL_MIDGAME_VALUE;
     AdvancedValue = (TOTAL_AdvancedValue * midgame_value + TOTAL_AdvancedValue / 2) / TOTAL_MIDGAME_VALUE;
-    situation.banNullMove = midgame_value < 40;
+    situation.UseBook = midgame_value > 62;
     //计算将车马炮的价值
     for (int i = 0; i < 256; i++)
     {

@@ -105,7 +105,7 @@ struct Situation{
 	int value[2];
 	char current_fen[120];				// 当前局面的FEN格式串
 	std::vector<Movement> moves_stack;	// 着法栈
-	bool banNullMove;
+	bool UseBook;
 };
 // 行列 <-> 位置转换
 inline int GetRow(const int position){

@@ -231,6 +231,7 @@ void InitRootMove(Situation& situation, int& num_of_all_movements, Movement* all
     GetAllNotCaptureMovements(situation, num_of_all_movements, all_movements);
     for(int i = numofnocap; i < num_of_all_movements; i ++){
         if(MakeAMove(situation, all_movements[i], 1)){
+            // std::cout << "remove " << int(all_movements[i].from) << " " << int(all_movements[i].to) << " \n";
             for(int j = i; j < num_of_all_movements - 1; j ++){
                 all_movements[j] = all_movements[j + 1];
             }

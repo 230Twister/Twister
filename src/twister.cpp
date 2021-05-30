@@ -8,16 +8,16 @@
 #include "book.h"
 
 int main(int argc, char *argv[]) {
+    LoadBookHashTable();
 	if (BootLine() == e_CommUcci) {
 		printf("id name twister\n");
-		printf("id version 0.1\n");
+		printf("id version 1.5\n");
 		printf("id author twister230\n");
 		printf("ucciok\n");
 		fflush(stdout);
         Situation situation;
         InitHashTable();
         InitPresetArray();
-		LoadBookHashTable();
 		while (true) {
 			CommEnum Order = IdleLine (Command, 0);
 			if (Order == e_CommAnnotation) {
@@ -28,6 +28,7 @@ int main(int argc, char *argv[]) {
 				printf("bye\n");
 				fflush(stdout);
 				DeleteHashTable();
+                DeleteBook();
 				break;
 			}
 			else if (Order == e_CommIsReady) { // isready

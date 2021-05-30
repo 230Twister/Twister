@@ -240,3 +240,7 @@ Movement ReadBookTable(Situation& situation){
     }
     return m;
 }
+
+void DeleteBook(){
+    delete[] BookHashTable;
+}

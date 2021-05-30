@@ -18,7 +18,6 @@ Movement BestMove;                                      // 当前局面的最好
 int step = 0;                                           // 搜索步数
 time_t StartTime;                                       // 开始搜索的时间
 bool isTimeLimit = 0;                                   // 时间是否超限
-bool UseBook = true;
 int NowMaxDepth;
 const int NULL_REDUCTION = 2;                           // 空着裁剪度
 const int DRAW_VALUE = -1;                              // 和棋分数
@@ -332,16 +331,12 @@ void ComputerThink(Situation& situation){
     StartTime = clock();
 
     // 读取开局库
-    if(UseBook){
+    if(situation.UseBook){
         Movement book_move = ReadBookTable(situation);
         if(book_move.from != 0 && MovementsLegal(book_move, situation)){
             printf ("bestmove %s\n", MovementToStr(book_move).c_str());
 		    fflush (stdout);
             return;
-        }
-        else{
-            UseBook = false;
-            delete[] BookHashTable;
         }
     }
 

@@ -25,5 +25,6 @@ extern UINT64 BookZobristKeyCheck;              // 当前局面校验值
 void FENToHash(const char* fen, string move);
 void LoadBookHashTable();
 Movement ReadBookTable(Situation& situation);
+void DeleteBook();
 
 #endif
