@@ -21,8 +21,8 @@ const int NOCAP_GET = 7;
 const UINT32 MAX_MOVE_VALUE = 1 << 31;
 
 void ResetHistory(){
-    memset(HistoryTable, 256 * 256, sizeof(int));
-    memset(KillerTable, 256 * 2, sizeof(Movement));
+    memset(HistoryTable, 0, 256 * 256 * sizeof(int));
+    memset(KillerTable, 0, 256 * 2 * sizeof(Movement));
 }
 
 /* 
