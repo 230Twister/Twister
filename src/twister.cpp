@@ -8,7 +8,6 @@
 #include "book.h"
 
 int main(int argc, char *argv[]) {
-    LoadBookHashTable();
 	if (BootLine() == e_CommUcci) {
 		printf("id name twister\n");
 		printf("id version 1.5\n");
@@ -17,6 +16,7 @@ int main(int argc, char *argv[]) {
 		fflush(stdout);
         Situation situation;
         InitHashTable();
+        LoadBookHashTable();
         InitPresetArray();
 		while (true) {
 			CommEnum Order = IdleLine (Command, 0);
