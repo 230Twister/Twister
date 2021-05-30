@@ -283,6 +283,10 @@ int SearchRoot(Situation& situation, int depth, Movement* move_list, int move_nu
         move = move_list[i];
         if(move.from == 0 && move.to == 0) continue;
         // 下子
+        if(move.capture == 32 || move.capture == 16){
+            BestMove = move;
+            return MAX_VALUE;
+        }
         if(MakeAMove(situation, move)){
             value = -MAX_VALUE + step;
         }
