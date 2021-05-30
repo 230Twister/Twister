@@ -12,7 +12,6 @@
 #include "value.h"
 #include "book.h"
 #include <ctime>
-#include <fstream>
 
 Movement BestMove;                                      // 当前局面的最好走法
 int step = 0;                                           // 搜索步数
@@ -21,12 +20,10 @@ bool isTimeLimit = 0;                                   // 时间是否超限
 int NowMaxDepth;
 const int NULL_REDUCTION = 2;                           // 空着裁剪度
 const int DRAW_VALUE = -1;                              // 和棋分数
-const UINT16 MAX_DEPTH = 24;                            // 最大搜索深度
-const time_t MAX_TIME = 40000;                          // 最大消耗时间(ms)
+const UINT16 MAX_DEPTH = 36;                            // 最大搜索深度
+const time_t MAX_TIME = 50000;                          // 最大消耗时间(ms)
 extern const int MAX_VALUE = 10000;                     // 最大价值，胜利局面绝对分数
 extern const int WIN_VALUE = MAX_VALUE - MAX_DEPTH;     // 胜利局面的相对分数
-
-int debug_value;
 
 int SearchCut(Situation& situation, int depth, int beta, bool allowNullMove = false){
     int value;                      // 下一着法的分值
@@ -357,12 +354,6 @@ void ComputerThink(Situation& situation){
             }
             else{
                 best_move_save = BestMove;
-                debug_value = value;
-                // 输出日志文件(每层搜索结果)
-                std::ofstream f;
-                f.open("debug.log", std::ios::app | std::ios::out);
-                f << "Depth: " << max_depth << " Time: " << clock() - StartTime << "ms \n";
-                f.close();
             }
             if(value > WIN_VALUE) break;
         }
@@ -379,12 +370,5 @@ void ComputerThink(Situation& situation){
         printf ("bestmove %s\n", MovementToStr(best_move_save).c_str());
 		fflush (stdout);
     }
-
-    // 输出日志文件(返回最佳着法)
-    std::ofstream f;
-    f.open("debug.log", std::ios::app | std::ios::out);
-    f << "Bestmove's value: " << debug_value << '\n';
-    f << "=========================================\n";
-    f.close();
     return;
 }

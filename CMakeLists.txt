@@ -4,7 +4,7 @@ project(Twister)                            #项目名字
 include_directories(./include)              #头文件位置
 aux_source_directory(./src/ DIR_TOOT_SRCS)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")            #开启调试信息
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")            #开启调试信息
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")         #开启警告
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lm")           #链接数学库
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")    #使用c++11
