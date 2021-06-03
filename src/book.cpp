@@ -199,7 +199,7 @@ void FENToHash(const char* fen, string move_s){
         p ++;
     }
     p ++;   // *p = side
-    if(*p == 'w'){
+    if(*p != 'b'){
         BookZobristKey ^= ZobristPlayer;
         BookZobristKeyCheck ^= ZobristPlayerCheck;
     }
