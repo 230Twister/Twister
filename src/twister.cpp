@@ -9,9 +9,6 @@
 
 int main(int argc, char *argv[]) {
 	if (BootLine() == e_CommUcci) {
-		printf("id name twister\n");
-		printf("id version 1.5\n");
-		printf("id author twister230\n");
 		printf("ucciok\n");
 		fflush(stdout);
         Situation situation;
@@ -37,31 +34,13 @@ int main(int argc, char *argv[]) {
 			}
 			else if (Order == e_CommSetOption) {
 				if(Command.Option.Type == e_NewGame) { // newgame
-                    // 输出日志文件(新对局时间)
-                    std::ofstream f;
-                    f.open("debug.log", std::ios::app | std::ios::out);
-                    time_t t = time(0); 
-                    char tmp[32];
-                    strftime(tmp, sizeof(tmp), "%Y-%m-%d %H:%M:%S",localtime(&t));
-                    f << "=========================================\n";
-                    f << "<NEW GAME> " << tmp << std::endl;
-                    f << "=========================================\n";
-                    f.close();
                     ResetZobristKey();
 				}
 			}
 			else if (Order == e_CommPosition) { // position [ startpos | fen ] moves ...
 				ResetZobristKey();
                 InitSituation(situation);
-                // 输出日志文件(FEN)
-                std::ofstream f;
-                f.open("debug.log", std::ios::app | std::ios::out);
-                f << "界面传给引擎的ucci指令: " << Command.Position.FenStr << "||" << Command.Position.MoveNum << " " << Command.Position.MoveStr << std::endl;
                 FenToSituation(situation, Command.Position.FenStr, Command.Position.MoveNum, Command.Position.MoveStr);
-                char fen[200];
-                SituationToFen(situation, fen);
-                f << "引擎处理完的当前局面的FEN: " << fen << std::endl;
-                f.close();
 				// 预评估
 				PreEvaluate(situation);
 			}
