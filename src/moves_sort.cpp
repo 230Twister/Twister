@@ -150,59 +150,6 @@ void MoveSort(const Situation & situation, int & num_of_all_movements, Movement*
     }
 }
 
-bool NextMove(const Situation& situation, MoveGenerate& generate, Movement& hash_move, int step){
-    int flag;
-    switch (generate.state)
-    {
-    case HASH_GET:
-        generate.state = CAP_GEN;
-        if(hash_move.from && MovementsLegal(hash_move, situation)){
-            generate.next = hash_move;
-            return true;
-        }
-    case CAP_GEN:   // 生成吃子着法
-        GetAllCaptureMovements(situation, generate.move_nums, generate.moves);
-        CaptureValue(situation, generate.move_nums, generate.moves);
-        std::sort(generate.moves, generate.moves + generate.move_nums, cmp);
-
-        generate.index = 0;
-        generate.state = CAP_GET;
-    case CAP_GET:
-        if(generate.index < generate.move_nums && generate.moves[generate.index].value > 1){
-            generate.next = generate.moves[generate.index];
-            generate.index++;
-            return true;
-        }
-    case KILL1_GET:
-        generate.state = KILL2_GET;
-        if(KillerTable[step][0].from && MovementsLegal(KillerTable[step][0], situation)){
-            generate.next = KillerTable[step][0];
-            return true;
-        }
-    case KILL2_GET:
-        generate.state = NOCAP_GEN;
-        if(KillerTable[step][1].from && MovementsLegal(KillerTable[step][1], situation)){
-            generate.next = KillerTable[step][1];
-            return true;
-        }
-    case NOCAP_GEN:
-        flag = generate.move_nums;
-        GetAllNotCaptureMovements(situation, generate.move_nums, generate.moves);
-        NoCaptureValue(situation, generate.move_nums, generate.moves, flag);
-        std::sort(generate.moves + flag, generate.moves + generate.move_nums, cmp);
-    
-        generate.state = NOCAP_GET;
-    case NOCAP_GET:
-        if(generate.index < generate.move_nums){
-            generate.next = generate.moves[generate.index];
-            generate.index++;
-            return true;
-        }
-    default:
-        return false;
-    }
-}
-
 /* 
  * 函数名：CaptureMoveSort
  * 描述：吃子着法排序
@@ -221,6 +168,17 @@ void CaptureMoveSort(const Situation& situation, int& num_of_all_movements, Move
     std::sort(all_movements, all_movements + num_of_all_movements, cmp);
 }
 
+/* 
+ * 函数名：InitRootMove
+ * 描述：生成根节点着法
+ * 入参: 
+ * - Situation & situation             局面
+ * - int & num_of_all_movements        当前着法数
+ * - Movement* all_movements           当前着法数组，存储当前所有着法
+ * 返回值：
+ * - void
+ * 最后更新时间: 21.05.26
+ */
 void InitRootMove(Situation& situation, int& num_of_all_movements, Movement* all_movements){
     // 吃子着法
     GetAllCaptureMovements(situation, num_of_all_movements, all_movements);
@@ -230,6 +188,7 @@ void InitRootMove(Situation& situation, int& num_of_all_movements, Movement* all
     // 不吃子着法
     GetAllNotCaptureMovements(situation, num_of_all_movements, all_movements);
     for(int i = numofnocap; i < num_of_all_movements; i ++){
+        // 每个着法都进行试探，过滤不合法着法
         if(MakeAMove(situation, all_movements[i], 1)){
             // std::cout << "remove " << int(all_movements[i].from) << " " << int(all_movements[i].to) << " \n";
             for(int j = i; j < num_of_all_movements - 1; j ++){
@@ -243,6 +202,16 @@ void InitRootMove(Situation& situation, int& num_of_all_movements, Movement* all
     situation.moves_stack.clear();
 }
 
+/* 
+ * 函数名：SortRootMove
+ * 描述：对根节点着法进行排序
+ * 入参: 
+ * - int   num_of_all_movements        当前着法数
+ * - Movement* all_movements           当前着法数组，存储当前所有着法
+ * 返回值：
+ * - void
+ * 最后更新时间: 21.05.26
+ */
 void SortRootMove(int num_of_all_movements, Movement* all_movements){
     // 对着法做历史表启发
     for(int i = 0; i < num_of_all_movements; i++){
@@ -253,6 +222,17 @@ void SortRootMove(int num_of_all_movements, Movement* all_movements){
     std::sort(all_movements, all_movements + num_of_all_movements, cmp);
 }
 
+/* 
+ * 函数名：UpdateRootMove
+ * 描述：更新根节点着法的价值
+ * 入参: 
+ * - int   num_of_all_movements        当前着法数
+ * - Movement* all_movements           当前着法数组，存储当前所有着法
+ * - Movement& move                    需要给予最大分值，在下次迭代中首先搜索的着法
+ * 返回值：
+ * - void
+ * 最后更新时间: 21.05.26
+ */
 void UpdateRootMove(int num_of_all_movements, Movement* all_movements, Movement& move){
     for(int i = 0; i < num_of_all_movements; i++){
         if(isMoveEqual(move, all_movements[i])){

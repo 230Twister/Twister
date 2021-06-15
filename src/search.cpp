@@ -17,7 +17,7 @@ Movement BestMove;                                      // 当前局面的最好
 int step = 0;                                           // 搜索步数
 time_t StartTime;                                       // 开始搜索的时间
 bool isTimeLimit = 0;                                   // 时间是否超限
-int NowMaxDepth;
+int NowMaxDepth;                                        // 当前迭代到的最大深度
 const int NULL_REDUCTION = 2;                           // 空着裁剪度
 const int DRAW_VALUE = -1;                              // 和棋分数
 const UINT16 MAX_DEPTH = 36;                            // 最大搜索深度
@@ -25,6 +25,18 @@ const time_t MAX_TIME = 50000;                          // 最大消耗时间(ms
 extern const int MAX_VALUE = 10000;                     // 最大价值，胜利局面绝对分数
 extern const int WIN_VALUE = MAX_VALUE - MAX_DEPTH;     // 胜利局面的相对分数
 
+/* 
+ * 函数名：SearchCut
+ * 描述：零窗口主要变例搜索
+ * 入参: 
+ * - Situation& situation 局面
+ * - int depth  深度
+ * - int beta   beta值
+ * - bool allowNullMove 是否允许空着裁剪
+ * 返回值：
+ * - int 最佳分值
+ * 最后更新时间: 21.05.25
+ */
 int SearchCut(Situation& situation, int depth, int beta, bool allowNullMove = false){
     int value;                      // 下一着法的分值
     int best;                       // 所有着法中的最佳分值
@@ -103,12 +115,14 @@ int SearchCut(Situation& situation, int depth, int beta, bool allowNullMove = fa
  * 函数名：PVSearch
  * 描述：带置换表的主要变例搜索
  * 入参: 
+ * - Situation& situation 局面
  * - int depth  深度
  * - int alpha  alpha值
  * - int beta   beta值
+ * - Movement& inspire 启发着法
  * 返回值：
  * - int 最佳分值
- * 最后更新时间: 21.04.05
+ * 最后更新时间: 21.05.25
  */
 int PVSearch(Situation& situation, int depth, int alpha, int beta, Movement& inspire){
     int value;                      // 下一着法的分值
@@ -212,6 +226,7 @@ int PVSearch(Situation& situation, int depth, int alpha, int beta, Movement& ins
  * 函数名：QuiescentSearch
  * 描述：静态搜索
  * 入参: 
+ * - Situation& situation 局面
  * - int depth  深度
  * - int alpha  alpha值
  * - int beta   beta值
@@ -266,6 +281,18 @@ int QuiescentSearch(Situation& situation, int alpha, int beta){
     return alpha;
 }
 
+/* 
+ * 函数名：SearchRoot
+ * 描述：静态搜索
+ * 入参: 
+ * - Situation& situation 局面
+ * - int depth  深度
+ * - Movement* move_list 根节点着法
+ * - int move_num 根节点着法数量
+ * 返回值：
+ * - int 最佳分值
+ * 最后更新时间: 21.05.26
+ */
 int SearchRoot(Situation& situation, int depth, Movement* move_list, int move_num){
     int value;                      // 下一着法的分值
     int best;                       // 所有着法中的最佳分值
@@ -317,7 +344,7 @@ int SearchRoot(Situation& situation, int depth, Movement* move_list, int move_nu
  * 函数名：ComputerThink
  * 描述：电脑迭代加深思考，获取最佳走法
  * 入参: 
- * - void
+ * - Situation& situation 局面
  * 返回值：
  * - void
  * 最后更新时间: 21.04.05

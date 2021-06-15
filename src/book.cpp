@@ -47,7 +47,7 @@ inline void copyToDestination(char* buffer_out, int& des, unsigned char* buffer_
 	}
 }
 
-//解压
+//lz4解压
 void decompress(char* buffer_out) {
 	int blockLength = 0;
     int p = 0;                                  //指向当前输出缓冲区的位置
