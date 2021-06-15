@@ -2,7 +2,7 @@
  * 文件名： representation.h
  * 描述	：数据的表示，包括棋盘 棋子 局面 着法等数据的表示
  * 作者 : yao
- * 最后更新时间: 21.02.24
+ * 最后更新时间: 21.05.24
  */
 #include "define.h"
 #include <vector>

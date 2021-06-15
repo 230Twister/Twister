@@ -932,7 +932,16 @@ bool IfProtected(int player, const int to, const Situation & situation, int exp)
 
     return false;
 }
-
+/* 
+ * 函数名：Catch
+ * 描述：判断该着法是否捉子
+ * 入参：
+ * - const Situation & situation 当前局面 
+ * - const Movement & move 需要判断的着法
+ * 返回值：
+ * - int 为0不捉子 为其他被捉子棋子序号
+ * 最后更新时间: 21.05.14
+ */
 int Catch(const Situation & situation, const Movement & move){
     int player_flag, opplayer_flag, from, to, from_id, catch_id, counter;
     player_flag = GetPlayerFlag(situation.current_player);
