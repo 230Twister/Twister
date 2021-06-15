@@ -181,8 +181,8 @@ void FenToSituation(Situation & situation, const char* fen, const int num_of_mov
 
     // 2. 写入当前玩家
     p ++;
-    if(*p == 'w') situation.current_player = RED;
-    else situation.current_player = BLACK;
+    if(*p == 'b') situation.current_player = BLACK;
+    else situation.current_player = RED;
 
     // 3. 若轮到红方走子，局面哈希值异或额外标记
     if(situation.current_player == RED){
