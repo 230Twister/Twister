@@ -8,7 +8,7 @@
 #include "book.h"
 
 int main(int argc, char *argv[]) {
-	if (BootLine() == e_CommUcci) {
+	if (BootLine() == CommUcci) {
 		printf("ucciok\n");
 		fflush(stdout);
         Situation situation;
@@ -17,34 +17,34 @@ int main(int argc, char *argv[]) {
         InitPresetArray();
 		while (true) {
 			CommEnum Order = IdleLine (Command, 0);
-			if (Order == e_CommAnnotation) {
+			if (Order == CommAnnotation) {
 				printf("%s\n", Command.Annotation.String );
 				fflush(stdout);
 			}
-			else if (Order == e_CommQuit) { // quit
+			else if (Order == CommQuit) {
 				printf("bye\n");
 				fflush(stdout);
 				DeleteHashTable();
                 DeleteBook();
 				break;
 			}
-			else if (Order == e_CommIsReady) { // isready
+			else if (Order == CommIsReady) { 
 				printf("readyok\n");
 				fflush(stdout );
 			}
-			else if (Order == e_CommSetOption) {
-				if(Command.Option.Type == e_NewGame) { // newgame
+			else if (Order == CommSetOption) {
+				if(Command.Option.Type == NewGame) { 
                     ResetZobristKey();
 				}
 			}
-			else if (Order == e_CommPosition) { // position [ startpos | fen ] moves ...
+			else if (Order == CommPosition) { 
 				ResetZobristKey();
                 InitSituation(situation);
                 FenToSituation(situation, Command.Position.FenStr, Command.Position.MoveNum, Command.Position.MoveStr);
 				// 预评估
 				PreEvaluate(situation);
 			}
-			else if (Order == e_CommGo || Order == e_CommGoPonder) { // go ...
+			else if (Order == CommGo || Order == CommGoPonder) {
 				ComputerThink(situation);
 			}
 		}

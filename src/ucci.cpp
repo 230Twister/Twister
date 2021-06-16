@@ -6,10 +6,14 @@
 
 #include "define.h"
 #include "ucci.h"
+#include <windows.h>
+inline void Idle(void) {
+    Sleep(1);
+}
+
 CommDetail Command;
 
-#include <windows.h>
-
+// 检查输入是否符合指令格式
 int CheckInput(int &BytesLeft) {
     static int s_Init = false;
     static BOOL s_ConsoleMode;
@@ -39,11 +43,7 @@ int CheckInput(int &BytesLeft) {
     }
 }
 
-inline void Idle(void) {
-    Sleep(1);
-}
-
-// 读取一行，利用"CheckInput()"函数
+// 读取一行界面发来的指令
 char *ReadInput(void){
     const int c_MaxInputBuff = 2048;
     static char s_LineStr[c_MaxInputBuff];
@@ -93,9 +93,9 @@ CommEnum BootLine(void) {
         LineStr = ReadInput();
     }
     if (strcmp(LineStr, "ucci") == 0) {
-        return e_CommUcci;
+        return CommUcci;
     } else {
-        return e_CommNone;
+        return CommNone;
     }
 }
 
@@ -115,7 +115,7 @@ CommEnum IdleLine(CommDetail &Command, int  Debug) {
 
     // "isready"指令
     if (strcmp(LineStr, "isready") == 0) {
-        return e_CommIsReady;
+        return CommIsReady;
 
         // "position {<special_position> | fen <fen_string>} [moves <move_list>]"指令
     } else if (strncmp(LineStr, "position ", 9) == 0) {
@@ -124,7 +124,7 @@ CommEnum IdleLine(CommDetail &Command, int  Debug) {
         if (strncmp(LineStr, "startpos", 8) == 0) {
             Command.Position.FenStr = "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w - - 0 1";
         } else {
-            return e_CommNone;
+            return CommNone;
         }
         // 寻找是否指定了后续着法，即是否有"moves"关键字
         while (*LineStr != '\0') {
@@ -132,71 +132,64 @@ CommEnum IdleLine(CommDetail &Command, int  Debug) {
                 LineStr += 7;
                 Command.Position.MoveNum = int((strlen(LineStr) + 1) / 5); // 提示："moves"后面的每个着法都是4个字符和1个空格
                 Command.Position.MoveStr = LineStr;
-                return e_CommPosition;
+                return CommPosition;
             }
             LineStr ++;
         }
         Command.Position.MoveNum = 0;
         Command.Position.MoveStr = NULL;
-        return e_CommPosition;
-
-        // "banmoves <move_list>"指令，处理起来和"position ... moves ..."是一样的
-    } else if (strncmp(LineStr, "banmoves ", 9) == 0) {
-        LineStr += 9;
-        Command.BanMoves.MoveNum = int((strlen(LineStr) + 1) / 5);
-        Command.BanMoves.MoveStr = LineStr;
-        return e_CommBanMoves;
-
-        // "go [ponder] {infinite | depth <depth> | time <time> [movestogo <moves_to_go> | increment <inc_time>]}"指令
-    } else if (strncmp(LineStr, "go ", 3) == 0) {
+        return CommPosition;
+    } 
+    // "go [ponder] {infinite | depth <depth> | time <time> [movestogo <moves_to_go> | increment <inc_time>]}"指令
+    else if (strncmp(LineStr, "go ", 3) == 0) {
         LineStr += 3;
         // 首先判断到底是"go"还是"go ponder"，因为两者解释成不同的指令
         if (strncmp(LineStr, "ponder ", 7) == 0) {
             LineStr += 7;
-            RetValue = e_CommGoPonder;
+            RetValue = CommGoPonder;
         } else {
-            RetValue = e_CommGo;
+            RetValue = CommGo;
         }
-        // 然后判断到底是固定深度还是设定时限
+        // 然后判断是固定深度还是设定时限
         if (strncmp(LineStr, "time ", 5) == 0) {
             LineStr += 5;
             Command.Search.DepthTime.Time = ReadDigit(LineStr, 36000);
             // 如果是设定时限，就要判断是时段制还是加时制
             if (strncmp(LineStr, " movestogo ", 11) == 0) {
                 LineStr += 11;
-                Command.Search.Mode = e_TimeMove;
+                Command.Search.Mode = TimeMove;
                 Command.Search.TimeMode.MovesToGo = ReadDigit(LineStr, 100);
                 if (Command.Search.TimeMode.MovesToGo < 1) {
                     Command.Search.TimeMode.MovesToGo = 1;
                 }
             } else if (strncmp(LineStr, " increment ", 11) == 0) {
                 LineStr += 11;
-                Command.Search.Mode = e_TimeInc;
+                Command.Search.Mode = TimeInc;
                 Command.Search.TimeMode.Increment = ReadDigit(LineStr, 600);
             } else {
-                Command.Search.Mode = e_TimeMove;
+                Command.Search.Mode = TimeMove;
                 Command.Search.TimeMode.MovesToGo = 1;
             }
         } else if (strncmp(LineStr, "depth ", 6) == 0) {
             LineStr += 6;
-            Command.Search.Mode = e_TimeDepth;
+            Command.Search.Mode = TimeDepth;
             Command.Search.DepthTime.Depth = ReadDigit(LineStr, c_MaxDepth - 1);
         } else {
-            Command.Search.Mode = e_TimeDepth;
+            Command.Search.Mode = TimeDepth;
             Command.Search.DepthTime.Depth = c_MaxDepth - 1;
         }
         return RetValue;
         // "stop"指令
     } else if (strcmp(LineStr, "stop") == 0) {
-        return e_CommStop;
+        return CommStop;
 
         // "quit"指令
     } else if (strcmp(LineStr, "quit") == 0) {
-        return e_CommQuit;
+        return CommQuit;
     } 
     // 无法识别的指令
     else {
-        return e_CommNone;
+        return CommNone;
     }
 }
 
@@ -204,18 +197,18 @@ CommEnum BusyLine(int  Debug) {
     const char *LineStr;
     LineStr = ReadInput();
     if (LineStr == NULL) {
-        return e_CommNone;
+        return CommNone;
     } else {
         if (Debug) {
             printf("info string %s\n", LineStr);
             fflush(stdout);
         }
         if (strcmp(LineStr, "isready") == 0) {
-            return e_CommIsReady;
+            return CommIsReady;
         } else if (strcmp(LineStr, "stop") == 0) {
-            return e_CommStop;
+            return CommStop;
         } else {
-            return e_CommNone;
+            return CommNone;
         }
     }
 }

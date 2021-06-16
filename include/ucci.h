@@ -11,61 +11,61 @@ const int c_MaxDepth = 32;
 
 // 和UCCI指令中关键字有关的选项
 enum OptionEnum{
-    e_OptionNone,
-    e_OptionBatch,
-    e_OptionDebug,
-    e_OptionBookFiles,
-    e_OptionEgtbPaths,
-    e_OptionHashSize,
-    e_OptionThreads,
-    e_OptionDrawMoves,
-    e_OptionRepetition,
-    e_OptionPruning,
-    e_OptionKnowledge,
-    e_OptionSelectivity,
-    e_OptionStyle,
-    e_OptionLoadBook,
-    e_NewGame
+    OptionNone,
+    OptionBatch,
+    OptionDebug,
+    OptionBookFiles,
+    OptionEgtbPaths,
+    OptionHashSize,
+    OptionThreads,
+    OptionDrawMoves,
+    OptionRepetition,
+    OptionPruning,
+    OptionKnowledge,
+    OptionSelectivity,
+    OptionStyle,
+    OptionLoadBook,
+    NewGame
 };
 enum CheckEnum{
-    e_CheckFalse,
-    e_CheckTrue
+    CheckFalse,
+    CheckTrue
 };
 enum RepetitionEnum{
-    e_RepetitionAlwaysDraw,
-    e_RepetitionCheckBan,
-    e_RepetitionAsianRule,
-    e_RepetitionChineseRule
+    RepetitionAlwaysDraw,
+    RepetitionCheckBan,
+    RepetitionAsianRule,
+    RepetitionChineseRule
 };
 enum ScaleEnum{
-    e_ScaleNone,
-    e_ScaleSmall,
-    e_ScaleMedium,
-    e_ScaleLarge
+    ScaleNone,
+    ScaleSmall,
+    ScaleMedium,
+    ScaleLarge
 };
 enum StyleEnum{
-    e_StyleSolid,
-    e_StyleNormal,
-    e_StyleRisky
+    StyleSolid,
+    StyleNormal,
+    StyleRisky
 };
 enum TimeEnum{
-    e_TimeDepth,
-    e_TimeMove,
-    e_TimeInc
+    TimeDepth,
+    TimeMove,
+    TimeInc
 };
 enum CommEnum{
-    e_CommNone,
-    e_CommPonderHit,
-    e_CommStop,
-    e_CommUcci,
-    e_CommIsReady,
-    e_CommSetOption,
-    e_CommPosition,
-    e_CommBanMoves,
-    e_CommGo,
-    e_CommGoPonder,
-    e_CommQuit,
-    e_CommAnnotation
+    CommNone,
+    CommPonderHit,
+    CommStop,
+    CommUcci,
+    CommIsReady,
+    CommSetOption,
+    CommPosition,
+    CommBanMoves,
+    CommGo,
+    CommGoPonder,
+    CommQuit,
+    CommAnnotation
 }; // UCCI指令类型
 
 // UCCI指令可以解释成以下这个抽象的结构
